@@ -1,6 +1,48 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Mabinogi_Classic';
+  src: url('/fonts/Mabinogi_Classic.woff') format('woff');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+    font-family: 'IbmPlexSans-Light';
+    src: url('/fonts/IBMPlexSansKR-Light.woff') format('woff');
+    font-weight: 300;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'IbmPlexSans-Regular';
+    src: url('/fonts/IBMPlexSansKR-Regular.woff') format('woff');
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'IbmPlexSans-Medium';
+    src: url('/fonts/IBMPlexSansKR-Medium.woff') format('woff');
+    font-weight: 500;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'IbmPlexSans-Semi-bold';
+    src: url('/fonts/IBMPlexSansKR-SemiBold.woff') format('woff');
+    font-weight: 600;
+    font-display: swap;
+}
+
 @theme {
+  --font-display: 'Mabinogi_Classic';
+  
+  --font-headline: 'IbmPlexSans-Semi-bold';
+  --font-title: 'IbmPlexSans-Medium';
+  --font-body: 'IbmPlexSans-Regular';
+  --font-content: 'IbmPlexSans-Light';
+
   --color-primary-100: #07222C;
   --color-primary-200: #0F4457;
   --color-primary-300: #166683;

@@ -1,72 +1,67 @@
 @import "tailwindcss";
 
 @font-face {
-  font-family: 'Mabinogi_Classic';
-  src: url('/fonts/Mabinogi_Classic.woff') format('woff');
+  font-family: "Mabinogi_Classic";
+  src: url("/fonts/Mabinogi_Classic.woff") format("woff");
   font-weight: 400;
   font-display: swap;
 }
 
 @font-face {
-    font-family: 'IbmPlexSans-Light';
-    src: url('/fonts/IBMPlexSansKR-Light.woff') format('woff');
-    font-weight: 300;
-    font-display: swap;
+  font-family: "IbmPlexSans-Light";
+  src: url("/fonts/IBMPlexSansKR-Light.woff") format("woff");
+  font-weight: 300;
+  font-display: swap;
 }
 
 @font-face {
-    font-family: 'IbmPlexSans-Regular';
-    src: url('/fonts/IBMPlexSansKR-Regular.woff') format('woff');
-    font-weight: 400;
-    font-display: swap;
+  font-family: "IbmPlexSans-Regular";
+  src: url("/fonts/IBMPlexSansKR-Regular.woff") format("woff");
+  font-weight: 400;
+  font-display: swap;
 }
 
 @font-face {
-    font-family: 'IbmPlexSans-Medium';
-    src: url('/fonts/IBMPlexSansKR-Medium.woff') format('woff');
-    font-weight: 500;
-    font-display: swap;
+  font-family: "IbmPlexSans-Medium";
+  src: url("/fonts/IBMPlexSansKR-Medium.woff") format("woff");
+  font-weight: 500;
+  font-display: swap;
 }
 
 @font-face {
-    font-family: 'IbmPlexSans-Semi-bold';
-    src: url('/fonts/IBMPlexSansKR-SemiBold.woff') format('woff');
-    font-weight: 600;
-    font-display: swap;
+  font-family: "IbmPlexSans-Semi-bold";
+  src: url("/fonts/IBMPlexSansKR-SemiBold.woff") format("woff");
+  font-weight: 600;
+  font-display: swap;
 }
 
 @theme {
-  --font-display: 'Mabinogi_Classic';
-  
-  --font-headline: 'IbmPlexSans-Semi-bold';
-  --font-title: 'IbmPlexSans-Medium';
-  --font-body: 'IbmPlexSans-Regular';
-  --font-content: 'IbmPlexSans-Light';
+  --default-font-family: var(--font-body);
+  --font-headline: "IbmPlexSans-Semi-bold";
+  --font-title: "IbmPlexSans-Medium";
+  --font-body: "IbmPlexSans-Regular";
+  --font-content: "IbmPlexSans-Light";
 
-  --color-primary-100: #07222C;
-  --color-primary-200: #0F4457;
   --color-primary-300: #166683;
-  --color-primary-400: #30AEDC;
-  --color-primary-500: #98D7EE;
-  --color-primary-600: #C8F0FF;
-  --color-primary-700: #DDF4FF;
-  
-  --color-primary-main: var(--color-primary-400);
+  --color-primary-400: #30aedc;
+  --color-primary-500: #98d7ee;
+  --color-primary-600: #ddf4ff;
 
-  --color-secondary-ivory: #FFFDF3;
-  --color-secondary-red: #FB2C36;
+  --color-secondary-ivory: #fffdf3;
+  --color-secondary-red: #fb2c36;
+
+  --color-background-overlay: rgba(0, 0, 0, 0.5);
 
   --color-status-hover: var(--color-primary-300);
 
-  --color-alert-error: #F54900;
-  --color-alert-warning:#F9A825;
-  --color-alert-success: #00C950;
+  --color-alert-error: #f54900;
+  --color-alert-warning: #f9a825;
+  --color-alert-success: #00c950;
 }
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-display: "Mabinogi_Classic";
   line-height: 1.5;
-  font-weight: 400;
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
@@ -78,56 +73,45 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
+@layer utilities {
+  .background-blur {
+    background-image: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.2) 20%,
+      rgba(255, 255, 255, 0.71) 70%,
+      rgba(255, 255, 255, 1) 100%
+    );
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    display: inline-block;
+  }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
+  .text-logo {
+    font-family: var(--font-display);
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+    color: transparent;
+    background-clip: text;
+    -webkit-background-clip: text;
+
+    background-image: linear-gradient(
+      to left,
+      #ddf4ff 16%,
+      #8cd3ef 48%,
+      #63c3e6 72%,
+      #30aedc 91%
+    );
+
+    width: 50%;
+    /* background-size: 100% 100%; */
+    /* background-repeat: no-repeat;
+    display: inline-block; */
+  }
 }
 
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
     background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
   }
 }

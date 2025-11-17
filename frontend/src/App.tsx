@@ -1,7 +1,7 @@
 function App() {
   return (
     <>
-      <h2 className="bg-primary-main">첫 화면</h2>
+      <h1 className="text-logo text-4xl font-bold">알고가자 algo-go</h1>
     </>
   );
 }

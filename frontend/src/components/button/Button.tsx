@@ -17,7 +17,7 @@ const getVariantStyle = (variant: ButtonVariant) => {
     secondary: `bg-white text-primary-main border-primary-main 
                 hover:bg-primary-600 
                 disabled:bg-white disabled:text-grayscale-warm-gray disabled:border-grayscale-warm-gray disabled:cursor-default`,
-    default: `bg-white text-grayscale-dark-gray border-grayscale-dark-gray
+    default: `bg-white text-grayscale-dark-gray border-grayscale-warm-gray
                 hover:bg-grayscale-default 
                 disabled:bg-white disabled:text-grayscale-warm-gray disabled:border-grayscale-warm-gray disabled:cursor-default`,
     text: `bg-transparent text-grayscale-dark-gray border-transparent

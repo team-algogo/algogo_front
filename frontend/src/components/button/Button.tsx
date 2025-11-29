@@ -38,7 +38,7 @@ const Button = ({
 
   return (
     <button
-      className={`flex items-center justify-center px-6 py-4 w-full cursor-pointer border-2 rounded-xl gap-2 disabled:cursor-default ${btnStyle}`}
+      className={`flex items-center justify-center px-6 py-4 w-full h-6 cursor-pointer border-2 rounded-xl gap-2 disabled:cursor-default ${btnStyle}`}
       {...rest}
     >
       {icon && (

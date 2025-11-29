@@ -93,6 +93,11 @@
     /* background-repeat: no-repeat;
     display: inline-block; */
   }
+
+  .text-title {
+    font-family: "IbmPlexSans-Medium";
+    font-size: 16px;
+  }
 }
 
 html,

@@ -23,6 +23,7 @@
 
 @theme {
   --default-font-family: var(--font-body);
+  --font-logo: "Mabinogi_Classic";
   --font-headline: "IbmPlexSans-Semi-bold";
   --font-title: "IbmPlexSans-Medium";
   --font-body: "IbmPlexSans-Regular";

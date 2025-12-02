@@ -71,7 +71,7 @@ const PasswordInput = ({
         e.preventDefault();
         onSubmit?.(e);
       }}
-      className={`flex items-center w-[660px] h-12 bg-grayscale-default border rounded-md overflow-hidden ${getBorderColor()}`}
+      className={`flex items-center w-full h-12 bg-grayscale-default border rounded-md overflow-hidden ${getBorderColor()}`}
     >
       <div className="flex-1 flex items-center relative">
         <input

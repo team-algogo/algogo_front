@@ -4,10 +4,10 @@ import TextLink from "../textLink/TextLink";
 const Header = () => {
   const [user, setUser] = useState(true);
   return (
-    <div className="w-full flex justify-between">
+    <div className="w-full flex justify-between px-6">
       <div className="flex gap-2 items-center">
-        <a href="#" className="font-logo px-6.5 py-3.5">
-          Algo-go
+        <a href="/" className="font-logo px-6.5 py-6">
+          알고가자
         </a>
         <TextLink src="#" className="px-3.5 py-3">
           문제집
@@ -41,7 +41,7 @@ const Header = () => {
             </TextLink>
           </>
         ) : (
-          <TextLink src="#" className="px-3.5 py-3">
+          <TextLink src="/login" variant="secondary" className="px-3.5 py-3">
             로그인
           </TextLink>
         )}

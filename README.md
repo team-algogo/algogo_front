@@ -1,3 +1,18 @@
+# Project 실행
+
+## pnpm 설치 및 실행
+
+```bash
+pnpm install
+pnpm run dev
+```
+
+## storybook 실행
+
+```bash
+pnpm run storybook
+```
+
 ## ⚙️ Git Branch 전략
 
 - main

@@ -1,7 +1,8 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import App from "../App";
-import MainPage from "../pages/main/MainPage";
-import LoginPage from "../pages/login/LoginPage";
+import MainPage from "@pages/main/MainPage";
+import LoginPage from "@pages/login/LoginPage";
+import JoinPage from "@pages/login/JoinPage";
 
 const router = createBrowserRouter([
   {
@@ -10,6 +11,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <MainPage /> },
       { path: "login", element: <LoginPage /> },
+      { path: "join", element: <JoinPage /> },
     ],
   },
 ]);

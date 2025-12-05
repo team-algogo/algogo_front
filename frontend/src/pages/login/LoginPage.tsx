@@ -1,8 +1,8 @@
-import Button from "../../components/button/Button";
-import IdInput from "../../components/form/input/IdInput";
-import PasswordInput from "../../components/form/input/PasswordInput";
-import TextLink from "../../components/textLink/TextLink";
-import BasePage from "../BasePage";
+import Button from "@components/button/Button";
+import IdInput from "@components/form/input/IdInput";
+import PasswordInput from "@components/form/input/PasswordInput";
+import TextLink from "@components/textLink/TextLink";
+import BasePage from "@pages/BasePage";
 
 const LoginPage = () => {
   return (

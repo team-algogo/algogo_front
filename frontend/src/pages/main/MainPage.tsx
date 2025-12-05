@@ -1,13 +1,17 @@
-import Banner from "../../components/banner/Banner";
+import Banner from "@components/banner/Banner";
 
-import MainGroupCard from "../../components/cards/main/MainGroupCard";
-import TextLink from "../../components/textLink/TextLink";
+import MainGroupCard from "@components/cards/main/MainGroupCard";
+import TextLink from "@components/textLink/TextLink";
 
-import MainProblemSetCard from "../../components/cards/main/MainProblemSetCard";
-import img from "../../assets/images/MainCard/MainCard1.jpg";
-import BasePage from "../BasePage";
+import MainProblemSetCard from "@components/cards/main/MainProblemSetCard";
+import img from "@assets/images/MainCard/MainCard1.jpg";
+import BasePage from "@pages/BasePage";
+import { getTestApi } from "@api/getTestApi";
 
 const MainPage = () => {
+  const result = getTestApi();
+  console.log(result);
+
   return (
     <BasePage>
       <Banner />

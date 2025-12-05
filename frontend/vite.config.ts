@@ -24,6 +24,8 @@ export default defineConfig(({ mode }: ConfigEnv) => {
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: [
+        { find: "@api", replacement: resolve(__dirname, "src/api") },
+        { find: "@assets", replacement: resolve(__dirname, "src/assets") },
         {
           find: "@components",
           replacement: resolve(__dirname, "src/components"),

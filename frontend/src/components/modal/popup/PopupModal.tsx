@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { useModalStore } from "../../store/useModalStore";
+import { useModalStore } from "../../../store/useModalStore";
 
 interface ModalProps {
   children: ReactNode;

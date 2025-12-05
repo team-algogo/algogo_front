@@ -1,5 +1,5 @@
 import type { ReactNode, ButtonHTMLAttributes } from "react";
-import { useModalStore } from "../../store/useModalStore";
+import { useModalStore } from "../../../store/useModalStore";
 
 // Footer Component
 interface PopupModalFooterProps {
@@ -8,11 +8,7 @@ interface PopupModalFooterProps {
 }
 
 const PopupModalFooter = ({ children, className }: PopupModalFooterProps) => {
-  return (
-    <div className={`flex gap-3 pt-4 ${className || ""}`}>
-      {children}
-    </div>
-  );
+  return <div className={`flex gap-3 pt-4 ${className || ""}`}>{children}</div>;
 };
 
 // Close Button Component
@@ -88,4 +84,3 @@ PopupModalFooter.CloseButton = CloseButton;
 PopupModalFooter.ActionButton = ActionButton;
 
 export default PopupModalFooter;
-

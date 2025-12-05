@@ -1,6 +1,6 @@
 import { useRef, useEffect } from "react";
 import type { ReactNode } from "react";
-import { useModalStore } from "../../store/useModalStore";
+import { useModalStore } from "../../../store/useModalStore";
 
 // Root Component
 interface AlertModalProps {

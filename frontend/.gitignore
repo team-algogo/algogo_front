@@ -36,3 +36,5 @@ localhost.key.pem
 localhost.pem
 
 backend/gradlew.bat
+*storybook.log
+storybook-static

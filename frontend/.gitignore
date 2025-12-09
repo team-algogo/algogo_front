@@ -42,5 +42,6 @@ storybook-static
 node_modules/
 dist/
 .DS_Store
+*/.DS_Store
 env.env
 *.env

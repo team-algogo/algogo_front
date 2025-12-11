@@ -4,6 +4,7 @@ import BasePage from "@pages/BasePage";
 import Group from "@components/cards/group/GroupListCard";
 import Button from "@components/button/Button";
 import { fetchGroupList } from "../../api/group/groupApi";
+import CreateGroupModal from "./CreateGroupModal";
 
 const GroupMainPage = () => {
   // --- 1. 상태 관리 (백엔드 스펙에 맞춤) ---
@@ -19,6 +20,8 @@ const GroupMainPage = () => {
   // C. 페이지네이션 관련
   const [page, setPage] = useState(0); // 현재 페이지 (0부터 시작)
   const size = 10; // 페이지당 개수 (고정값 혹은 상태로 관리)
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // --- 2. React Query 데이터 Fetching ---
   const { data, isLoading, isError } = useQuery({
@@ -82,6 +85,9 @@ const GroupMainPage = () => {
 
   return (
     <BasePage>
+      {isModalOpen && (
+        <CreateGroupModal onClose={() => setIsModalOpen(false)} />
+      )}
       <div className="w-full flex flex-col gap-6 px-4 py-6 max-w-[1000px] mx-auto">
         {/* Top Section */}
         <div className="flex justify-between items-end">
@@ -93,8 +99,8 @@ const GroupMainPage = () => {
               함께 문제를 풀고 성장하는 코드 리뷰 커뮤니티
             </p>
           </div>
-          <div className="w-[200px]">
-            <Button variant="primary" icon="plusIcon.svg">
+          <div className="w-[170px]">
+            <Button variant="primary" icon="plusIcon.svg" onClick={() => setIsModalOpen(true)}>
               그룹 만들기
             </Button>
           </div>

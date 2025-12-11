@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query"; // React Query 훅 추가
 import Button from "@components/button/Button";
+import { createGroup } from "../../api/group/groupApi"; // 위에서 만든 API 함수 import
 import Toast from "@pages/toast/Toast";
 
 interface CreateGroupModalProps {
@@ -8,45 +10,72 @@ interface CreateGroupModalProps {
 
 const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
   // --- 상태 관리 ---
-  // maxCount: 초기값은 빈 문자열("")로 두어 placeholder가 보이게 하거나, 
-  // 입력 시 숫자처리를 위해 number | string 타입을 유지
-  const [maxCount, setMaxCount] = useState<number | string>(""); 
+  const [maxCount, setMaxCount] = useState<number | string>("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-
-  // 토스트 메시지 상태
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // --- 핸들러: 만들기 버튼 클릭 시 검증 ---
+  // --- React Query 설정 ---
+  const queryClient = useQueryClient(); // 캐시 관리자 호출
+
+  const mutation = useMutation({
+    mutationFn: createGroup, // 실행할 API 함수
+    onSuccess: () => {
+      // 1. 성공 시: 리스트 데이터 새로고침 (키가 "groups"로 시작하는 모든 쿼리 무효화 -> 재요청 유발)
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+
+      // 2. 성공 토스트 띄우기
+      setToastMessage("그룹이 성공적으로 생성되었습니다!");
+
+      // 3. 1.5초 뒤에 모달 닫기 (토스트 메시지를 보여줄 시간 확보)
+      setTimeout(() => {
+        onClose();
+      }, 1500);
+    },
+    onError: (error) => {
+      // 에러 처리 (필요 시 에러 메시지 파싱)
+      console.error(error);
+      setToastMessage("그룹 생성에 실패했습니다. 다시 시도해주세요.");
+    },
+  });
+
+  // --- 핸들러 ---
   const handleCreateGroup = () => {
-    // 1. 빈 값 체크
+    // 1. 유효성 검사
     if (maxCount === "") {
       setToastMessage("정원수를 입력해주세요");
       return;
     }
 
-    const countNumber = Number(maxCount);
+    const capacity = Number(maxCount);
 
-    // 2. 범위 체크 (1 ~ 100)
-    if (countNumber < 1 || countNumber > 100) {
+    if (capacity < 1 || capacity > 100) {
       setToastMessage("정원수는 1~100명 사이만 가능합니다");
       return;
     }
 
-    // 3. (선택사항) 제목 등 다른 필수값 체크도 필요하면 여기에 추가
     if (!title.trim()) {
-       setToastMessage("그룹 이름을 입력해주세요");
-       return;
+      setToastMessage("그룹 이름을 입력해주세요");
+      return;
     }
 
-    // 4. 모든 검증 통과 시 API 호출 로직 실행
-    console.log("생성 성공!", { title, maxCount: countNumber, description });
-    // API 호출 후 모달 닫기 -> onClose();
+    if (!description.trim()) {
+        setToastMessage("그룹 설명을 입력해주세요");
+        return;
+    }
+
+    // 2. API 요청 전송 (mutate 실행)
+    // 백엔드가 원하는 필드명(capacity)으로 매핑해서 보냅니다.
+    mutation.mutate({
+      title,
+      description,
+      capacity, 
+    });
   };
 
   return (
     <>
-      {/* 토스트 메시지가 있을 때만 렌더링 */}
+      {/* 토스트 메시지 렌더링 */}
       {toastMessage && (
         <Toast 
           message={toastMessage} 
@@ -54,6 +83,7 @@ const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
         />
       )}
 
+      {/* 모달 UI */}
       <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
         <div className="bg-white w-[600px] rounded-2xl p-8 flex flex-col gap-8 shadow-xl relative">
           
@@ -61,15 +91,17 @@ const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
             Group 만들기
           </h2>
 
+          {/* 입력 폼 영역 */}
           <div className="flex flex-col gap-6">
-            {/* Group 명 */}
+            
+            {/* 제목 */}
             <div className="flex flex-col gap-2">
               <label className="font-bold text-grayscale-dark-gray">
                 Group 명 <span className="text-alert-error text-red-500">*</span>
               </label>
               <div className="flex gap-2">
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   placeholder="Group 명을 입력해 주세요"
                   className="flex-1 bg-grayscale-default rounded-lg px-4 py-3 outline-none placeholder:text-grayscale-warm-gray"
                   maxLength={10}
@@ -87,25 +119,20 @@ const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
               </div>
             </div>
 
-            {/* 최대 정원수 (수정된 부분) */}
+            {/* 정원 (capacity) */}
             <div className="flex flex-col gap-2">
               <label className="font-bold text-grayscale-dark-gray">
                 최대 정원수 <span className="text-alert-error text-red-500">*</span>
               </label>
-              <input 
-                type="number" 
+              <input
+                type="number"
                 placeholder="최대 인원을 입력해 주세요"
                 className="w-full bg-grayscale-default rounded-lg px-4 py-3 outline-none placeholder:text-grayscale-warm-gray"
                 value={maxCount}
                 onChange={(e) => {
                   const val = e.target.value;
-                  // 빈 값이면 빈 문자열로, 아니면 숫자로 변환 안 하고 문자열 그대로 뒀다가 제출 시 검증해도 됨
-                  // 여기서는 사용자 편의를 위해 '지우기'가 가능하도록 로직 유지
-                  if (val === "") {
-                    setMaxCount("");
-                  } else {
-                    setMaxCount(Number(val));
-                  }
+                  if (val === "") setMaxCount("");
+                  else setMaxCount(Number(val));
                 }}
               />
               <p className="text-xs text-grayscale-warm-gray">
@@ -113,12 +140,12 @@ const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
               </p>
             </div>
 
-            {/* Group 설명 */}
+            {/* 설명 */}
             <div className="flex flex-col gap-2">
               <label className="font-bold text-grayscale-dark-gray">
                 Group 설명 <span className="text-alert-error text-red-500">*</span>
               </label>
-              <textarea 
+              <textarea
                 placeholder="Group에 대한 설명을 입력해 주세요"
                 className="w-full h-[120px] bg-grayscale-default rounded-lg px-4 py-3 outline-none resize-none placeholder:text-grayscale-warm-gray"
                 maxLength={50}
@@ -131,10 +158,16 @@ const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
             </div>
           </div>
 
+          {/* 하단 버튼 */}
           <div className="flex gap-3 mt-2">
             <div className="flex-1">
-              <Button variant="primary" onClick={handleCreateGroup}>
-                만들기
+              <Button 
+                variant="primary" 
+                onClick={handleCreateGroup}
+                // API 전송 중일 때 버튼 비활성화 (중복 클릭 방지)
+                disabled={mutation.isPending}
+              >
+                {mutation.isPending ? "생성 중..." : "만들기"}
               </Button>
             </div>
             <div className="flex-1">

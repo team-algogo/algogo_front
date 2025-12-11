@@ -16,6 +16,11 @@ export interface CreateGroupRequest {
   capacity: number;
 }
 
+// 중복 체크 
+export interface CheckGroupResponse {
+  isAvailable: boolean;
+}
+
 // 정렬 옵션 타입 정의
 import type  Response  from "../../type/response";
 import type  { GroupListResponse }  from "../../type/group/group";
@@ -42,4 +47,14 @@ export const createGroup = async (data: CreateGroupRequest) => {
     data
   );
   return response.data;
+};
+
+export const checkGroupNameDuplicate = async (groupTitle: string) => {
+  const response = await client.post<Response<CheckGroupResponse>>(
+    "/api/v1/groups/check/groupnames",
+    {
+      groupTitle, 
+    }
+  );
+  return response.data; 
 };

@@ -31,6 +31,8 @@ export default defineConfig(({ mode }: ConfigEnv) => {
           replacement: resolve(__dirname, "src/components"),
         },
         { find: "@pages", replacement: resolve(__dirname, "src/pages") },
+        { find: "@store", replacement: resolve(__dirname, "src/store") },
+        { find: "@type", replacement: resolve(__dirname, "src/type") },
       ],
     },
   };

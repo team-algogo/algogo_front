@@ -3,35 +3,22 @@ import { useState } from "react";
 type PasswordStatus = "default" | "error" | "warning" | "success";
 
 interface PasswordInputProps {
-  formId: string;
   placeholder?: string;
-  value?: string;
+  id: string;
+  value: string;
   status?: PasswordStatus;
-  onChange?: (value: string) => void;
-  onSubmit?: (e: React.FormEvent<HTMLFormElement>) => void;
+  onChange: (value: string) => void;
 }
 
 const PasswordInput = ({
-  formId,
   placeholder = "비밀번호를 입력하세요",
-  value: externalValue,
+  id,
+  value,
   status = "default",
   onChange,
-  onSubmit,
 }: PasswordInputProps) => {
-  const [internalValue, setInternalValue] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-
-  const value = externalValue !== undefined ? externalValue : internalValue;
-
-  const handleChange = (newValue: string) => {
-    if (onChange) {
-      onChange(newValue);
-    } else {
-      setInternalValue(newValue);
-    }
-  };
 
   const getBorderColor = () => {
     if (isFocused) {
@@ -65,22 +52,19 @@ const PasswordInput = ({
   const statusIcon = getStatusIcon();
 
   return (
-    <form
-      id={formId}
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSubmit?.(e);
-      }}
+    <div
       className={`flex items-center w-full h-12 bg-grayscale-default border rounded-md overflow-hidden ${getBorderColor()}`}
     >
       <div className="flex-1 flex items-center relative">
         <input
+          id={id}
           type={showPassword ? "text" : "password"}
           value={value}
-          onChange={(e) => handleChange(e.target.value)}
+          onChange={(e) => onChange(e.target.value)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder={placeholder}
+          autoComplete="current-password"
           className="w-full h-full px-4 text-grayscale-dark-gray placeholder-grayscale-warm-gray outline-none bg-transparent"
         />
       </div>
@@ -112,7 +96,7 @@ const PasswordInput = ({
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
-            onClick={() => handleChange("")}
+            onClick={() => onChange("")}
             className="flex justify-center items-center size-6 rounded-full transition-colors"
           >
             <img
@@ -123,7 +107,7 @@ const PasswordInput = ({
           </button>
         )}
       </div>
-    </form>
+    </div>
   );
 };
 

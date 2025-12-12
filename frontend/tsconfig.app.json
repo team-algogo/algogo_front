@@ -19,7 +19,9 @@
       "@api/*": ["api/*"],
       "@assets/*": ["assets/*"],
       "@components/*": ["components/*"],
-      "@pages/*": ["pages/*"]
+      "@pages/*": ["pages/*"],
+      "@store/*": ["store/*"],
+      "@type/*": ["type/*"]
     },
     "jsx": "react-jsx",
 

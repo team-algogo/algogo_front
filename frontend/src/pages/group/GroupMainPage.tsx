@@ -5,6 +5,8 @@ import Group from "@components/cards/group/GroupListCard";
 import Button from "@components/button/Button";
 import { fetchGroupList } from "../../api/group/groupApi";
 import CreateGroupModal from "./CreateGroupModal";
+import { useNavigate } from "react-router-dom"; // 리다이렉트용
+import useAuthStore from "@store/useAuthStore";
 
 const GroupMainPage = () => {
   // --- 1. 상태 관리 (백엔드 스펙에 맞춤) ---
@@ -21,7 +23,24 @@ const GroupMainPage = () => {
   const [page, setPage] = useState(0); // 현재 페이지 (0부터 시작)
   const size = 10; // 페이지당 개수 (고정값 혹은 상태로 관리)
 
+  // 회원관리
+  const { userType } = useAuthStore(); // 혹은 authorization을 체크해도 됨
+  const navigate = useNavigate();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleOpenModal = () => {
+    // 로그인이 안 되어 있다면 (userType이 없거나 null일 때)
+    if (!userType) {
+      const confirmLogin = window.confirm("로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하시겠습니까?");
+      if (confirmLogin) {
+        navigate("/login"); // 로그인 페이지로 이동
+      }
+      return;
+    }
+    // 로그인 되어 있으면 모달 열기
+    setIsModalOpen(true);
+  };
 
   const queryParams = { // 이렇게 하라고 하신거같다
     page,
@@ -108,7 +127,7 @@ const GroupMainPage = () => {
             </p>
           </div>
           <div className="w-[170px]">
-            <Button variant="primary" icon="plusIcon.svg" onClick={() => setIsModalOpen(true)}>
+            <Button variant="primary" icon="plusIcon.svg" onClick={handleOpenModal}>
               그룹 만들기
             </Button>
           </div>

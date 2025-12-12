@@ -23,10 +23,18 @@ const GroupMainPage = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const queryParams = { // 이렇게 하라고 하신거같다
+    page,
+    size,
+    sortBy,
+    sortDirection,
+    keyword,
+  };
+
   // --- 2. React Query 데이터 Fetching ---
   const { data, isLoading, isError } = useQuery({
     // queryKey에 API에 영향을 주는 모든 변수를 넣어야 함 (하나라도 바뀌면 재호출)
-    queryKey: ["groups", page, size, sortBy, sortDirection, keyword],
+    queryKey: ["groups", queryParams],
     queryFn: () =>
       fetchGroupList({
         page,

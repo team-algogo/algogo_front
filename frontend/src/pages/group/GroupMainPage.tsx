@@ -26,13 +26,16 @@ const GroupMainPage = () => {
   // 회원관리
   const { userType } = useAuthStore(); // 혹은 authorization을 체크해도 됨
   const navigate = useNavigate();
+  const isLoggedIn = !!userType; // -> 원래 헤더에서 로그인 체크가 있다고 했던거같은데 없는 거 같아서,,이렇게 해볼게요
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleOpenModal = () => {
     // 로그인이 안 되어 있다면 (userType이 없거나 null일 때)
     if (!userType) {
-      const confirmLogin = window.confirm("로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하시겠습니까?");
+      const confirmLogin = window.confirm(
+        "로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하시겠습니까?"
+      ); // -> 이거 원래 알림 창이 있어야하지않 이렇게해도되나
       if (confirmLogin) {
         navigate("/login"); // 로그인 페이지로 이동
       }
@@ -42,7 +45,8 @@ const GroupMainPage = () => {
     setIsModalOpen(true);
   };
 
-  const queryParams = { // 이렇게 하라고 하신거같다
+  const queryParams = {
+    // 이렇게 하라고 하신거같다
     page,
     size,
     sortBy,
@@ -70,6 +74,7 @@ const GroupMainPage = () => {
   const totalCount = data?.data?.page?.totalElements || 0;
   // 전체 페이지 수 계산 (페이지네이션 UI용)
   const totalPages = data?.data?.page?.totalPages || 0;
+  const visibleGroups = isLoggedIn ? groupList : groupList.slice(0, 3);
 
   // --- 3. 핸들러 함수들 ---
 
@@ -127,7 +132,11 @@ const GroupMainPage = () => {
             </p>
           </div>
           <div className="w-[170px]">
-            <Button variant="primary" icon="plusIcon.svg" onClick={handleOpenModal}>
+            <Button
+              variant="primary"
+              icon="plusIcon.svg"
+              onClick={handleOpenModal}
+            >
               그룹 만들기
             </Button>
           </div>
@@ -192,25 +201,67 @@ const GroupMainPage = () => {
         </div>
 
         {/* List Rendering */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 relative pb-20">
+          {" "}
+          {/* relative 추가 */}
           {isLoading ? (
             <div className="text-center py-10">로딩 중입니다...</div>
           ) : isError ? (
-            <div className="text-center py-10 text-alert-error">
-              데이터를 불러오는데 실패했습니다.
-            </div>
+            <div className="text-center py-10 text-alert-error">실패...</div>
           ) : groupList.length > 0 ? (
-            groupList.map((group: any) => (
-              <Group
-                key={group.programId}
-                id={group.programId}
-                title={group.title}
-                description={group.description}
-                memberCount={group.memberCount}
-                problemCount={group.programProblemCount}
-                createdAt={formatDate(group.createdAt)}
-              />
-            ))
+            <>
+              {/* 1. 실제 보여줄 리스트 (로그인 시 전체, 비로그인 시 3개) */}
+              {visibleGroups.map((group: any) => (
+                <Group
+                  key={group.programId}
+                  id={group.programId}
+                  title={group.title}
+                  description={group.description}
+                  memberCount={group.memberCount}
+                  problemCount={group.programProblemCount}
+                  createdAt={formatDate(group.createdAt)}
+                />
+              ))}
+
+              {/* 2. 비로그인 시 나타날 '블러 처리된 가짜 리스트 & 안내 문구' */}
+              {!isLoggedIn && groupList.length > 3 && (
+                <div className="relative mt-4">
+                  {/* (A) 뒷배경에 깔릴 흐릿한 아이템들 (시각적 효과용) */}
+                  <div className="flex flex-col gap-4 opacity-30 blur-[2px] pointer-events-none select-none">
+                    {/* 실제 데이터가 더 있다면 그걸 쓰고, 없다면 더미 데이터 2~3개 렌더링 */}
+                    {groupList.slice(3, 6).map((group: any) => (
+                      <Group
+                        key={group.programId}
+                        id={group.programId}
+                        title={group.title}
+                        description={group.description}
+                        memberCount={group.memberCount}
+                        problemCount={group.programProblemCount}
+                        createdAt={formatDate(group.createdAt)}
+                      />
+                    ))}
+                  </div>
+
+                  {/* (B) 그라데이션 오버레이 (자연스럽게 사라지는 효과) */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/80 to-white z-10"></div>
+
+                  {/* (C) 중앙 안내 문구 */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center z-20 gap-2">
+                    <p className="text-primary-main text-lg font-bold">
+                      더 많은 그룹을 보려면 <br className="md:hidden" />{" "}
+                      로그인이 필요합니다 🥲
+                    </p>
+                    <Button
+                      variant="primary"
+                      onClick={() => navigate("/login")}
+                      className="!w-fit !px-6 !py-2 !h-10 text-sm" // 버튼 크기 조정
+                    >
+                      로그인 하러가기
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
             <div className="text-center py-20 text-grayscale-warm-gray">
               검색 결과가 없습니다.
@@ -219,7 +270,7 @@ const GroupMainPage = () => {
         </div>
 
         {/* --- Pagination UI (간단 구현) --- */}
-        {totalCount > 0 && (
+        {isLoggedIn && totalCount > 0 && (
           <div className="flex justify-center gap-2 py-6">
             <button
               onClick={() => setPage((old) => Math.max(old - 1, 0))}

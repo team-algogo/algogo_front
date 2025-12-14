@@ -1,4 +1,4 @@
-import type { ProblemSetListResponse } from "@type/problemset";
+import type { ProblemSetListResponse } from "@type/problemset/ProblemSetType";
 import getResponse from "@api/getResponse";
 
 export const getProblemSetList = async (

@@ -8,8 +8,17 @@ export interface ApiProblemSet {
     programType: string;
     categories: string[];
     totalParticipants: number;
+    problemCount: number;
+}
+
+export interface PageInfo {
+    number: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
 }
 
 export interface ProblemSetListResponse {
+    page: PageInfo;
     problemSetList: ApiProblemSet[];
 }

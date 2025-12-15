@@ -1,16 +1,35 @@
-import Banner from "@components/banner/Banner";
+import { useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
+import Banner from "@components/banner/Banner";
 import MainGroupCard from "@components/cards/main/MainGroupCard";
 import TextLink from "@components/textLink/TextLink";
-
 import MainProblemSetCard from "@components/cards/main/MainProblemSetCard";
+import AlertModal from "@components/modal/alarm/AlertModal";
+
 import img from "@assets/images/MainCard/MainCard1.jpg";
+
 import BasePage from "@pages/BasePage";
-import { getTestApi } from "@api/getTestApi";
+
+import { useModalStore } from "@store/useModalStore";
 
 const MainPage = () => {
-  const result = getTestApi();
-  console.log(result);
+  const { state, pathname } = useLocation();
+  const navigate = useNavigate();
+  const { openModal, closeModal } = useModalStore();
+
+  // 회원가입 성공 후 모달 표시
+  useEffect(() => {
+    if (state?.showModal) {
+      openModal("alert");
+
+      // state 제거 (새로고침 시 모달 다시 안 뜨도록)
+      navigate(pathname, {
+        replace: true,
+        state: null,
+      });
+    }
+  }, [state, openModal, navigate, pathname]);
 
   return (
     <BasePage>
@@ -129,6 +148,23 @@ const MainPage = () => {
           </div>
         </div>
       </div>
+
+      {/* 회원가입 성공 모달 */}
+      <AlertModal.Content autoCloseDelay={0}>
+        <div className="text-4xl mb-4">🥳</div>
+        <AlertModal.Message className="font-semibold text-lg">
+          성공적으로 회원가입이 되었습니다!
+        </AlertModal.Message>
+        <button
+          onClick={() => {
+            closeModal();
+            navigate("/login");
+          }}
+          className="mt-4 px-6 py-2 bg-primary-main text-white rounded-lg hover:bg-primary-dark transition-colors"
+        >
+          로그인하기
+        </button>
+      </AlertModal.Content>
     </BasePage>
   );
 };

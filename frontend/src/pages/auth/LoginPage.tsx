@@ -29,10 +29,10 @@ const LoginPage = () => {
 
   return (
     <BasePage>
-      <div className="w-full h-[calc(100vh-150px)] flex justify-center items-center py-6">
+      <div className="w-full min-h-[calc(100vh-150px)] flex justify-center items-center py-6">
         <form
           onSubmit={onSubmitLogin}
-          className="flex flex-col gap-10 w-[426px] px-6 py-10 shadow-box rounded-sm scale-80"
+          className="flex flex-col gap-10 w-[426px] px-6 py-10 shadow-box rounded-sm scale-90"
         >
           {/** title */}
           <div className="font-title text-xl text-center">로그인</div>

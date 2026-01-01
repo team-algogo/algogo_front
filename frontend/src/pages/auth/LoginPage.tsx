@@ -7,8 +7,10 @@ import TextLink from "@components/textLink/TextLink";
 
 import { postLogin } from "@api/auth/auth";
 import useAuthStore from "@store/useAuthStore";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -22,6 +24,7 @@ const LoginPage = () => {
       const accessToken = response.headers.authorization;
       setUserType("User");
       setAuthorization(accessToken);
+      navigate("/", { replace: true });
     } catch (err) {
       console.log(err);
     }

@@ -21,6 +21,41 @@ export interface CheckGroupResponse {
   isAvailable: boolean;
 }
 
+export interface MyGroupListResponse {
+  groupLists: {
+    programId: number;
+    title: string;
+    description: string;
+    createdAt: string;
+    modifiedAt: string;
+    capacity: number;
+    memberCount: number;
+    programProblemCount: number;
+    role: "ADMIN" | "USER"; // 역할 필드 중요
+  }[];
+  page: {
+    number: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+  };
+}
+
+export interface GroupProblemParams {
+  programId: number;
+  page: number;
+  size: number;
+  sortBy: string;
+  sortDirection: string;
+}
+
+export const joinGroup = async (programId: number) => {
+  const response = await client.post<Response<null>>(
+    `/api/v1/groups/${programId}/join`
+  );
+  return response.data;
+};
+
 // 정렬 옵션 타입 정의
 import type  Response  from "../../type/response";
 import type  { GroupListResponse }  from "../../type/group/group";
@@ -57,4 +92,45 @@ export const checkGroupNameDuplicate = async (groupTitle: string) => {
     }
   );
   return response.data; 
+};
+
+// 메인 그룹 페이지 (로그인시) 좌측에 뿌려주는 내가 참여한 그룹방 리스트 
+export const fetchMyGroupList = async () => {
+  // 정렬 조건 등은 고정해서 요청
+  const response = await client.get<Response<MyGroupListResponse>>(
+    "/api/v1/groups/lists/me",
+    {
+      params: {
+        sortBy: "createdAt",
+        sortDirection: "desc", // 보통 최신순
+        page: 0,
+        size: 100, // 스크롤 방식이므로 넉넉하게 한 번에 가져오기
+      },
+    }
+  );
+  return response.data;
+};
+
+// GET /api/v1/groups/{programId}
+export const fetchGroupDetail = async (programId: number) => {
+  const response = await client.get<Response<any>>(
+    `/api/v1/groups/${programId}`
+  );
+  return response.data;
+};
+
+export const fetchGroupProblemList = async (params: GroupProblemParams) => {
+  const { programId, page, size, sortBy, sortDirection } = params;
+  const response = await client.get<Response<any>>(
+    `/api/v1/groups/${programId}/problems/lists`,
+    {
+      params: {
+        page,
+        size,
+        sortBy,
+        sortDirection,
+      },
+    }
+  );
+  return response.data;
 };

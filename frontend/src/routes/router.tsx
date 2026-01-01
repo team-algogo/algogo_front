@@ -3,6 +3,7 @@ import App from "../App";
 import MainPage from "@pages/main/MainPage";
 import GroupMainPage from "@pages/group/GroupMainPage";
 import LoginPage from "@pages/auth/LoginPage";
+import GroupDetailPage from "@pages/group/GroupDetailPage"; // 나중에 만드는 페이지 상세조회
 // import JoinPage from "@pages/auth/JoinPage";
 
 const router = createBrowserRouter([
@@ -14,6 +15,7 @@ const router = createBrowserRouter([
       { path: "login", element: <LoginPage /> },
       { path: "group", element: <GroupMainPage /> },
       // { path: "join", element: <JoinPage /> },
+      { path: "group/:groupId", element: <GroupDetailPage /> },
     ],
   },
 ]);

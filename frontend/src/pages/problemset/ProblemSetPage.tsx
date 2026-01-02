@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getCategoryList } from "@api/problemset/getCategoryList";
 import Header from "@components/header/Header";
 import ProblemSetList from "@components/problemset/ProblemSetList";
 import SortSelect from "@components/selectbox/SortSelect";
@@ -21,7 +23,12 @@ export default function ProblemSetPage() {
         // Reset sort direction if needed, but desc is usually good for both "Latest" and "Popular"
     };
 
-    const tabs = ["전체", "알고리즘", "기업대비"];
+    const { data: categoryList } = useQuery({
+        queryKey: ["categoryList"],
+        queryFn: getCategoryList,
+    });
+
+    const tabs = ["전체", ...(categoryList?.map((c) => c.name) || [])];
     const sortOptions = [
         { label: "최신순", value: "createdAt" },
         { label: "인기순", value: "popular" },
@@ -43,14 +50,14 @@ export default function ProblemSetPage() {
                     <div className="flex flex-row justify-between items-end w-full h-[60px] border-b border-[#F4F4F5]">
 
                         {/* Tabs Group */}
-                        <div className="flex flex-row items-start p-0 gap-[20px] w-[264px] h-[34px]">
+                        <div className="flex flex-row items-start p-0 gap-[20px] w-fit h-[34px]">
                             {tabs.map((tab) => (
                                 <button
                                     key={tab}
                                     onClick={() => handleCategoryChange(tab)}
-                                    className={`box-border flex flex-col items-end px-[2px] pb-[8px] gap-[8px] h-[34px] ${category === tab
-                                            ? "border-b-[2px] border-[#0D6EFD]"
-                                            : "border-b-[2px] border-transparent hover:border-gray-200"
+                                    className={`box-border flex flex-col items-center justify-end px-[2px] pb-[8px] gap-[8px] h-[34px] whitespace-nowrap ${category === tab
+                                        ? "border-b-[2px] border-[#0D6EFD]"
+                                        : "border-b-[2px] border-transparent hover:border-gray-200"
                                         }`}
                                 >
                                     <span className={`h-[16px] font-ibm font-bold text-[16px] leading-[100%] ${category === tab ? "text-[#0D6EFD]" : "text-[#2F353A]"

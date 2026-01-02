@@ -17,9 +17,7 @@ export const getProblemSetList = async (
     };
 
     if (category !== "전체") {
-        if (category === "기업대비") params.category = "enterprise";
-        else if (category === "알고리즘") params.category = "algorithm";
-        else params.category = category;
+        params.category = category;
     }
 
     if (keyword) {

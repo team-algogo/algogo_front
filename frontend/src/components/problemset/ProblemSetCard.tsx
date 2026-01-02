@@ -45,8 +45,8 @@ export default function ProblemSetCard({
             {/* Frame 291: Top Badge Area */}
             <div className="flex flex-col items-start p-[12px_16px] gap-[10px] w-full h-[44px]">
                 {displayCategory && (
-                    <div className={`flex flex-row justify-center items-center px-[8px] py-[6px] gap-[10px] w-fit h-fit rounded-[100px] ${displayCategory === '알고리즘' ? 'bg-[#F0FDFA]' : 'bg-[#EFF6FF]'}`}>
-                        <span className={`text-[12px] font-medium leading-[130%] tracking-[-0.01em] text-center whitespace-nowrap ${displayCategory === '알고리즘' ? 'text-[#0F766E]' : 'text-[#1D4ED8]'} font-ibm`}>
+                    <div className={`flex flex-row justify-center items-center px-[8px] py-[6px] gap-[10px] w-fit h-fit rounded-[100px] ${displayCategory.includes('알고리즘') ? 'bg-[#F0FDFA]' : 'bg-[#EFF6FF]'}`}>
+                        <span className={`text-[12px] font-medium leading-[130%] tracking-[-0.01em] text-center whitespace-nowrap ${displayCategory.includes('알고리즘') ? 'text-[#0F766E]' : 'text-[#1D4ED8]'} font-ibm`}>
                             {displayCategory}
                         </span>
                     </div>

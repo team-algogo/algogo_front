@@ -5,10 +5,31 @@ interface LevelBadgeProps {
 }
 
 export default function LevelBadge({ platform, difficulty, level }: LevelBadgeProps) {
-    const getBadgeStyle = (lvl: string) => {
-        const state = lvl.toUpperCase();
+    const getEffectiveLevel = (plat: string, diff: string): "EASY" | "MEDIUM" | "HARD" => {
+        const p = plat.toUpperCase();
+        const d = diff.toUpperCase();
 
-        switch (state) {
+        if (p === "PROGRAMMERS") {
+            if (d.includes("LEVEL_0") || d.includes("LEVEL_1")) return "EASY";
+            if (d.includes("LEVEL_2") || d.includes("LEVEL_3")) return "MEDIUM";
+            return "HARD"; // Level 4, 5+
+        }
+        else if (p === "BOJ") {
+            if (d.includes("BRONZE") || d.includes("SILVER") || d.includes("UNRATED")) return "EASY";
+            if (d.includes("GOLD") || d.includes("PLATINUM")) return "MEDIUM";
+            return "HARD"; // Diamond, Ruby+
+        }
+        else if (p === "SWEA") {
+            if (["D1", "D2", "D3"].some(val => d.includes(val))) return "EASY";
+            if (["D4", "D5", "D6"].some(val => d.includes(val))) return "MEDIUM";
+            return "HARD"; // D7, D8+
+        }
+
+        return "EASY";
+    };
+
+    const getBadgeStyle = (effectiveLevel: string) => {
+        switch (effectiveLevel) {
             case "MEDIUM": // Orange/Yellow
                 return {
                     bg: "bg-[#FEF3C7]",
@@ -58,7 +79,8 @@ export default function LevelBadge({ platform, difficulty, level }: LevelBadgePr
         return diff;
     };
 
-    const { bg, text, minWidth } = getBadgeStyle(level);
+    const effectiveLevel = getEffectiveLevel(platform, difficulty);
+    const { bg, text, minWidth } = getBadgeStyle(effectiveLevel);
     const platformDisplay = getPlatformDisplay(platform);
 
     // User CSS implied two separate text elements.

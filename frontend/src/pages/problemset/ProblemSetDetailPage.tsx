@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import useAuthStore from "@store/useAuthStore";
 import Header from "@components/header/Header";
 import SortSelect from "@components/selectbox/SortSelect";
 import { getProblemSetDetail } from "@api/problemset/getProblemSetDetail";
@@ -13,10 +12,6 @@ import Pagination from "@components/pagination/Pagination";
 export default function ProblemSetDetailPage() {
     const { programId } = useParams<{ programId: string }>();
     const id = Number(programId);
-
-    // Auth Store Access
-    const authorization = useAuthStore((state) => state.authorization);
-    const isLogined = !!authorization && authorization.length > 0;
 
     const [page, setPage] = useState(1);
     const [sortBy, setSortBy] = useState("startDate");
@@ -44,6 +39,7 @@ export default function ProblemSetDetailPage() {
     const problems = problemsData?.problemList || [];
     const pageInfo = problemsData?.page;
     const totalPages = pageInfo?.totalPages || 1;
+    const isLogined = problemsData?.isLogined;
 
     // Handle Page Change
     const handlePageChange = (newPage: number) => {

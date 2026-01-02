@@ -1,4 +1,4 @@
-import type { CategoryListResponse } from "@type/problemset/ProblemSetType";
+import type { CategoryListResponse } from "@type/problemset/problemSet.d.ts";
 import getResponse from "@api/getResponse";
 
 export const getCategoryList = async () => {

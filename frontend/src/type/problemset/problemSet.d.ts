@@ -33,3 +33,12 @@ export interface ProblemSetDetailResponse {
     programType: string;
     categories: string[];
 }
+
+export interface Category {
+    id: number;
+    name: string;
+}
+
+export interface CategoryListResponse {
+    categoryList: Category[];
+}

@@ -15,7 +15,7 @@ export default function ProblemListTable({ problems, page, itemsPerPage = 20, is
     return (
         <div className="flex flex-col w-full rounded-[12px] bg-white border border-[#F4F4F5] overflow-hidden overflow-x-auto relative">
             {!isLogined && (
-                <div className="absolute bottom-0 w-full h-[calc(100%-168px)] z-10 flex flex-col items-center justify-center bg-gradient-to-b from-white/60 to-white/90 backdrop-blur-[1px]">
+                <div className="absolute bottom-0 w-full h-[calc(100%-168px)] z-10 flex flex-col items-center justify-center bg-gradient-to-b from-white/70 to-white/93 backdrop-blur-[3px]">
                     <div className="flex flex-col items-center gap-[12px]">
                         <span className="font-sans font-black text-[16px] leading-[130%] text-[#333333]">
                             더 많은 문제를 보려면<br />

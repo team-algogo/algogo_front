@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import type { Problem } from "@type/problemset/problem.d.ts";
 import LevelBadge from "./LevelBadge";
 
@@ -5,12 +6,33 @@ interface ProblemListTableProps {
     problems: Problem[];
     page: number;
     itemsPerPage?: number;
+    isLogined?: boolean;
 }
 
-export default function ProblemListTable({ problems, page, itemsPerPage = 20 }: ProblemListTableProps) {
+export default function ProblemListTable({ problems, page, itemsPerPage = 20, isLogined = true }: ProblemListTableProps) {
+    const navigate = useNavigate();
+
     return (
-        <div className="flex flex-col w-full rounded-[12px] bg-white border border-[#F4F4F5] overflow-hidden overflow-x-auto">
-            <div className="min-w-[1200px]">
+        <div className="flex flex-col w-full rounded-[12px] bg-white border border-[#F4F4F5] overflow-hidden overflow-x-auto relative">
+            {!isLogined && (
+                <div className="absolute bottom-0 w-full h-[calc(100%-168px)] z-10 flex flex-col items-center justify-center bg-gradient-to-b from-white/60 to-white/90 backdrop-blur-[1px]">
+                    <div className="flex flex-col items-center gap-[12px]">
+                        <span className="font-sans font-black text-[16px] leading-[130%] text-[#333333]">
+                            더 많은 문제를 보려면<br />
+                            로그인이 필요합니다 🔒
+                        </span>
+                        <button
+                            onClick={() => navigate('/login')}
+                            className="flex flex-row justify-center items-center px-[24px] py-[12px] bg-[#0D6EFD] rounded-[8px] hover:bg-[#0b5ed7] transition-colors"
+                        >
+                            <span className="font-ibm font-bold text-[16px] leading-[100%] text-white">
+                                로그인하기
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            )}
+            <div className={`min-w-[1200px] ${!isLogined ? 'select-none pointer-events-none' : ''}`}>
                 {/* Table Header */}
                 <div className="flex flex-row w-full h-[56px] bg-[#F9FAFB] border-b border-gray-100">
                     <div className="w-[88px] shrink-0 flex items-center justify-center text-[16px] font-medium text-[#333333]">#</div>

@@ -34,16 +34,43 @@ const JoinPage = () => {
 
   //#region useEffect
 
+  // 닉네임 유효성 검사
+  const validateNickname = (nickname: string): string => {
+    if (!nickname) return "";
+
+    const nicknameRegexp = /^[가-힣a-zA-Z0-9]{2,10}$/;
+
+    if (!nicknameRegexp.test(nickname)) {
+      return "한글, 영문, 숫자만 가능하며 2~10자여야 합니다.";
+    }
+
+    return "";
+  };
+
   // 닉네임 변경 시 중복확인 초기화
   useEffect(() => {
     setIsNicknameChecked(false);
-    setNicknameError("");
+    const validationError = validateNickname(nickname);
+    setNicknameError(validationError);
   }, [nickname]);
+
+  const validateEmail = (email: string): string => {
+    if (!email) return "";
+
+    const emailRegexp = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$/;
+
+    if (!emailRegexp.test(email)) {
+      return "올바른 이메일 형식이 아닙니다.";
+    }
+
+    return "";
+  };
 
   // 이메일 변경 시 중복확인 초기화
   useEffect(() => {
     setIsEmailChecked(false);
-    setEmailError("");
+    const emailError = validateEmail(email);
+    setEmailError(emailError);
   }, [email]);
 
   // 비밀번호 유효성 검사

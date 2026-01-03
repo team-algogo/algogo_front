@@ -13,6 +13,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(false);
 
   const { setUserType, setAuthorization } = useAuthStore();
 
@@ -27,6 +28,7 @@ const LoginPage = () => {
       navigate("/", { replace: true });
     } catch (err) {
       console.log(err);
+      setError(true);
     }
   };
 
@@ -49,7 +51,10 @@ const LoginPage = () => {
                   type="text"
                   value={email}
                   placeholder="이메일 또는 아이디"
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setError(false);
+                  }}
                   autoComplete="email"
                   className="px-3 py-2 rounded-lg shadow-xs focus:outline-none"
                 />
@@ -60,11 +65,19 @@ const LoginPage = () => {
                   type="password"
                   value={password}
                   placeholder="비밀번호"
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setError(false);
+                  }}
                   autoComplete="current-password"
                   className="px-3 py-2 rounded-lg shadow-xs focus:outline-none"
                 />
               </div>
+              {error && (
+                <div className="px-2 text-base text-alert-error">
+                  이메일 혹은 비밀번호를 확인해주세요
+                </div>
+              )}
             </div>
             <div>
               <Button type="submit">로그인</Button>

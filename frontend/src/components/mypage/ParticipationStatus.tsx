@@ -72,12 +72,16 @@ const ParticipationStatus = () => {
                 <div className="flex justify-between items-center self-stretch">
                     <button
                         onClick={() => setActiveTab('문제집')}
-                        className={`flex flex-1 justify-center items-center gap-2 ${activeTab === '문제집' ? 'border-b border-[#0D6EFD]' : 'border-b border-[#E8F0FF]'
-                            } py-3`}
+                        className={`flex flex-1 justify-center items-center gap-2 ${
+                            activeTab === '문제집'
+                                ? 'border-b border-[#0D6EFD]'
+                                : 'border-b border-[#E8F0FF]'
+                        } py-3`}
                     >
                         <span
-                            className={`text-base font-semibold leading-[130%] tracking-[-0.16px] ${activeTab === '문제집' ? 'text-[#0D6EFD]' : 'text-[#6C757D]'
-                                }`}
+                            className={`text-base font-semibold leading-[130%] tracking-[-0.16px] ${
+                                activeTab === '문제집' ? 'text-[#0D6EFD]' : 'text-[#6C757D]'
+                            }`}
                             style={{ fontFamily: 'IBM Plex Sans KR' }}
                         >
                             문제집
@@ -85,12 +89,16 @@ const ParticipationStatus = () => {
                     </button>
                     <button
                         onClick={() => setActiveTab('캠페인')}
-                        className={`flex flex-1 justify-center items-center gap-2 ${activeTab === '캠페인' ? 'border-b border-[#0D6EFD]' : 'border-b border-[#E8F0FF]'
-                            } py-3`}
+                        className={`flex flex-1 justify-center items-center gap-2 ${
+                            activeTab === '캠페인'
+                                ? 'border-b border-[#0D6EFD]'
+                                : 'border-b border-[#E8F0FF]'
+                        } py-3`}
                     >
                         <span
-                            className={`text-base font-semibold leading-[130%] tracking-[-0.16px] ${activeTab === '캠페인' ? 'text-[#0D6EFD]' : 'text-[#6C757D]'
-                                }`}
+                            className={`text-base font-semibold leading-[130%] tracking-[-0.16px] ${
+                                activeTab === '캠페인' ? 'text-[#0D6EFD]' : 'text-[#6C757D]'
+                            }`}
                             style={{ fontFamily: 'IBM Plex Sans KR' }}
                         >
                             캠페인
@@ -98,12 +106,16 @@ const ParticipationStatus = () => {
                     </button>
                     <button
                         onClick={() => setActiveTab('그룹방')}
-                        className={`flex flex-1 justify-center items-center gap-2 ${activeTab === '그룹방' ? 'border-b border-[#0D6EFD]' : 'border-b border-[#E8F0FF]'
-                            } py-3`}
+                        className={`flex flex-1 justify-center items-center gap-2 ${
+                            activeTab === '그룹방'
+                                ? 'border-b border-[#0D6EFD]'
+                                : 'border-b border-[#E8F0FF]'
+                        } py-3`}
                     >
                         <span
-                            className={`text-base font-semibold leading-[130%] tracking-[-0.16px] ${activeTab === '그룹방' ? 'text-[#0D6EFD]' : 'text-[#6C757D]'
-                                }`}
+                            className={`text-base font-semibold leading-[130%] tracking-[-0.16px] ${
+                                activeTab === '그룹방' ? 'text-[#0D6EFD]' : 'text-[#6C757D]'
+                            }`}
                             style={{ fontFamily: 'IBM Plex Sans KR' }}
                         >
                             그룹방
@@ -145,11 +157,20 @@ const ParticipationStatus = () => {
                             </defs>
                         </svg>
                         <div className="flex items-start gap-1 rounded-lg border border-[#727479] px-2 py-1">
-                            <span className="text-[#727479] text-sm font-normal leading-[130%]" style={{ fontFamily: 'IBM Plex Sans KR' }}>
+                            <span
+                                className="text-[#727479] text-sm font-normal leading-[130%]"
+                                style={{ fontFamily: 'IBM Plex Sans KR' }}
+                            >
                                 최신순
                             </span>
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <path d="M4 7L8 11L12 7" stroke="#727479" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                <path
+                                    d="M4 7L8 11L12 7"
+                                    stroke="#727479"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
                             </svg>
                         </div>
                     </div>

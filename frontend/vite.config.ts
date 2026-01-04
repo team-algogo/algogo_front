@@ -12,12 +12,12 @@ export default defineConfig(({ mode }: ConfigEnv) => {
     server: {
       proxy: isDev
         ? {
-            "/api": {
-              target: env.VITE_API_BASE_URL,
-              changeOrigin: true,
-              secure: false,
-            },
-          }
+          "/api": {
+            target: env.VITE_API_BASE_URL,
+            changeOrigin: true,
+            secure: false,
+          },
+        }
         : undefined,
       cors: true,
     },
@@ -33,6 +33,7 @@ export default defineConfig(({ mode }: ConfigEnv) => {
         { find: "@pages", replacement: resolve(__dirname, "src/pages") },
         { find: "@store", replacement: resolve(__dirname, "src/store") },
         { find: "@type", replacement: resolve(__dirname, "src/type") },
+        { find: "@utils", replacement: resolve(__dirname, "src/utils") },
       ],
     },
   };

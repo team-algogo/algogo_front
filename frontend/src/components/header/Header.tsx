@@ -48,7 +48,7 @@ const Header = () => {
         {userType == "User" ? (
           <>
             <NotificationContainer />
-            <TextLink src="/" className="px-3.5 py-3">
+            <TextLink src="/mypage" className="px-3.5 py-3">
               마이페이지
             </TextLink>
             <TextLink src="/" className="px-3.5 py-3" onClick={logout}>

@@ -7,10 +7,13 @@ import TextLink from "@components/textLink/TextLink";
 
 import { postLogin } from "@api/auth/auth";
 import useAuthStore from "@store/useAuthStore";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(false);
 
   const { setUserType, setAuthorization } = useAuthStore();
 
@@ -22,17 +25,19 @@ const LoginPage = () => {
       const accessToken = response.headers.authorization;
       setUserType("User");
       setAuthorization(accessToken);
+      navigate("/", { replace: true });
     } catch (err) {
       console.log(err);
+      setError(true);
     }
   };
 
   return (
     <BasePage>
-      <div className="w-full h-[calc(100vh-150px)] flex justify-center items-center py-6">
+      <div className="w-full min-h-[calc(100vh-150px)] flex justify-center items-center py-6">
         <form
           onSubmit={onSubmitLogin}
-          className="flex flex-col gap-10 w-[426px] px-6 py-10 shadow-box rounded-sm scale-80"
+          className="flex flex-col gap-10 w-[426px] px-6 py-10 shadow-box rounded-sm scale-90"
         >
           {/** title */}
           <div className="font-title text-xl text-center">로그인</div>
@@ -46,7 +51,10 @@ const LoginPage = () => {
                   type="text"
                   value={email}
                   placeholder="이메일 또는 아이디"
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setError(false);
+                  }}
                   autoComplete="email"
                   className="px-3 py-2 rounded-lg shadow-xs focus:outline-none"
                 />
@@ -57,11 +65,19 @@ const LoginPage = () => {
                   type="password"
                   value={password}
                   placeholder="비밀번호"
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setError(false);
+                  }}
                   autoComplete="current-password"
                   className="px-3 py-2 rounded-lg shadow-xs focus:outline-none"
                 />
               </div>
+              {error && (
+                <div className="px-2 text-base text-alert-error">
+                  이메일 혹은 비밀번호를 확인해주세요
+                </div>
+              )}
             </div>
             <div>
               <Button type="submit">로그인</Button>

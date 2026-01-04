@@ -1,60 +1,48 @@
-import client from '@api/client';
 import { useQuery } from '@tanstack/react-query';
+import { getUserProfile } from '@api/user/userApi';
 
-interface UserProfileResponse {
-    name: string;
-    statusMessage: string;
-    avatarInitial: string;
-    stats: {
-        submittedCodes: number;
-        writtenReviews: number;
-        receivedReviews: number;
-    };
-}
 
 const UserProfileCard = () => {
-    const { data: user, isLoading } = useQuery<UserProfileResponse>({
+    const { data: userProfile, isLoading } = useQuery({
         queryKey: ['userProfile'],
         queryFn: async () => {
-            const response = await client.get('/users/me'); // Adjust endpoint as needed
+            const response = await getUserProfile();
+            // getResponse returns the full body: { message: string, data: UserProfileResponse }
+            // We need to return the 'data' property which holds the actual user profile
             return response.data;
         },
-        // Fallback data structure for development if API fails or returns different structure
-        initialData: {
-            name: 'User',
-            statusMessage: 'Loading...',
-            avatarInitial: 'U',
-            stats: {
-                submittedCodes: 0,
-                writtenReviews: 0,
-                receivedReviews: 0,
-            },
-        }
     });
 
     if (isLoading) {
         return <div className="animate-pulse flex h-[200px] w-full bg-gray-100 rounded-lg"></div>;
     }
 
-    // Ensure user object exists to prevent runtime errors
-    const userData = user || {
-        name: 'username',
-        statusMessage: '👀 오늘도 고양이랑🐈',
-        avatarInitial: 'K',
-        stats: {
-            submittedCodes: 0,
-            writtenReviews: 0,
-            receivedReviews: 0,
-        },
+    // Map API response to UI needed structure
+    // API: nickname, description, profileImage
+    // UI: name, statusMessage, avatarInitial
+    const name = userProfile?.nickname || 'Guest';
+    const statusMessage = userProfile?.description || '상태 메시지가 없습니다.';
+    const profileImage = userProfile?.profileImage;
+    const avatarInitial = name.charAt(0).toUpperCase();
+
+    // Stats are not yet provided by API, defaulting to 0
+    const stats = {
+        submittedCodes: 0,
+        writtenReviews: 0,
+        receivedReviews: 0
     };
 
     return (
         <div className="flex flex-col items-start gap-4 self-stretch rounded-lg border border-[#F4F6FA] overflow-hidden">
             {/* Avatar */}
-            <div className="flex w-[120px] h-[120px] justify-center items-center bg-[#30AEDC] rounded-full">
-                <span className="text-white text-center text-sm font-normal leading-[150%] select-none" style={{ fontFamily: 'Roboto' }}>
-                    {userData.avatarInitial}
-                </span>
+            <div className="flex w-[120px] h-[120px] justify-center items-center bg-[#30AEDC] rounded-full overflow-hidden relative">
+                {profileImage ? (
+                    <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                    <span className="text-white text-center text-sm font-normal leading-[150%] select-none" style={{ fontFamily: 'Roboto' }}>
+                        {avatarInitial}
+                    </span>
+                )}
             </div>
 
             {/* User Info */}
@@ -64,7 +52,7 @@ const UserProfileCard = () => {
                         className="flex-1 overflow-hidden text-[#050505] text-ellipsis text-2xl font-medium leading-[130%] tracking-[0.24px] line-clamp-1"
                         style={{ fontFamily: 'IBM Plex Sans KR' }}
                     >
-                        {userData.name}
+                        {name}
                     </h2>
                 </div>
                 <div className="flex justify-between items-center self-stretch">
@@ -72,7 +60,7 @@ const UserProfileCard = () => {
                         className="flex-1 overflow-hidden text-[#333] text-ellipsis text-xs font-normal leading-[130%] tracking-[-0.12px] line-clamp-1"
                         style={{ fontFamily: 'IBM Plex Sans KR' }}
                     >
-                        {userData.statusMessage}
+                        {statusMessage}
                     </p>
                 </div>
             </div>
@@ -82,7 +70,7 @@ const UserProfileCard = () => {
                 <div className="flex w-[46px] flex-col items-start gap-[3px]">
                     <div className="inline-flex px-1 py-0 justify-center items-center gap-1 rounded-lg bg-[#ECEEF2]">
                         <span className="text-[#777A80] text-xs font-bold leading-4" style={{ fontFamily: 'IBM Plex Sans KR' }}>
-                            {userData.stats?.submittedCodes || 0}
+                            {stats.submittedCodes}
                         </span>
                     </div>
                     <span
@@ -95,7 +83,7 @@ const UserProfileCard = () => {
                 <div className="flex w-[46px] flex-col items-start gap-[3px]">
                     <div className="inline-flex px-1 py-0 justify-center items-center gap-1 rounded-lg bg-[#ECEEF2]">
                         <span className="text-[#777A80] text-xs font-bold leading-4" style={{ fontFamily: 'IBM Plex Sans KR' }}>
-                            {userData.stats?.writtenReviews || 0}
+                            {stats.writtenReviews}
                         </span>
                     </div>
                     <span
@@ -108,7 +96,7 @@ const UserProfileCard = () => {
                 <div className="flex w-[46px] flex-col items-start gap-[3px]">
                     <div className="inline-flex px-1 py-0 justify-center items-center gap-1 rounded-lg bg-[#ECEEF2]">
                         <span className="text-[#777A80] text-xs font-bold leading-4" style={{ fontFamily: 'IBM Plex Sans KR' }}>
-                            {userData.stats?.receivedReviews || 0}
+                            {stats.receivedReviews}
                         </span>
                     </div>
                     <span

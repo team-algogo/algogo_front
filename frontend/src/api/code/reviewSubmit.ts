@@ -33,8 +33,8 @@ export interface SubmissionReviewProps {
   content: string;
   createdAt: string;
   modifiedAt: string;
+  isLike: boolean;
   children: SubmissionReviewProps[];
-  isLiked?: boolean;
 }
 
 export const getSubmissionDetail = async (submissionId: string) => {

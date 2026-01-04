@@ -8,6 +8,7 @@ import { getProblemSetProblems } from "@api/problemset/getProblemSetProblems";
 import ProblemSetDetailHeader from "@components/problemset/detail/ProblemSetDetailHeader";
 import ProblemListTable from "@components/problemset/detail/ProblemListTable";
 import Pagination from "@components/pagination/Pagination";
+import useAuthStore from "@store/useAuthStore";
 
 export default function ProblemSetDetailPage() {
     const { programId } = useParams<{ programId: string }>();
@@ -39,7 +40,8 @@ export default function ProblemSetDetailPage() {
     const problems = problemsData?.problemList || [];
     const pageInfo = problemsData?.page;
     const totalPages = pageInfo?.totalPages || 1;
-    const isLogined = problemsData?.isLogined;
+    const { userType } = useAuthStore();
+    const isLogined = !!userType;
 
     // Handle Page Change
     const handlePageChange = (newPage: number) => {

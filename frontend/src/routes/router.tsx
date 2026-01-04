@@ -3,6 +3,8 @@ import App from "../App";
 import MainPage from "@pages/main/MainPage";
 import LoginPage from "@pages/auth/LoginPage";
 import JoinPage from "@pages/auth/JoinPage";
+import ProblemSetPage from "@pages/problemset/ProblemSetPage";
+import ProblemSetDetailPage from "@pages/problemset/ProblemSetDetailPage";
 
 const router = createBrowserRouter([
   {
@@ -12,6 +14,8 @@ const router = createBrowserRouter([
       { index: true, element: <MainPage /> },
       { path: "login", element: <LoginPage /> },
       { path: "join", element: <JoinPage /> },
+      { path: "problemset", element: <ProblemSetPage /> },
+      { path: "problemset/:programId", element: <ProblemSetDetailPage /> },
     ],
   },
 ]);

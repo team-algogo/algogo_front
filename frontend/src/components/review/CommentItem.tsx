@@ -17,7 +17,7 @@ const CommentItem: FC<CommentItemProps> = ({
   reviewId,
   userId,
   likeCount,
-  isLiked: propsIsLiked,
+  isLike,
   codeLine,
   content,
   children,
@@ -45,10 +45,10 @@ const CommentItem: FC<CommentItemProps> = ({
 
   useEffect(() => {
     setLocalLikeCount(likeCount);
-    if (typeof propsIsLiked === "boolean") {
-      setIsLiked(propsIsLiked);
+    if (isLike) {
+      setIsLiked(isLike);
     }
-  }, [likeCount, propsIsLiked]);
+  }, [likeCount, isLike]);
   const [userDetail, setUserDetail] = useState<UserDetailProps | null>(null);
 
   const getUserInfoById = async (id: number) => {

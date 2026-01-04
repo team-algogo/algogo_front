@@ -11,13 +11,13 @@ interface CreateGroupModalProps {
 const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
   // --- 1. 상태 관리 ---
   const [title, setTitle] = useState("");
-  
+
   // 🔥 [누락되었던 부분] 중복 확인 완료 여부를 체크하는 상태입니다.
-  const [isTitleChecked, setIsTitleChecked] = useState(false); 
+  const [isTitleChecked, setIsTitleChecked] = useState(false);
 
   const [maxCount, setMaxCount] = useState<number | string>("");
   const [description, setDescription] = useState("");
-  
+
   // Toast 설정
   const [toastConfig, setToastConfig] = useState<{ message: string; type: ToastType } | null>(null);
 
@@ -35,15 +35,15 @@ const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
 
       if (isAvailable) {
         setIsTitleChecked(true); // ✅ 사용 가능하므로 체크 상태 true로 변경
-        setToastConfig({ 
-          message: message || "사용 가능한 그룹 이름입니다.", 
-          type: "success" 
+        setToastConfig({
+          message: message || "사용 가능한 그룹 이름입니다.",
+          type: "success"
         });
       } else {
         setIsTitleChecked(false); // ❌ 중복이므로 체크 상태 false
-        setToastConfig({ 
-          message: message || "이미 존재하는 그룹 이름입니다.", 
-          type: "error" 
+        setToastConfig({
+          message: message || "이미 존재하는 그룹 이름입니다.",
+          type: "error"
         });
       }
     },
@@ -60,7 +60,7 @@ const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["groups"] }); // 리스트 새로고침
       setToastConfig({ message: "그룹이 성공적으로 생성되었습니다!", type: "success" });
-      setTimeout(() => onClose(), 1500); // 1.5초 뒤 모달 닫기
+      setTimeout(() => onClose(), 500); // 0.5초 뒤 모달 닫기
     },
     onError: () => {
       setToastConfig({ message: "그룹 생성에 실패했습니다.", type: "error" });
@@ -82,8 +82,8 @@ const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
   const handleCreateGroup = () => {
     // A. 중복 확인 여부 체크
     if (!isTitleChecked) {
-        setToastConfig({ message: "그룹 이름 중복 확인을 해주세요", type: "error" });
-        return;
+      setToastConfig({ message: "그룹 이름 중복 확인을 해주세요", type: "error" });
+      return;
     }
 
     // B. 제목 입력 체크 (혹시 모르니 한번 더)
@@ -94,8 +94,8 @@ const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
 
     // C. 정원수 체크
     if (maxCount === "") {
-        setToastConfig({ message: "정원수를 입력해주세요", type: "error" });
-        return;
+      setToastConfig({ message: "정원수를 입력해주세요", type: "error" });
+      return;
     }
 
     // D. 그룹 생성 요청 전송
@@ -110,30 +110,30 @@ const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
     <>
       {/* Toast 메시지 표시 */}
       {toastConfig && (
-        <Toast 
-          message={toastConfig.message} 
+        <Toast
+          message={toastConfig.message}
           type={toastConfig.type}
-          onClose={() => setToastConfig(null)} 
+          onClose={() => setToastConfig(null)}
         />
       )}
 
       <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
         <div className="bg-white w-[600px] rounded-2xl p-8 flex flex-col gap-8 shadow-xl relative">
-          
+
           <h2 className="font-headline text-2xl text-center text-grayscale-dark-gray">
             Group 만들기
           </h2>
 
           <div className="flex flex-col gap-6">
-            
+
             {/* Group 명 입력 */}
             <div className="flex flex-col gap-2">
               <label className="font-bold text-grayscale-dark-gray">
                 Group 명 <span className="text-alert-error text-red-500">*</span>
               </label>
               <div className="flex gap-2">
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   placeholder="Group 명을 입력해 주세요"
                   className="flex-1 bg-grayscale-default rounded-lg px-4 py-3 outline-none placeholder:text-grayscale-warm-gray"
                   maxLength={10}
@@ -141,11 +141,11 @@ const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
                   onChange={(e) => {
                     setTitle(e.target.value);
                     // 🚨 중요: 글자를 고치면 다시 중복확인을 받아야 하므로 false로 초기화
-                    setIsTitleChecked(false); 
+                    setIsTitleChecked(false);
                   }}
                 />
                 <div className="w-[100px]">
-                  <button 
+                  <button
                     onClick={handleCheckDuplicate}
                     disabled={checkDuplicateMutation.isPending}
                     className="w-full h-full bg-white border border-grayscale-warm-gray rounded-lg text-sm text-grayscale-dark-gray hover:bg-grayscale-default transition-colors disabled:opacity-50"
@@ -164,8 +164,8 @@ const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
               <label className="font-bold text-grayscale-dark-gray">
                 최대 정원수 <span className="text-alert-error text-red-500">*</span>
               </label>
-              <input 
-                type="number" 
+              <input
+                type="number"
                 placeholder="최대 인원을 입력해 주세요"
                 className="w-full bg-grayscale-default rounded-lg px-4 py-3 outline-none placeholder:text-grayscale-warm-gray"
                 value={maxCount}
@@ -185,7 +185,7 @@ const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
               <label className="font-bold text-grayscale-dark-gray">
                 Group 설명 <span className="text-alert-error text-red-500">*</span>
               </label>
-              <textarea 
+              <textarea
                 placeholder="Group에 대한 설명을 입력해 주세요"
                 className="w-full h-[120px] bg-grayscale-default rounded-lg px-4 py-3 outline-none resize-none placeholder:text-grayscale-warm-gray"
                 maxLength={50}
@@ -200,8 +200,8 @@ const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
 
           <div className="flex gap-3 mt-2">
             <div className="flex-1">
-              <Button 
-                variant="primary" 
+              <Button
+                variant="primary"
                 onClick={handleCreateGroup}
                 disabled={createMutation.isPending}
               >

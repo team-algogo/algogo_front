@@ -42,7 +42,7 @@ const AddGroupProblemModal = ({ programId, onClose }: AddGroupProblemModalProps)
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["groupProblems", programId] });
             setToastConfig({ message: "선택한 문제들이 추가되었습니다!", type: "success" });
-            setTimeout(() => onClose(), 1500);
+            setTimeout(() => onClose(), 500);
         },
         onError: (error: any) => {
             const errorMsg = error.response?.data?.message || "문제 추가에 실패했습니다.";
@@ -294,11 +294,12 @@ const AddGroupProblemModal = ({ programId, onClose }: AddGroupProblemModalProps)
 
                                             <div className="grid grid-cols-2 gap-3">
                                                 <div className="flex flex-col gap-1">
-                                                    <label className="text-xs font-bold text-gray-500">체감 난이도</label>
+                                                    <label className="text-xs font-bold text-gray-500">커스텀 난이도</label>
                                                     <select
-                                                        className="bg-gray-50 border border-gray-200 rounded px-2 py-2 text-xs outline-none focus:border-primary-main"
+                                                        className={`bg-gray-50 border border-gray-200 rounded px-2 py-2 text-xs outline-none focus:border-primary-main ${problemConfigs[problem.id]?.difficultyViewType === "PROBLEM_DIFFICULTY" ? "opacity-50 cursor-not-allowed" : ""}`}
                                                         value={problemConfigs[problem.id]?.userDifficultyType}
                                                         onChange={(e) => updateConfig(problem.id, "userDifficultyType", e.target.value)}
+                                                        disabled={problemConfigs[problem.id]?.difficultyViewType === "PROBLEM_DIFFICULTY"}
                                                     >
                                                         <option value="EASY">EASY</option>
                                                         <option value="MEDIUM">MEDIUM</option>
@@ -310,9 +311,13 @@ const AddGroupProblemModal = ({ programId, onClose }: AddGroupProblemModalProps)
                                                     <select
                                                         className="bg-gray-50 border border-gray-200 rounded px-2 py-2 text-xs outline-none focus:border-primary-main"
                                                         value={problemConfigs[problem.id]?.difficultyViewType}
-                                                        onChange={(e) => updateConfig(problem.id, "difficultyViewType", e.target.value)}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            updateConfig(problem.id, "difficultyViewType", val);
+                                                            // 만약 문제 난이도를 선택하면 -> 체감 난이도 선택 불가 (로직 상 필요하다면 값도 초기화할 수 있음)
+                                                        }}
                                                     >
-                                                        <option value="USER_DIFFICULTY">체감 난이도</option>
+                                                        <option value="USER_DIFFICULTY">커스텀 난이도</option>
                                                         <option value="PROBLEM_DIFFICULTY">문제 난이도</option>
                                                     </select>
                                                 </div>

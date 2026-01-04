@@ -302,3 +302,21 @@ export const cancelGroupInvitation = async (programId: number, inviteId: number)
   );
   return response.data;
 };
+
+export interface GroupInviteListResponse {
+  users: {
+    inviteId: number;
+    email: string;
+    profileImage: string;
+    nickname: string;
+    status: "ACCEPTED" | "DENIED" | "PENDING";
+  }[];
+}
+
+// GET /api/v1/groups/{programId}/invite/lists
+export const fetchGroupInviteList = async (programId: number) => {
+  const response = await client.get<Response<GroupInviteListResponse>>(
+    `/api/v1/groups/${programId}/invite/lists`
+  );
+  return response.data;
+};

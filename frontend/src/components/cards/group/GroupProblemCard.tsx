@@ -7,6 +7,7 @@ interface GroupProblemCardProps {
   solvedCount: number; // 푼 사람 수
   totalMembers: number; // 전체 멤버 수
   problemLink?: string; // 문제 링크 (있다면)
+  onDelete?: () => void; // 삭제 핸들러 (옵션)
 }
 
 const GroupProblemCard = ({
@@ -16,7 +17,9 @@ const GroupProblemCard = ({
   solvedCount,
   totalMembers,
   problemLink = "#",
+  onDelete,
 }: GroupProblemCardProps) => {
+
   // 난이도별 뱃지 스타일
   const getBadgeStyle = (diff: string) => {
     switch (diff.toLowerCase()) {
@@ -38,9 +41,22 @@ const GroupProblemCard = ({
     <div className="w-full bg-white border border-grayscale-warm-gray rounded-xl p-5 flex justify-between items-center hover:shadow-md transition-shadow">
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-3">
+          {onDelete && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation(); // 카드 클릭 이벤트 전파 방지 (혹시 있다면)
+                onDelete();
+              }}
+              className="text-gray-300 hover:text-red-500 transition-colors"
+              title="문제 삭제"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          )}
           <h3 className="font-headline text-lg text-grayscale-dark-gray">
             {title}
           </h3>
+
           <span
             className={`px-2 py-0.5 rounded-full text-xs font-bold ${getBadgeStyle(
               difficulty

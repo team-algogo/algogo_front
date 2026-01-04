@@ -115,7 +115,7 @@
 }
 
 /* 라벨 기본 커서 설정 */
-label {
+/* label {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -151,4 +151,4 @@ input[type="radio"]:not(:disabled):hover + span::before {
 input[type="radio"]:checked:focus + span::before {
   border-color: var(--color-primary-500);
   box-shadow: inset 0 0 0 3px var(--color-primary-main);
-}
+} */

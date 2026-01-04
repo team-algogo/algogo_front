@@ -6,6 +6,8 @@ import LoginPage from "@pages/auth/LoginPage";
 import GroupDetailPage from "@pages/group/GroupDetailPage"; // 나중에 만드는 페이지 상세조회
 import GroupMembersPage from "@pages/group/GroupMembersPage";
 import JoinPage from "@pages/auth/JoinPage";
+import CodeSubmitPage from "@pages/code/CodeSubmitPage";
+import CodeReviewPage from "@pages/code/CodeReviewPage";
 import ProblemSetPage from "@pages/problemset/ProblemSetPage";
 import ProblemSetDetailPage from "@pages/problemset/ProblemSetDetailPage";
 
@@ -20,6 +22,8 @@ const router = createBrowserRouter([
       { path: "group/:groupId", element: <GroupDetailPage /> },
       { path: "group/:groupId/members", element: <GroupMembersPage /> },
       { path: "join", element: <JoinPage /> },
+      { path: "code/:programProblemId", element: <CodeSubmitPage /> },
+      { path: "review/:submissionId", element: <CodeReviewPage /> },
       { path: "problemset", element: <ProblemSetPage /> },
       { path: "problemset/:programId", element: <ProblemSetDetailPage /> },
     ],

@@ -1,6 +1,16 @@
 import client from "@api/client";
 import getResponse from "@api/getResponse";
 
+export interface UserDetailProps {
+  userId: number;
+  email: string;
+  description: string;
+  nickname: string;
+  profileImage?: string | null;
+  createdAt: string;
+  modifiedAt: string;
+}
+
 // 로그인
 export const postLogin = async (email: string, password: string) => {
   const response = await client.post("/api/v1/auths/login", {
@@ -27,7 +37,7 @@ export const getCheckUser = async () => {
 export const postSignUp = async (
   email: string,
   password: string,
-  nickname: string
+  nickname: string,
 ) => {
   const response = await client.post("/api/v1/users/signup", {
     email: email,
@@ -53,5 +63,17 @@ export const postCheckNickname = async (nickname: string) => {
     nickname: nickname,
   });
 
+  return response.data;
+};
+
+export const getUserDetail = async () => {
+  const response = await getResponse<UserDetailProps>("/api/v1/users/profiles");
+  return response.data;
+};
+
+export const getUserDetailById = async (userId: number) => {
+  const response = await getResponse<UserDetailProps>(
+    `/api/v1/users/profiles/${userId}`,
+  );
   return response.data;
 };

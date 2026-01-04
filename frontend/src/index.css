@@ -68,10 +68,12 @@
   }
 
   .background-blur {
-    background-image: linear-gradient(to bottom,
-        rgba(255, 255, 255, 0.2) 20%,
-        rgba(255, 255, 255, 0.71) 70%,
-        rgba(255, 255, 255, 1) 100%);
+    background-image: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.2) 20%,
+      rgba(255, 255, 255, 0.71) 70%,
+      rgba(255, 255, 255, 1) 100%
+    );
 
     background-size: 100% 100%;
     background-repeat: no-repeat;
@@ -85,11 +87,13 @@
     background-clip: text;
     -webkit-background-clip: text;
 
-    background-image: linear-gradient(to left,
-        #ddf4ff 16%,
-        #8cd3ef 48%,
-        #63c3e6 72%,
-        #30aedc 91%);
+    background-image: linear-gradient(
+      to left,
+      #ddf4ff 16%,
+      #8cd3ef 48%,
+      #63c3e6 72%,
+      #30aedc 91%
+    );
 
     width: 50%;
     /* background-size: 100% 100%; */
@@ -111,7 +115,7 @@
 }
 
 /* 라벨 기본 커서 설정 */
-label {
+/* label {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -147,4 +151,4 @@ input[type="radio"]:not(:disabled):hover+span::before {
 input[type="radio"]:checked:focus+span::before {
   border-color: var(--color-primary-500);
   box-shadow: inset 0 0 0 3px var(--color-primary-main);
-}
+} */

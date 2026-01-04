@@ -24,7 +24,7 @@ const Header = () => {
         <a href="/" className="font-logo text-xl px-6.5 py-6">
           알고가자
         </a>
-        <TextLink src="#" className="px-3.5 py-3">
+        <TextLink src="/problemset" className="px-3.5 py-3">
           문제집
         </TextLink>
         <TextLink src="#" className="px-3.5 py-3">

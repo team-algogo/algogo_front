@@ -19,7 +19,7 @@ const Header = () => {
   };
 
   return (
-    <div className="w-full flex justify-between px-6">
+    <div className="w-full flex justify-between px-6 border border-transparent border-b-grayscale-default">
       <div className="flex gap-2 items-center">
         <a href="/" className="font-logo text-xl px-6.5 py-6">
           알고가자

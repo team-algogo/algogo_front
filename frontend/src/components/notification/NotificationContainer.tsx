@@ -56,7 +56,7 @@ export default function NotificationContainer() {
                             Authorization: `Bearer ${token}`,
                         },
                         heartbeatTimeout: 86400000,
-                    }
+                    } as any
                 );
 
                 eventSource.onopen = () => {

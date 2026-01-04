@@ -37,7 +37,7 @@ const Header = () => {
         <TextLink src="#" className="px-3.5 py-3">
           캠페인
         </TextLink>
-        <TextLink src="#" className="px-3.5 py-3">
+        <TextLink src="/group" className="px-3.5 py-3">
           그룹방
         </TextLink>
         <a href="#" className="size-10 flex justify-center items-center">

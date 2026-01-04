@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import Header from "@components/header/Header";
 
 interface BaseProps {
   children: ReactNode;
@@ -8,8 +7,7 @@ interface BaseProps {
 const BasePage = ({ children }: BaseProps) => {
   return (
     <>
-      <Header />
-      <div className="w-full bg-white py-4 max-w-[1400px] flex flex-col gap-7">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-7 bg-white py-4">
         {children}
       </div>
     </>

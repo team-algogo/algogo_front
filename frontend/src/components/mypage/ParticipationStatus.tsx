@@ -30,9 +30,11 @@ const ParticipationStatus = () => {
 
     // Problem Set Query
     const { data: problemSetData, isLoading: isProblemSetLoading } = useQuery({
-        queryKey: ["myProblemSets", sortBy, sortDirection],
+        queryKey: ["myProblemSets", page, sortBy, sortDirection],
         queryFn: async () => {
             const response = await getProblemSetMe(
+                page - 1,
+                itemsPerPage,
                 sortBy,
                 sortDirection.toUpperCase(),
             );
@@ -74,25 +76,10 @@ const ParticipationStatus = () => {
     };
 
     if (activeTab === "문제집") {
-        contentList = problemSetData?.programList || [];
-
-        // Client-side pagination logic moved to server-side sort, but pagination is still client-side based on `getProblemSetMe` current response structure returning full list?
-        // Wait, `getProblemSetMe` response definition shows just `programList: ProblemSetMeItem[]`, it does not seem to support pagination yet based on previous file view.
-        // However, I must rely on server-side SORTING as requested.
-        // Pagination logic remains client-side for now as API didn't change for pagination, only sort params added.
-
-        const totalItems = contentList.length;
-        const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
-        const startIndex = (page - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-
-        contentList = contentList.slice(startIndex, endIndex);
-        pageInfo = {
-            number: page - 1,
-            totalPages: totalPages,
-            size: itemsPerPage,
-            totalElements: totalItems,
-        };
+        contentList = problemSetData?.problemSetLists || [];
+        if (problemSetData?.page) {
+            pageInfo = problemSetData.page;
+        }
     } else if (activeTab === "그룹방") {
         contentList = groupData?.groupLists || [];
         if (groupData?.page) {
@@ -132,10 +119,10 @@ const ParticipationStatus = () => {
                         <ProblemSetCard
                             key={problem.programId}
                             title={problem.title}
-                            category={"알고리즘"} // Default
+                            categories={problem.categories}
                             progress={0} // Default
-                            problemCount={0} // Default
-                            memberCount={0} // Default
+                            problemCount={problem.problemCount}
+                            memberCount={problem.totalParticipants}
                             thumbnailUrl={
                                 problem.thumbnail ||
                                 "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400"

@@ -284,10 +284,11 @@ const MainPage = () => {
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`pb-2 text-sm font-medium transition-colors ${activeTab === tab
-                    ? "text-primary-main border-primary-main border-b-2"
-                    : "text-grayscale-warm-gray hover:text-grayscale-dark"
-                    }`}
+                  className={`pb-2 text-sm font-medium transition-colors ${
+                    activeTab === tab
+                      ? "text-primary-main border-primary-main border-b-2"
+                      : "text-grayscale-warm-gray hover:text-grayscale-dark"
+                  }`}
                 >
                   {tab}
                 </button>
@@ -310,7 +311,7 @@ const MainPage = () => {
                         : 0}
                     </span>
                   </div>
-                  <TextLink src="#" className="font-body text-base">
+                  <TextLink src="/mypage" className="font-body text-base">
                     전체보기 →
                   </TextLink>
                 </div>
@@ -345,7 +346,7 @@ const MainPage = () => {
                       {reviewReceive ? reviewReceive.pageInfo.totalElements : 0}
                     </span>
                   </div>
-                  <TextLink src="#" className="font-body text-base">
+                  <TextLink src="/mypage" className="font-body text-base">
                     전체보기 →
                   </TextLink>
                 </div>

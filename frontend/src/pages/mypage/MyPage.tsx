@@ -23,7 +23,7 @@ const MyPage = () => {
 
   return (
     <BasePage>
-      <div className="mx-auto flex max-w-[1440px] items-start gap-3 self-stretch px-4 py-8">
+      <div className="grid grid-cols-[280px_1fr] items-start gap-10">
         <Sidebar setViewMode={setViewMode} />
         <ContentArea viewMode={viewMode} setViewMode={setViewMode} />
       </div>

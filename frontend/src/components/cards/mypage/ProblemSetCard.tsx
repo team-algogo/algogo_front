@@ -22,10 +22,10 @@ const ProblemSetCard = ({
   onClick,
 }: ProblemSetCardProps) => {
   return (
-    <div className="flex w-[377px] flex-col items-start rounded-lg border border-[#EBEDF1] overflow-hidden hover:shadow-[0_1px_5px_0_rgba(0,0,0,0.10)] transition-shadow">
+    <div className="flex w-full flex-col items-start rounded-lg border border-[#EBEDF1] overflow-hidden hover:shadow-[0_1px_5px_0_rgba(0,0,0,0.10)] transition-shadow">
       {/* Thumbnail */}
       <div
-        className="flex h-[100px] px-4 py-4 flex-col items-start gap-2 self-stretch bg-cover bg-center bg-no-repeat"
+        className="flex h-[180px] px-4 py-4 flex-col items-start gap-2 self-stretch bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${thumbnailUrl})` }}
       >
         <CategoryBadge category={category} />
@@ -82,16 +82,14 @@ const ProblemSetCard = ({
           {/* Button */}
           <button
             onClick={onClick}
-            className={`flex justify-center items-center gap-2 self-stretch rounded-lg py-3 transition-colors ${
-              isCompleted
-                ? 'border border-[#0D6EFD] bg-white hover:bg-[#E8F0FF]'
-                : 'bg-[#0D6EFD] hover:bg-[#0B5ED7]'
-            }`}
+            className={`flex justify-center items-center gap-2 self-stretch rounded-lg py-3 transition-colors ${isCompleted
+              ? 'border border-[#0D6EFD] bg-white hover:bg-[#E8F0FF]'
+              : 'bg-[#0D6EFD] hover:bg-[#0B5ED7]'
+              }`}
           >
             <span
-              className={`text-sm font-bold leading-4 tracking-[0.14px] ${
-                isCompleted ? 'text-[#0D6EFD]' : 'text-white'
-              }`}
+              className={`text-sm font-bold leading-4 tracking-[0.14px] ${isCompleted ? 'text-[#0D6EFD]' : 'text-white'
+                }`}
               style={{ fontFamily: 'IBM Plex Sans KR' }}
             >
               {isCompleted ? '복습하기' : '문제 풀기'}

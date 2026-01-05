@@ -32,7 +32,7 @@ const Sidebar = ({ setViewMode }: SidebarProps) => {
   };
 
   return (
-    <aside className="flex w-[280px] flex-col items-start gap-10">
+    <aside className="sticky top-8 flex h-fit w-[280px] flex-col items-start gap-10">
       <UserProfileCard setViewMode={setViewMode} />
 
       {/* Settings */}

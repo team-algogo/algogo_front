@@ -10,6 +10,8 @@ import CodeSubmitPage from "@pages/code/CodeSubmitPage";
 import CodeReviewPage from "@pages/code/CodeReviewPage";
 import ProblemSetPage from "@pages/problemset/ProblemSetPage";
 import ProblemSetDetailPage from "@pages/problemset/ProblemSetDetailPage";
+import MyPage from "@pages/mypage/MyPage";
+import SettingsPage from "@pages/mypage/SettingsPage";
 
 const router = createBrowserRouter([
   {
@@ -18,10 +20,9 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <MainPage /> },
       { path: "login", element: <LoginPage /> },
-      { path: "group", element: <GroupMainPage /> },
-      { path: "group/:groupId", element: <GroupDetailPage /> },
-      { path: "group/:groupId/members", element: <GroupMembersPage /> },
       { path: "join", element: <JoinPage /> },
+      { path: "mypage", element: <MyPage /> },
+      { path: "mypage/settings", element: <SettingsPage /> },
       { path: "code/:programProblemId", element: <CodeSubmitPage /> },
       { path: "review/:submissionId", element: <CodeReviewPage /> },
       { path: "problemset", element: <ProblemSetPage /> },

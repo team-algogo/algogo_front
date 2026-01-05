@@ -25,7 +25,7 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="flex w-[280px] flex-col items-start gap-10">
+    <aside className="sticky top-8 flex w-[280px] flex-col items-start gap-10 h-fit">
       <UserProfileCard />
 
       {/* Settings */}

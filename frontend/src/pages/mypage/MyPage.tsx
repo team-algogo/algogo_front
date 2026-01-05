@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '@store/useAuthStore';
-import BasePage from '../BasePage';
 import Sidebar from '@components/mypage/Sidebar';
 import ContentArea from '@components/mypage/ContentArea';
 
@@ -19,12 +18,10 @@ const MyPage = () => {
     if (!authorization) return null;
 
     return (
-        <BasePage>
-            <div className="flex max-w-[1440px] items-start gap-3 self-stretch mx-auto px-4 py-8">
-                <Sidebar />
-                <ContentArea />
-            </div>
-        </BasePage>
+        <div className="grid max-w-[1600px] grid-cols-[280px_1fr] items-start gap-10 pl-[72px] pr-4 py-8 bg-white w-full">
+            <Sidebar />
+            <ContentArea />
+        </div>
     );
 };
 

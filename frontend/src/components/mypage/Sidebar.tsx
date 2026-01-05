@@ -1,9 +1,16 @@
-import { useNavigate } from 'react-router-dom';
-import { postLogout } from '@api/auth/auth';
-import useAuthStore from '@store/useAuthStore';
-import UserProfileCard from './UserProfileCard';
+import { useNavigate } from "react-router-dom";
+import type { Dispatch, SetStateAction } from "react";
+import { postLogout } from "@api/auth/auth";
+import useAuthStore from "@store/useAuthStore";
+import UserProfileCard from "./UserProfileCard";
 
-const Sidebar = () => {
+type ViewMode = "참여 현황" | "활동 내역" | "작성 리뷰";
+
+interface SidebarProps {
+  setViewMode: Dispatch<SetStateAction<ViewMode>>;
+}
+
+const Sidebar = ({ setViewMode }: SidebarProps) => {
   const navigate = useNavigate();
 
   // Wait, I recall useAuthStore has setAuthorization and setUserType. I should check if it has a logout action or just manually clear.
@@ -26,28 +33,28 @@ const Sidebar = () => {
 
   return (
     <aside className="flex w-[280px] flex-col items-start gap-10">
-      <UserProfileCard />
+      <UserProfileCard setViewMode={setViewMode} />
 
       {/* Settings */}
       <div className="flex flex-col items-start gap-3 self-stretch">
         <h3
-          className="self-stretch overflow-hidden text-[#777A80] text-ellipsis text-xs font-normal leading-[130%] tracking-[-0.12px] line-clamp-1"
-          style={{ fontFamily: 'IBM Plex Sans KR' }}
+          className="line-clamp-1 self-stretch overflow-hidden text-xs leading-[130%] font-normal tracking-[-0.12px] text-ellipsis text-[#777A80]"
+          style={{ fontFamily: "IBM Plex Sans KR" }}
         >
           계정 관리
         </h3>
         <div className="flex flex-col items-start gap-4 self-stretch">
           <button
-            onClick={() => navigate('/mypage/settings')}
-            className="self-stretch overflow-hidden text-[#050505] text-ellipsis text-base font-medium leading-[130%] tracking-[-0.16px] line-clamp-1 text-left hover:opacity-70 transition-opacity"
-            style={{ fontFamily: 'IBM Plex Sans KR' }}
+            onClick={() => navigate("/mypage/settings")}
+            className="line-clamp-1 self-stretch overflow-hidden text-left text-base leading-[130%] font-medium tracking-[-0.16px] text-ellipsis text-[#050505] transition-opacity hover:opacity-70"
+            style={{ fontFamily: "IBM Plex Sans KR" }}
           >
             회원정보관리
           </button>
           <button
             onClick={handleLogout}
-            className="self-stretch overflow-hidden text-[#050505] text-ellipsis text-base font-medium leading-[130%] tracking-[-0.16px] line-clamp-1 text-left hover:opacity-70 transition-opacity"
-            style={{ fontFamily: 'IBM Plex Sans KR' }}
+            className="line-clamp-1 self-stretch overflow-hidden text-left text-base leading-[130%] font-medium tracking-[-0.16px] text-ellipsis text-[#050505] transition-opacity hover:opacity-70"
+            style={{ fontFamily: "IBM Plex Sans KR" }}
           >
             로그아웃
           </button>

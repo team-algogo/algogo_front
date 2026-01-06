@@ -110,47 +110,68 @@ export default function NotificationDropdown() {
     };
 
     const handleAcceptInvite = () => {
+        console.log("handleAcceptInvite called", selectedNotification);
         if (!selectedNotification) return;
 
         const { type, payload } = selectedNotification;
+        console.log("Payload:", payload);
+
+        // Fallback for snake_case
+        const pId = payload?.programId || payload?.program_id;
+        const jId = payload?.joinId || payload?.join_id;
+        const iId = payload?.inviteId || payload?.invite_id;
 
         if (type === "GROUP_JOIN_APPLY") {
-            if (payload?.programId && payload?.joinId) {
+            if (pId && jId) {
+                console.log("Mutating join request accept");
                 respondToJoinMutation.mutate({
-                    programId: payload.programId,
-                    joinId: payload.joinId,
+                    programId: pId,
+                    joinId: jId,
                     isAccepted: "ACCEPTED"
                 });
+            } else {
+                console.error("Missing payload for JOIN_APPLY", payload);
             }
         } else if (type === "GROUP_INVITE_APPLY") {
-            if (payload?.programId && payload?.inviteId) {
+            if (pId && iId) {
+                console.log("Mutating invite accept");
                 respondToInviteMutation.mutate({
-                    programId: payload.programId,
-                    inviteId: payload.inviteId,
+                    programId: pId,
+                    inviteId: iId,
                     isAccepted: "ACCEPTED"
                 });
+            } else {
+                console.error("Missing payload for INVITE_APPLY", payload);
             }
         }
     };
 
     const handleRejectInvite = () => {
+        console.log("handleRejectInvite called", selectedNotification);
         if (!selectedNotification) return;
 
         const { type, payload } = selectedNotification;
 
+        // Fallback for snake_case
+        const pId = payload?.programId || payload?.program_id;
+        const jId = payload?.joinId || payload?.join_id;
+        const iId = payload?.inviteId || payload?.invite_id;
+
         if (type === "GROUP_JOIN_APPLY") {
-            if (payload?.programId && payload?.joinId) {
+            if (pId && jId) {
+                console.log("Mutating join request deny");
                 respondToJoinMutation.mutate({
-                    programId: payload.programId,
-                    joinId: payload.joinId,
+                    programId: pId,
+                    joinId: jId,
                     isAccepted: "DENIED"
                 });
             }
         } else if (type === "GROUP_INVITE_APPLY") {
-            if (payload?.programId && payload?.inviteId) {
+            if (pId && iId) {
+                console.log("Mutating invite deny");
                 respondToInviteMutation.mutate({
-                    programId: payload.programId,
-                    inviteId: payload.inviteId,
+                    programId: pId,
+                    inviteId: iId,
                     isAccepted: "DENIED"
                 });
             }
@@ -339,8 +360,8 @@ export default function NotificationDropdown() {
                     return (
                         <InviteModal
                             type={isInvite ? 'INVITE' : 'JOIN_REQUEST'}
-                            programId={selectedNotification.payload?.programId}
-                            userId={selectedNotification.payload?.userId}
+                            programId={selectedNotification.payload?.programId || selectedNotification.payload?.program_id}
+                            userId={selectedNotification.payload?.userId || selectedNotification.payload?.user_id}
                             onClose={() => setSelectedNotification(null)}
                             onAccept={handleAcceptInvite}
                             onReject={handleRejectInvite}

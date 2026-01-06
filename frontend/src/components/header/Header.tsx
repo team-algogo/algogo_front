@@ -26,7 +26,7 @@ const Header = () => {
   };
 
   return (
-    <div className="w-full flex justify-between px-6">
+    <div className="w-full flex justify-between px-6 border border-transparent border-b-grayscale-default">
       <div className="flex gap-2 items-center">
         <a href="/" className="font-logo text-xl px-6.5 py-6">
           알고가자
@@ -37,7 +37,7 @@ const Header = () => {
         <TextLink src="#" className="px-3.5 py-3">
           캠페인
         </TextLink>
-        <TextLink src="#" className="px-3.5 py-3">
+        <TextLink src="/group" className="px-3.5 py-3">
           그룹방
         </TextLink>
         <a href="/search" className="size-10 flex justify-center items-center">
@@ -48,7 +48,7 @@ const Header = () => {
         {userType == "User" ? (
           <>
             <NotificationContainer />
-            <TextLink src="/" className="px-3.5 py-3">
+            <TextLink src="/mypage" className="px-3.5 py-3">
               마이페이지
             </TextLink>
             <TextLink src="/" className="px-3.5 py-3" onClick={logout}>

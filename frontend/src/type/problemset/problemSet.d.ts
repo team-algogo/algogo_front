@@ -42,3 +42,13 @@ export interface Category {
 export interface CategoryListResponse {
     categoryList: Category[];
 }
+
+export interface ProblemSetSearchResults {
+    page: PageInfo;
+    problemSetList: ApiProblemSet[];
+}
+
+export interface ProblemSetSearchResponse {
+    message: string;
+    data: ProblemSetSearchResults;
+}

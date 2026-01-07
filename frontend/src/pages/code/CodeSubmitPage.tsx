@@ -4,7 +4,7 @@ import Button from "@components/button/Button";
 import SearchInput from "@components/form/input/SearchInput";
 import { Editor } from "@monaco-editor/react";
 import BasePage from "@pages/BasePage";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   getProblemInfo,
   postCodeSubmit,
@@ -51,6 +51,8 @@ const CodeSubmitPage = () => {
     else setIsDisabled(true);
   }, [execTime, memory, strategy]);
 
+  const navigate = useNavigate();
+
   const handleSubmit = async () => {
     if (!problemInfo) return;
     console.log(problemInfo);
@@ -67,6 +69,9 @@ const CodeSubmitPage = () => {
       );
 
       console.log(response.data);
+      if (response.status === 200) {
+        navigate(`/statistics/${param.programProblemId}`);
+      }
     } catch (err) {
       console.log(err);
     }

@@ -86,9 +86,10 @@ export default function ProblemListTable({ problems, page, itemsPerPage = 20, is
                             </div>
                             <div className="w-[110px] shrink-0 flex items-center justify-center">
                                 <button
+                                    onClick={() => navigate(`/statistics/${item.programProblemId}`)}
                                     className="flex items-center justify-center px-3 py-2 border border-[#0D6EFD] rounded-[8px] text-[#0D6EFD] text-[14px] font-medium hover:bg-blue-50"
                                 >
-                                    이동
+                                    통계
                                 </button>
                             </div>
                         </div>
@@ -100,6 +101,6 @@ export default function ProblemListTable({ problems, page, itemsPerPage = 20, is
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 }

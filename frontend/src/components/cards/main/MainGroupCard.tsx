@@ -1,5 +1,4 @@
 import Badge from "../../badge/Badge";
-import Button from "../../button/Button";
 
 import main1 from "../../../assets/images/MainCard/MainCard1.jpg";
 import main2 from "../../../assets/images/MainCard/MainCard2.jpg";
@@ -25,39 +24,58 @@ const images = [
   main10,
 ];
 
-const MainGroupCard = () => {
+interface MainGroupCardProps {
+  icon?: string;
+  title?: string;
+  subtitle?: string;
+  codeTitle?: string;
+  badges?: { text: string; variant: "orange" | "green" | "white" }[];
+}
+
+const MainGroupCard = ({
+  icon = "🔥",
+  title = "지금 가장 많은 코멘트가 달린 코드 확인하기",
+  subtitle = "코드 몇 줄로 메모리 단축!",
+  codeTitle = "[Python] 다익스트라 알고리즘 구현 리뷰",
+  badges = [
+    { text: "HOT", variant: "orange" },
+    { text: "All", variant: "white" },
+  ],
+}: MainGroupCardProps) => {
   const img = images[Math.floor(Math.random() * images.length)];
 
   return (
     <a
       href="#"
-      className="relative flex flex-col justify-between w-[255px] h-[275px] text-white px-4 py-3 bg-cover bg-center rounded-lg"
-      style={{
-        backgroundImage: `url(${img})`,
-      }}
+      className="flex max-w-sm flex-col overflow-hidden rounded-lg shadow-md transition-shadow hover:shadow-lg"
     >
-      <div className="absolute inset-0 bg-black/50 rounded-lg"></div>
-      <div className="relative flex flex-col gap-y-4">
-        <div className="flex justify-between">
-          <Badge variant="orange">Hot</Badge>
-          <Badge variant="white">All</Badge>
+      {/* 이미지 영역 */}
+      <div
+        className="relative h-[140px] bg-cover bg-center"
+        style={{ backgroundImage: `url(${img})` }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/60" />
+        <div className="relative flex h-full flex-col justify-end p-4 text-white">
+          <div className="flex items-center gap-2 text-sm font-semibold">
+            <span>{icon}</span>
+            <span>{title}</span>
+          </div>
+          <div className="mt-1 text-xs text-white/80">{subtitle}</div>
         </div>
+      </div>
 
-        <div className="font-headline text-2xl">코드 문제 제목</div>
-        <div>가장 많은 코멘트가 달린 리뷰!</div>
-
+      {/* 하단 영역 */}
+      <div className="flex flex-col gap-2 bg-white p-4">
+        <div className="text-grayscale-dark text-sm font-medium">
+          {codeTitle}
+        </div>
         <div className="flex gap-2">
-          <div className="flex gap-2 px-1 py-3">
-            <img src="/icons/reviewIconWhite.svg" />
-            <div>리뷰수: 100</div>
-          </div>
-          <div className="flex gap-2 px-1 py-3">
-            <img src="/icons/codeIcon.svg" />
-            <div>Python</div>
-          </div>
+          {badges.map((badge, index) => (
+            <Badge key={index} variant={badge.variant}>
+              {badge.text}
+            </Badge>
+          ))}
         </div>
-
-        <Button variant="default">리뷰 구경하기</Button>
       </div>
     </a>
   );

@@ -1,23 +1,36 @@
-const MainProblemSetCard = ({ img }: { img: string }) => {
+import { Link } from "react-router-dom";
+
+interface MainProblemSetCardProps {
+  programId: number;
+  img: string;
+  title?: string;
+  count?: number;
+}
+
+const MainProblemSetCard = ({
+  programId,
+  img,
+  title = "삼성 코딩 테스트 문제집",
+  count = 30,
+}: MainProblemSetCardProps) => {
   return (
-    <a
-      href="#"
-      className="relative flex flex-col justify-end w-75 h-52 text-black p-6 bg-cover bg-center rounded-lg overflow-hidden"
+    <Link
+      to={`/problemset/${programId}`}
+      className="relative flex h-[160px] w-[200px] shrink-0 flex-col justify-end overflow-hidden rounded-lg bg-cover bg-center p-4 text-white"
       style={{
         backgroundImage: `url(${img})`,
       }}
     >
-      <div className="absolute inset-0 bg-white/80"></div>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
 
-      <div className="relative flex flex-col gap-y-4">
-        <div className="font-title text-lg">삼성 코딩 테스트 문제집</div>
-
-        <div className="flex gap-2 px-1">
-          <img src="icons/bookIcon.svg" />
-          <div className="font-body text-sm">30개</div>
+      <div className="relative flex flex-col gap-y-2">
+        <div className="text-sm leading-tight font-semibold">{title}</div>
+        <div className="flex items-center gap-1.5">
+          <img src="/icons/bookIcon.svg" className="h-4 w-4 invert" />
+          <span className="text-xs text-white/80">{count}개</span>
         </div>
       </div>
-    </a>
+    </Link>
   );
 };
 

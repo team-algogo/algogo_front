@@ -21,67 +21,72 @@ const GroupProblemCard = ({
 }: GroupProblemCardProps) => {
 
   // 난이도별 뱃지 스타일
-  const getBadgeStyle = (diff: string) => {
+  // 난이도별 뱃지 스타일 (심플/테크니컬 버전)
+  const getBadgeStyle = (diff: string | undefined) => {
+    if (!diff) return "text-gray-600 bg-gray-50 border border-gray-200";
+
     switch (diff.toLowerCase()) {
       case "easy":
-        return "bg-grayscale-dark-gray text-white";
+        return "text-green-600 bg-green-50 border border-green-200";
       case "medium":
-        return "bg-grayscale-warm-gray text-white"; // 예시 색상
+        return "text-yellow-600 bg-yellow-50 border border-yellow-200";
       case "hard":
       case "high":
-        return "bg-primary-main text-white";
+        return "text-red-600 bg-red-50 border border-red-200";
       default:
-        return "bg-grayscale-default text-grayscale-dark-gray";
+        return "text-gray-600 bg-gray-50 border border-gray-200";
     }
   };
 
   const formattedDate = new Date(addedAt).toLocaleDateString("ko-KR");
 
   return (
-    <div className="w-full bg-white border border-grayscale-warm-gray rounded-xl p-5 flex justify-between items-center hover:shadow-md transition-shadow">
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-3">
-          {onDelete && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation(); // 카드 클릭 이벤트 전파 방지 (혹시 있다면)
-                onDelete();
-              }}
-              className="text-gray-300 hover:text-red-500 transition-colors"
-              title="문제 삭제"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-          )}
-          <h3 className="font-headline text-lg text-grayscale-dark-gray">
-            {title}
-          </h3>
+    <div
+      className="w-full border-b border-gray-200 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-default px-2"
+      onClick={() => window.open(problemLink, "_blank")}
+    >
+      {/* Left: Check/Status info could go here if needed */}
 
-          <span
-            className={`px-2 py-0.5 rounded-full text-xs font-bold ${getBadgeStyle(
-              difficulty
-            )}`}
-          >
-            {difficulty}
-          </span>
-        </div>
-        <div className="flex items-center gap-3 text-xs text-grayscale-warm-gray">
-          <span>추가일: {formattedDate}</span>
-          <span className="w-[1px] h-3 bg-grayscale-warm-gray opacity-50"></span>
-          <span>
-            해결: {solvedCount} / {totalMembers}명
-          </span>
-        </div>
+      <div className="flex items-center gap-4 flex-1 min-w-0">
+        <span
+          className={`px-2 py-[2px] rounded text-[10px] font-bold uppercase tracking-wide ${getBadgeStyle(
+            difficulty
+          )}`}
+        >
+          {difficulty}
+        </span>
+
+        <h3 className="text-sm font-medium text-gray-900 truncate flex-1 hover:text-primary-main hover:underline cursor-pointer">
+          {title}
+        </h3>
       </div>
 
-      <div>
-        <Button
-          variant="primary"
-          className="!h-9 !px-4 text-sm" // 버튼 크기 살짝 작게 조절
-          onClick={() => window.open(problemLink, "_blank")}
-        >
-          <span className="mr-1">&lt;&gt;</span> 풀기
-        </Button>
+      <div className="flex items-center gap-6 text-xs text-gray-500 shrink-0 ml-4">
+        <div className="flex items-center gap-1.5 w-24 justify-end">
+          <span>해결</span>
+          <span className="font-bold text-gray-700">{solvedCount} / {totalMembers}</span>
+        </div>
+        <span className="text-gray-400 w-20 text-right">{formattedDate}</span>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2 w-16 justify-end" onClick={(e) => e.stopPropagation()}>
+          <Button
+            variant="secondary"
+            className="!h-7 !px-2.5 !text-xs !border-gray-300"
+            onClick={() => window.open(problemLink, "_blank")}
+          >
+            문제풀기
+          </Button>
+          {onDelete && (
+            <button
+              onClick={onDelete}
+              className="text-gray-400 hover:text-red-500 transition-colors p-1"
+              title="삭제"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,10 +1,9 @@
 interface LevelBadgeProps {
     platform: string;
     difficulty: string;
-    level: string; // EASY, MEDIUM, HARD
 }
 
-export default function LevelBadge({ platform, difficulty, level }: LevelBadgeProps) {
+export default function LevelBadge({ platform, difficulty }: LevelBadgeProps) {
     const getEffectiveLevel = (plat: string, diff: string): "EASY" | "MEDIUM" | "HARD" => {
         const p = plat.toUpperCase();
         const d = diff.toUpperCase();
@@ -89,11 +88,12 @@ export default function LevelBadge({ platform, difficulty, level }: LevelBadgePr
     // I will render them as two spans.
 
     return (
-        <div className={`flex flex-row items-center justify-center px-2 py-[2px] gap-[6px] rounded-[10px] ${bg} ${minWidth} h-[20px]`}>
-            <span className={`text-[12px] font-medium font-ibm leading-[130%] tracking-[−0.02em] ${text}`}>
+        <div className={`flex flex-row items-center justify-center px-2 py-[4px] gap-[4px] rounded-[10px] ${bg} ${minWidth} whitespace-nowrap`}>
+            <span className={`text-[10px] font-medium font-ibm leading-[130%] tracking-[−0.02em] ${text}`}>
                 {platformDisplay}
             </span>
-            <span className={`text-[12px] font-medium font-ibm leading-[130%] tracking-[−0.02em] ${text}`}>
+            <div className={`w-[1px] h-[8px] ${text} opacity-20 bg-current`}></div>
+            <span className={`text-[12px] font-bold font-ibm leading-[130%] tracking-[−0.02em] ${text}`}>
                 {getDifficultyDisplay(platform, difficulty)}
             </span>
         </div>

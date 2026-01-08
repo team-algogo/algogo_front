@@ -6,16 +6,11 @@ import UserProfileCard from './UserProfileCard';
 const Sidebar = () => {
   const navigate = useNavigate();
 
-  // Wait, I recall useAuthStore has setAuthorization and setUserType. I should check if it has a logout action or just manually clear.
-  // Checking store file previously: setAuthorization, setUserType. No explicit logout action.
-  // So I'll manually distinct them.
-
   const handleLogout = async () => {
     try {
       await postLogout();
     } catch (error) {
       console.error("Logout API failed", error);
-      // creating a robust logout even if API fails
     } finally {
       useAuthStore.getState().setAuthorization("");
       useAuthStore.getState().setUserType(null);
@@ -25,29 +20,24 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="sticky top-8 flex w-[280px] flex-col items-start gap-10 h-fit">
+    <aside className="sticky top-24 flex w-full max-w-[280px] flex-col gap-6">
       <UserProfileCard />
 
       {/* Settings */}
-      <div className="flex flex-col items-start gap-3 self-stretch">
-        <h3
-          className="self-stretch overflow-hidden text-[#777A80] text-ellipsis text-xs font-normal leading-[130%] tracking-[-0.12px] line-clamp-1"
-          style={{ fontFamily: 'IBM Plex Sans KR' }}
-        >
+      <div className="flex flex-col gap-2">
+        <h3 className="text-gray-500 text-xs font-semibold px-2">
           계정 관리
         </h3>
-        <div className="flex flex-col items-start gap-4 self-stretch">
+        <div className="flex flex-col gap-1">
           <button
             onClick={() => navigate('/mypage/settings')}
-            className="self-stretch overflow-hidden text-[#050505] text-ellipsis text-base font-medium leading-[130%] tracking-[-0.16px] line-clamp-1 text-left hover:opacity-70 transition-opacity"
-            style={{ fontFamily: 'IBM Plex Sans KR' }}
+            className="w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-50 hover:text-primary-600 rounded-md transition-colors font-medium text-sm"
           >
             회원정보관리
           </button>
           <button
             onClick={handleLogout}
-            className="self-stretch overflow-hidden text-[#050505] text-ellipsis text-base font-medium leading-[130%] tracking-[-0.16px] line-clamp-1 text-left hover:opacity-70 transition-opacity"
-            style={{ fontFamily: 'IBM Plex Sans KR' }}
+            className="w-full text-left px-3 py-2 text-gray-700 hover:bg-red-50 hover:text-status-error rounded-md transition-colors font-medium text-sm"
           >
             로그아웃
           </button>

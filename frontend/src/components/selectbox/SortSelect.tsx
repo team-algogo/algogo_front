@@ -37,20 +37,26 @@ export default function SortSelect({ value, onChange, options }: SortSelectProps
         <div className="relative" ref={containerRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex flex-row items-center justify-between px-[12px] py-[8px] gap-[4px] min-w-[82px] h-[34px] border border-[#727479] rounded-[8px] bg-white text-[14px] text-[#727479] font-ibm hover:bg-gray-50 transition-colors"
+                className={`flex flex-row items-center justify-between px-3 py-2 gap-2 min-w-[100px] h-9 border rounded-md transition-all text-sm font-medium ${isOpen
+                        ? "border-primary-500 ring-1 ring-primary-500 text-primary-600 bg-white"
+                        : "border-gray-300 bg-white text-gray-600 hover:border-gray-400 hover:bg-gray-50"
+                    }`}
             >
                 <span>{currentLabel}</span>
-                <img src="/icons/downArrow.svg" alt="v" className={`w-[10px] h-[6px] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                <img src="/icons/downArrow.svg" alt="v" className={`w-2.5 h-1.5 transition-transform opacity-60 ${isOpen ? 'rotate-180 opacity-100' : ''}`} />
             </button>
 
             {/* Dropdown Menu */}
             {isOpen && (
-                <div className="absolute right-0 top-full mt-1 w-full min-w-[100px] bg-white border border-[#E5E5E5] rounded-md shadow-lg z-20 overflow-hidden">
+                <div className="absolute right-0 top-full mt-1 w-full min-w-[120px] bg-white border border-gray-200 rounded-md shadow-lg z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
                     {options.map((option) => (
                         <button
                             key={option.value}
                             onClick={() => handleSelect(option.value)}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 font-ibm text-[#333333] transition-colors"
+                            className={`w-full text-left px-3 py-2 text-sm transition-colors ${value === option.value
+                                    ? "bg-primary-50 text-primary-600 font-medium"
+                                    : "text-gray-700 hover:bg-gray-50"
+                                }`}
                         >
                             {option.label}
                         </button>

@@ -4,11 +4,11 @@ interface BadgeProps {
 }
 
 const StateBadge = ({ isPassed, hasText }: BadgeProps) => {
-  const bgColor = isPassed ? "bg-primary-main" : "bg-alert-error";
+  const bgColor = isPassed ? "bg-primary-main" : "bg-status-error";
 
   return hasText ? (
     <div
-      className={`${bgColor} text-white flex justify-center items-center h-6 w-15 px-3 py-0.5 rounded-lg`}
+      className={`${bgColor} text-white flex justify-center items-center h-6 min-w-[60px] px-3 py-0.5 rounded-lg text-xs font-medium`}
     >
       {isPassed ? "통과" : "실패"}
     </div>

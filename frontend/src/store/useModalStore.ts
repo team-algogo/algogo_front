@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-type ModalType = "popup" | "alert" | null;
+type ModalType = "popup" | "alert" | "campaign" | null;
 
 interface ModalStore {
   modalType: ModalType;

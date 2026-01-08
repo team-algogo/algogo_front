@@ -31,11 +31,16 @@ const Trigger = ({ children, className }: TriggerProps) => {
 interface ContentProps {
   children: ReactNode;
   autoCloseDelay?: number; // 자동 닫힘 시간 (ms), 기본 3초
+  modalType?: "alert" | "campaign"; // 모달 타입, 기본값 'alert'
 }
 
-const Content = ({ children, autoCloseDelay = 3000 }: ContentProps) => {
+const Content = ({
+  children,
+  autoCloseDelay = 3000,
+  modalType = "alert",
+}: ContentProps) => {
   const { isOpen, closeModal } = useModalStore();
-  const isAlertOpen = isOpen("alert");
+  const isAlertOpen = isOpen(modalType);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   // 자동 닫힘
@@ -61,7 +66,7 @@ const Content = ({ children, autoCloseDelay = 3000 }: ContentProps) => {
     <div
       ref={overlayRef}
       onClick={handleOverlayClick}
-      className="fixed inset-0 min-h-screen flex items-center justify-center bg-black/30"
+      className="fixed inset-0 min-h-screen flex items-center justify-center bg-black/30 z-50"
     >
       <div className="relative w-lg min-h-[155px] bg-white rounded-lg shadow-lg p-6 flex flex-col items-center justify-center">
         {/* Close Button */}

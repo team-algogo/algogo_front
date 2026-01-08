@@ -29,6 +29,9 @@ const router = createBrowserRouter([
       { path: "problemset", element: <ProblemSetPage /> },
       { path: "problemset/:programId", element: <ProblemSetDetailPage /> },
       { path: "statistics/:programProblemId", element: <ProblemStatisticsPage /> },
+      { path: "group", element: <GroupMainPage /> },
+      { path: "group/:groupId", element: <GroupDetailPage /> },
+      { path: "group/:groupId/members", element: <GroupMembersPage /> },
     ],
   },
 ]);

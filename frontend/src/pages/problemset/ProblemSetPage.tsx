@@ -9,7 +9,6 @@ export default function ProblemSetPage() {
   const [category, setCategory] = useState("전체");
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState("createdAt");
-  // Sort direction handling: usually popular -> desc, createdAt -> desc. default desc.
   const [sortDirection] = useState("desc");
 
   const handleCategoryChange = (newCategory: string) => {
@@ -20,7 +19,6 @@ export default function ProblemSetPage() {
   const handleSortChange = (newSortBy: string) => {
     setSortBy(newSortBy);
     setPage(1);
-    // Reset sort direction if needed, but desc is usually good for both "Latest" and "Popular"
   };
 
   const { data: categoryList } = useQuery({
@@ -36,50 +34,47 @@ export default function ProblemSetPage() {
 
   return (
     <BasePage>
-      <div className="mx-auto flex h-full w-full max-w-250 flex-col items-start gap-4 bg-white p-[40px_0px_80px] px-6">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
         {/* Header Title */}
-        <h1 className="font-headline h-[42px] w-[86px] text-3xl leading-[130%]">
-          문제집
-        </h1>
+        <div className="border-b border-gray-200 pb-8">
+          <h1 className="font-headline text-3xl text-gray-900">
+            문제집
+          </h1>
+          <p className="mt-2 text-gray-500">
+            다양한 알고리즘 문제집을 풀어보세요.
+          </p>
+        </div>
 
-        {/* Content Area (List + Controls) */}
-        <div className="flex w-full flex-col items-start gap-[24px] p-0">
-          {/* Controls Row: Category Tabs + Sort Select */}
-          <div className="flex h-[60px] w-full flex-row items-end justify-between border-b border-[#F4F4F5]">
-            {/* Tabs Group */}
-            <div className="flex h-[34px] w-fit flex-row items-start gap-[20px] p-0">
-              {tabs.map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => handleCategoryChange(tab)}
-                  className={`box-border flex h-[34px] flex-col items-center justify-end gap-[8px] px-[2px] pb-[8px] whitespace-nowrap ${
-                    category === tab
-                      ? "border-primary-main border-b-2"
-                      : "border-b-2 border-transparent hover:border-gray-200"
+        {/* Controls Row: Category Tabs + Sort Select */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-200 pb-0">
+          {/* Tabs Group */}
+          <div className="flex overflow-x-auto no-scrollbar gap-6 -mb-px">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => handleCategoryChange(tab)}
+                className={`whitespace-nowrap pb-4 text-base font-medium transition-colors border-b-2 ${category === tab
+                    ? "border-primary-500 text-primary-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                   }`}
-                >
-                  <span
-                    className={`font-ibm h-4 text-[16px] leading-[100%] font-bold ${
-                      category === tab ? "text-primary-main" : "text-[#2F353A]"
-                    }`}
-                  >
-                    {tab}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {/* Sort Select */}
-            <div className="mb-2 flex flex-row items-center gap-4">
-              <SortSelect
-                value={sortBy}
-                onChange={handleSortChange}
-                options={sortOptions}
-              />
-            </div>
+              >
+                {tab}
+              </button>
+            ))}
           </div>
 
-          {/* List */}
+          {/* Sort Select */}
+          <div className="pb-2 sm:pb-0">
+            <SortSelect
+              value={sortBy}
+              onChange={handleSortChange}
+              options={sortOptions}
+            />
+          </div>
+        </div>
+
+        {/* List */}
+        <div className="mt-2">
           <ProblemSetList
             category={category}
             sortBy={sortBy}

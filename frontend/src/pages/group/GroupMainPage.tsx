@@ -3,9 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import BasePage from "@pages/BasePage";
 import Group from "@components/cards/group/GroupListCard";
-import MyGroupListCard from "@components/cards/group/MyGroupListCard"; // [NEW] 컴포넌트 import
+import MyGroupListCard from "@components/cards/group/MyGroupListCard";
 import Button from "@components/button/Button";
-import { fetchGroupList, fetchMyGroupList } from "../../api/group/groupApi"; // [NEW] API import
+import { fetchGroupList, fetchMyGroupList } from "../../api/group/groupApi";
 import CreateGroupModal from "./CreateGroupModal";
 import useAuthStore from "@store/useAuthStore";
 
@@ -114,18 +114,21 @@ const GroupMainPage = () => {
         로그인 시: 좌우 분할을 위해 max-width를 조금 더 넓게(1200px) 잡아줍니다.
         비로그인 시: 기존 1000px 유지
       */}
+      {/* [Layout 변경] 
+        심플한 리스트 형태를 위해 Grid 대신 단일 컬럼 사용
+      */}
       <div
-        className={`w-full flex flex-col gap-6 px-4 py-6 mx-auto min-h-[80vh] ${isLoggedIn ? "max-w-[1200px]" : "max-w-[1000px]"}`}
+        className={`w-full flex flex-col gap-10 px-4 py-8 mx-auto min-h-[80vh] ${isLoggedIn ? "max-w-[1200px]" : "max-w-[1000px]"}`}
       >
         {/* --- Top Section (Title, Create Button, Search) --- */}
         {/* 이 부분은 공통으로 상단에 위치 */}
         <div>
           <div className="flex justify-between items-end mb-6">
             <div className="flex flex-col gap-1">
-              <h1 className="font-headline text-[24px] text-grayscale-dark-gray">
+              <h1 className="font-headline text-[32px] text-grayscale-dark-gray leading-tight">
                 Group Room
               </h1>
-              <p className="font-body text-grayscale-warm-gray text-sm">
+              <p className="font-body text-grayscale-warm-gray text-base">
                 함께 문제를 풀고 성장하는 코드 리뷰 커뮤니티
               </p>
             </div>
@@ -133,21 +136,22 @@ const GroupMainPage = () => {
               <Button
                 variant="primary"
                 onClick={handleOpenModal}
+                className="shadow-lg hover:shadow-xl transition-shadow"
               >
-                <div className="flex items-center gap-2">
-                  <img src="/icons/plusIcon.svg" alt="plus" className="w-4 h-4" />
-                  <span>그룹 만들기</span>
+                <div className="flex items-center justify-center gap-2">
+                  <img src="/icons/plusIcon.svg" alt="plus" className="w-4 h-4 brightness-0 invert" />
+                  <span className="font-bold">그룹 만들기</span>
                 </div>
               </Button>
 
             </div>
           </div>
 
-          <div className="w-full h-[52px] bg-grayscale-default rounded-xl flex items-center px-4 gap-3">
+          <div className="w-full h-[52px] bg-white border border-grayscale-warm-gray rounded-xl flex items-center px-4 gap-3 focus-within:border-primary-main focus-within:ring-1 focus-within:ring-primary-main transition-all shadow-sm">
             <img
               src="/icons/searchIconBlack.svg"
               alt="search"
-              className="size-5 cursor-pointer"
+              className="size-5 cursor-pointer opacity-50"
               onClick={() => {
                 setKeyword(searchInput);
                 setPage(0);
@@ -166,25 +170,25 @@ const GroupMainPage = () => {
 
         {/* --- Content Section --- */}
         {/* 로그인 여부에 따라 Grid 레이아웃 적용 */}
-        <div
-          className={`grid gap-8 ${isLoggedIn ? "md:grid-cols-[280px_1fr]" : "grid-cols-1"}`}
-        >
+        {/* --- Content Section --- */}
+        {/* 리스트형 디자인: Grid 제거하고 Flex Col 사용 */}
+        <div className="flex flex-col md:flex-row gap-8">
           {/* [Left Column] My Group List (로그인 시에만 보임) */}
           {isLoggedIn && (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 w-full md:w-[280px] shrink-0 h-full">
               <div className="flex items-center gap-2 mb-2">
                 <span className="font-headline text-lg text-grayscale-dark-gray">
                   My Group
                 </span>
-                <span className="bg-primary-main text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                <span className="bg-primary-main text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm">
                   {myGroupList.length}
                 </span>
               </div>
 
-              {/* 스크롤 영역: 내용이 많아지면 이 박스 안에서 스크롤 됨 */}
-              <div className="flex flex-col gap-4 max-h-[800px] overflow-y-auto pr-1 custom-scrollbar">
+              {/* 스크롤 영역: 내용이 많아지면 이 박스 안에서 스크롤 됨 (flex-1로 높이 채움) */}
+              <div className="flex flex-col gap-4 flex-1 h-full min-h-0 overflow-y-auto pr-1 custom-scrollbar">
                 {isMyLoading ? (
-                  <div className="text-center py-4 text-sm text-grayscale-warm-gray">
+                  <div className="text-center py-8 text-sm text-grayscale-warm-gray">
                     로딩 중...
                   </div>
                 ) : myGroupList.length > 0 ? (
@@ -200,10 +204,9 @@ const GroupMainPage = () => {
                     />
                   ))
                 ) : (
-                  <div className="p-6 text-center text-sm text-grayscale-warm-gray bg-grayscale-default rounded-xl border border-dashed border-grayscale-warm-gray">
-                    참여 중인 그룹이 없습니다.
-                    <br />
-                    새로운 그룹을 만들어보세요!
+                  <div className="p-8 text-center text-sm text-grayscale-warm-gray bg-white rounded-xl border border-dashed border-grayscale-warm-gray h-full flex items-center justify-center flex-col gap-2">
+                    <p>참여 중인 그룹이 없습니다.</p>
+                    <p className="text-xs">새로운 그룹을 만들어보세요!</p>
                   </div>
                 )}
               </div>
@@ -211,20 +214,20 @@ const GroupMainPage = () => {
           )}
 
           {/* [Right Column] All Group List */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 flex-1 min-w-0">
             {/* List Header */}
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <span className="font-headline text-lg text-grayscale-dark-gray">
-                  전체
+                  전체 그룹
                 </span>
-                <span className="px-2 py-0.5 bg-grayscale-default rounded-md text-xs font-bold text-grayscale-warm-gray">
+                <span className="px-2 py-0.5 bg-gray-100 rounded-md text-xs font-bold text-gray-500">
                   {totalCount}
                 </span>
               </div>
               <div className="relative">
                 <select
-                  className="appearance-none bg-transparent border border-grayscale-warm-gray rounded-lg px-4 py-2 pr-8 text-sm cursor-pointer hover:border-primary-main focus:outline-none focus:border-primary-main transition-colors"
+                  className="appearance-none bg-white border border-grayscale-warm-gray rounded-lg px-4 py-2 pr-8 text-sm cursor-pointer hover:border-primary-main focus:outline-none focus:border-primary-main transition-colors shadow-sm text-gray-600"
                   onChange={handleSortChange}
                   defaultValue="latest"
                 >
@@ -243,9 +246,9 @@ const GroupMainPage = () => {
             {/* List Rendering */}
             <div className="flex flex-col gap-4 relative pb-10">
               {isAllLoading ? (
-                <div className="text-center py-10">로딩 중입니다...</div>
+                <div className="text-center py-20">로딩 중입니다...</div>
               ) : isAllError ? (
-                <div className="text-center py-10 text-alert-error">
+                <div className="text-center py-20 text-status-error">
                   데이터 불러오기 실패
                 </div>
               ) : allGroupList.length > 0 ? (
@@ -282,15 +285,15 @@ const GroupMainPage = () => {
                         ))}
                       </div>
                       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/80 to-white z-10"></div>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center z-20 gap-2">
-                        <p className="text-primary-main text-lg font-bold text-center">
-                          더 많은 그룹을 보려면 <br className="md:hidden" />{" "}
+                      <div className="absolute inset-0 flex flex-col items-center justify-center z-20 gap-4">
+                        <p className="text-gray-900 text-xl font-bold text-center">
+                          더 많은 그룹을 보려면 <br className="md:hidden" />
                           로그인이 필요합니다 🥲
                         </p>
                         <Button
                           variant="primary"
                           onClick={() => navigate("/login")}
-                          className="!w-fit !px-6 !py-2 !h-10 text-sm"
+                          className="!w-fit !px-8 !py-3 !h-auto text-base shadow-lg hover:shadow-xl transition-all hover:-translate-y-1"
                         >
                           로그인 하러가기
                         </Button>
@@ -299,8 +302,9 @@ const GroupMainPage = () => {
                   )}
                 </>
               ) : (
-                <div className="text-center py-20 text-grayscale-warm-gray">
-                  검색 결과가 없습니다.
+                <div className="text-center py-32 text-grayscale-warm-gray flex flex-col items-center gap-4">
+                  <img src="/icons/searchIconBlack.svg" className="w-12 h-12 opacity-20" />
+                  <p>검색 결과가 없습니다.</p>
                 </div>
               )}
             </div>
@@ -311,11 +315,11 @@ const GroupMainPage = () => {
                 <button
                   onClick={() => setPage((old) => Math.max(old - 1, 0))}
                   disabled={page === 0}
-                  className="px-4 py-2 rounded bg-gray-200 disabled:opacity-50 hover:bg-gray-300"
+                  className="px-4 py-2 rounded-lg bg-white border border-gray-200 text-gray-600 disabled:opacity-50 hover:bg-gray-50 transition-colors"
                 >
                   이전
                 </button>
-                <span className="px-4 py-2">
+                <span className="px-4 py-2 text-gray-900 font-medium">
                   {page + 1} / {totalPages}
                 </span>
                 <button
@@ -323,7 +327,7 @@ const GroupMainPage = () => {
                     setPage((old) => (old + 1 < totalPages ? old + 1 : old))
                   }
                   disabled={page + 1 >= totalPages}
-                  className="px-4 py-2 rounded bg-gray-200 disabled:opacity-50 hover:bg-gray-300"
+                  className="px-4 py-2 rounded-lg bg-white border border-gray-200 text-gray-600 disabled:opacity-50 hover:bg-gray-50 transition-colors"
                 >
                   다음
                 </button>

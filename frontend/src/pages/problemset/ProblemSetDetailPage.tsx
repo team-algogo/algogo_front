@@ -56,7 +56,7 @@ export default function ProblemSetDetailPage() {
 
   return (
     <BasePage>
-      <div className="mx-auto flex h-full w-full max-w-[1000px] flex-col items-start gap-10 bg-white p-[40px_0px_80px]">
+      <div className="mx-auto flex h-full w-full max-w-7xl flex-col items-start gap-10 bg-white p-[40px_24px_80px]">
         {/* Header Section */}
         {detail && (
           <ProblemSetDetailHeader

@@ -201,151 +201,149 @@ const JoinPage = () => {
 
   return (
     <BasePage>
-      <div className="w-full min-h-[calc(100vh-150px)] flex justify-center items-center scale-90">
+      <div className="w-full min-h-[calc(100vh-200px)] flex justify-center items-center py-10">
         <form
           onSubmit={onSubmitSignUp}
-          className="flex flex-col gap-10 w-[426px] px-6 py-10 shadow-box rounded-sm"
+          className="flex flex-col gap-8 w-full max-w-[420px] px-8 py-10 bg-white shadow-card rounded-lg border border-gray-100"
         >
           {/** title */}
-          <div className="font-title text-xl text-center">회원가입</div>
+          <div className="text-center">
+            <h1 className="font-headline text-2xl text-gray-900 mb-2">회원가입</h1>
+            <p className="text-gray-500 text-sm">알고가자의 회원이 되어 함께 성장하세요!</p>
+          </div>
 
-          {/** login input */}
-          <div className="flex flex-col gap-6">
+          {/** join input */}
+          <div className="flex flex-col gap-5">
             <div className="flex flex-col gap-4">
-              <div className="flex flex-col">
-                <label id="nickname">Nickname</label>
+
+              {/* Nickname */}
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="nickname" className="text-sm font-medium text-gray-700">닉네임</label>
                 <div className="flex gap-2">
                   <input
+                    id="nickname"
                     type="text"
                     value={nickname}
-                    placeholder="닉네임"
+                    placeholder="2~10자"
                     onChange={(e) => setNickname(e.target.value)}
-                    className={`flex-1 px-3 py-2 rounded-lg shadow-xs focus:outline-none border-2 ${
-                      nicknameError
-                        ? "border-alert-error"
+                    className={`flex-1 h-10 px-3 rounded-md border border-gray-300 focus:ring-1 outline-none transition-all text-sm placeholder-gray-400 ${nicknameError
+                        ? "border-status-error focus:border-status-error focus:ring-status-error"
                         : isNicknameChecked
-                          ? "border-alert-success"
-                          : "border-transparent"
-                    }`}
+                          ? "border-status-success focus:border-status-success focus:ring-status-success"
+                          : "focus:border-primary-500 focus:ring-primary-500"
+                      }`}
                   />
                   <Button
                     variant="secondary"
+                    size="sm"
                     type="button"
                     onClick={onSubmitCheckNickname}
+                    className="shrink-0"
                   >
                     중복확인
                   </Button>
                 </div>
                 {nicknameError && (
-                  <span className="text-alert-error text-sm mt-1">
+                  <span className="text-status-error text-xs animate-in fade-in slide-in-from-top-1">
                     {nicknameError}
                   </span>
                 )}
                 {isNicknameChecked && !nicknameError && (
-                  <span className="text-alert-success text-sm mt-1">
+                  <span className="text-status-success text-xs animate-in fade-in slide-in-from-top-1">
                     사용 가능한 닉네임입니다.
                   </span>
                 )}
               </div>
-              <div className="flex flex-col">
-                <label id="email">Email</label>
+
+              {/* Email */}
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="email" className="text-sm font-medium text-gray-700">이메일</label>
                 <div className="flex gap-2">
                   <input
+                    id="email"
                     type="text"
                     value={email}
                     placeholder="ssafy@ssafy.com"
                     onChange={(e) => setEmail(e.target.value)}
-                    className={`flex-1 px-3 py-2 rounded-lg shadow-xs focus:outline-none border-2 ${
-                      emailError
-                        ? "border-alert-error"
+                    className={`flex-1 h-10 px-3 rounded-md border border-gray-300 focus:ring-1 outline-none transition-all text-sm placeholder-gray-400 ${emailError
+                        ? "border-status-error focus:border-status-error focus:ring-status-error"
                         : isEmailChecked
-                          ? "border-alert-success"
-                          : "border-transparent"
-                    }`}
+                          ? "border-status-success focus:border-status-success focus:ring-status-success"
+                          : "focus:border-primary-500 focus:ring-primary-500"
+                      }`}
                   />
                   <Button
                     variant="secondary"
+                    size="sm"
                     type="button"
                     onClick={onSubmitCheckEmail}
+                    className="shrink-0"
                   >
                     중복확인
                   </Button>
                 </div>
                 {emailError && (
-                  <span className="text-alert-error text-sm mt-1">
+                  <span className="text-status-error text-xs animate-in fade-in slide-in-from-top-1">
                     {emailError}
                   </span>
                 )}
                 {isEmailChecked && !emailError && (
-                  <span className="text-alert-success text-sm mt-1">
+                  <span className="text-status-success text-xs animate-in fade-in slide-in-from-top-1">
                     사용 가능한 이메일입니다.
                   </span>
                 )}
               </div>
-              <div className="flex flex-col">
-                <label id="password">Password</label>
+
+              {/* Password */}
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="password" className="text-sm font-medium text-gray-700">비밀번호</label>
                 <input
+                  id="password"
                   type="password"
                   value={password}
                   placeholder="영문+숫자+특수문자 포함 8자 이상"
                   onChange={(e) => setPassword(e.target.value)}
-                  className={`px-3 py-2 rounded-lg shadow-xs focus:outline-none border-2 ${
-                    passwordError ? "border-alert-error" : "border-transparent"
-                  }`}
+                  className={`w-full h-10 px-3 rounded-md border border-gray-300 focus:ring-1 outline-none transition-all text-sm placeholder-gray-400 ${passwordError ? "border-status-error focus:border-status-error focus:ring-status-error" : "focus:border-primary-500 focus:ring-primary-500"
+                    }`}
                 />
                 {passwordError && (
-                  <span className="text-alert-error text-sm mt-1">
+                  <span className="text-status-error text-xs animate-in fade-in slide-in-from-top-1">
                     {passwordError}
                   </span>
                 )}
               </div>
-              <div className="flex flex-col">
-                <label id="confirmPassword">Password 확인</label>
+
+              {/* Confirm Password */}
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">비밀번호 확인</label>
                 <input
+                  id="confirmPassword"
                   type="password"
                   value={confirmPassword}
                   placeholder="비밀번호 확인"
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className={`px-3 py-2 rounded-lg shadow-xs focus:outline-none border-2 ${
-                    confirmPasswordError
-                      ? "border-alert-error"
-                      : "border-transparent"
-                  }`}
+                  className={`w-full h-10 px-3 rounded-md border border-gray-300 focus:ring-1 outline-none transition-all text-sm placeholder-gray-400 ${confirmPasswordError
+                      ? "border-status-error focus:border-status-error focus:ring-status-error"
+                      : "focus:border-primary-500 focus:ring-primary-500"
+                    }`}
                 />
                 {confirmPasswordError && (
-                  <span className="text-alert-error text-sm mt-1">
+                  <span className="text-status-error text-xs animate-in fade-in slide-in-from-top-1">
                     {confirmPasswordError}
                   </span>
                 )}
               </div>
             </div>
-            <div>
-              <Button type="submit">계정 만들기</Button>
-            </div>
+
+            <Button type="submit" className="w-full mt-4" size="lg">계정 만들기</Button>
           </div>
 
           {/** etc */}
           <div className="flex flex-col gap-6">
-            {/** oAuth */}
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-3 w-full">
-                <div className="flex-1 h-px bg-grayscale-default"></div>
-                <span className="text-grayscale-warm-gray text-sm whitespace-nowrap">
-                  소셜 계정으로 로그인
-                </span>
-                <div className="flex-1 h-px bg-grayscale-default"></div>
-              </div>
-              <div className="flex justify-center gap-10">
-                <img src="/icons/login/googleIcon.svg" />
-                <img src="/icons/login/naverIcon.svg" />
-                <img src="/icons/login/kakaoIcon.svg" />
-              </div>
-            </div>
-            {/** find login info / join */}
-            <div className="flex justify-center gap-3 text-grayscale-warm-gray text-sm">
+            <div className="flex justify-center gap-3 text-gray-500 text-sm">
               <span>이미 계정이 있으신가요?</span>
               <TextLink src="/login">
-                <span>로그인하기</span>
+                <span className="text-primary-600 font-medium hover:text-primary-700">로그인하기</span>
               </TextLink>
             </div>
           </div>

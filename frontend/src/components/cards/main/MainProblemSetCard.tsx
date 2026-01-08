@@ -16,18 +16,39 @@ const MainProblemSetCard = ({
   return (
     <Link
       to={`/problemset/${programId}`}
-      className="relative flex h-[160px] w-[200px] shrink-0 flex-col justify-end overflow-hidden rounded-lg bg-cover bg-center p-4 text-white"
-      style={{
-        backgroundImage: `url(${img})`,
-      }}
+      className="group relative flex flex-col justify-end w-full h-[220px] rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1 bg-gray-900"
     >
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
+      <div
+        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
+        style={{
+          backgroundImage: `url(${img})`,
+        }}
+      />
 
-      <div className="relative flex flex-col gap-y-2">
-        <div className="text-sm leading-tight font-semibold">{title}</div>
-        <div className="flex items-center gap-1.5">
-          <img src="/icons/bookIcon.svg" className="h-4 w-4 invert" />
-          <span className="text-xs text-white/80">{count}개</span>
+      {/* Glassmorphism Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
+
+      <div className="relative z-10 flex flex-col gap-y-2 p-5 text-white">
+        <div className="transform transition-transform duration-300 group-hover:translate-x-1">
+          <div className="font-headline text-lg font-bold leading-tight group-hover:text-primary-200 transition-colors">
+            {title}
+          </div>
+          <p className="text-gray-300 text-xs mt-1 font-light line-clamp-1">
+            실전 대비를 위한 최적의 문제 모음
+          </p>
+        </div>
+
+        <div className="flex items-center justify-between mt-2 pt-3 border-t border-white/10 opacity-80 group-hover:opacity-100 transition-opacity">
+          <div className="flex gap-2 items-center text-xs text-gray-300">
+            <img src="/icons/bookIcon.svg" className="size-3.5 opacity-70 filter invert" alt="problems" />
+            <span>{count} problems</span>
+          </div>
+          <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-colors">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14"></path>
+              <path d="M12 5l7 7-7 7"></path>
+            </svg>
+          </div>
         </div>
       </div>
     </Link>

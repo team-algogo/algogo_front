@@ -34,6 +34,9 @@ const router = createBrowserRouter([
       { path: "problemset/:programId", element: <ProblemSetDetailPage /> },
       { path: "search", element: <SearchPage /> },
       { path: "statistics/:programProblemId", element: <ProblemStatisticsPage /> },
+      { path: "group", element: <GroupMainPage /> },
+      { path: "group/:groupId", element: <GroupDetailPage /> },
+      { path: "group/:groupId/members", element: <GroupMembersPage /> },
     ],
   },
 ]);

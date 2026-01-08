@@ -13,37 +13,20 @@ export default function ProblemListTable({ problems, page, itemsPerPage = 20, is
     const navigate = useNavigate();
 
     return (
-        <div className="flex flex-col w-full rounded-[12px] bg-white border border-[#F4F4F5] overflow-hidden overflow-x-auto relative">
-            {!isLogined && (
-                <div className="absolute bottom-0 w-full h-[calc(100%-168px)] z-10 flex flex-col items-center justify-center bg-gradient-to-b from-white/70 to-white/93 backdrop-blur-[3px]">
-                    <div className="flex flex-col items-center gap-[12px]">
-                        <span className="font-sans font-black text-[16px] leading-[130%] text-[#333333]">
-                            더 많은 문제를 보려면<br />
-                            로그인이 필요합니다 🔒
-                        </span>
-                        <button
-                            onClick={() => navigate('/login')}
-                            className="flex flex-row justify-center items-center px-[24px] py-[12px] bg-[#0D6EFD] rounded-[8px] hover:bg-[#0b5ed7] transition-colors"
-                        >
-                            <span className="font-ibm font-bold text-[16px] leading-[100%] text-white">
-                                로그인하기
-                            </span>
-                        </button>
-                    </div>
-                </div>
-            )}
-            <div className={`min-w-[1200px] ${!isLogined ? 'select-none pointer-events-none' : ''}`}>
+        <div className="relative w-full min-h-[300px]">
+            {/* Table Content */}
+            <div className={`w-full transition-all duration-300 ${!isLogined ? 'blur-[3px] opacity-60 pointer-events-none select-none' : ''}`}>
                 {/* Table Header */}
-                <div className="flex flex-row w-full h-[56px] bg-[#F9FAFB] border-b border-gray-100">
-                    <div className="w-[88px] shrink-0 flex items-center justify-center text-[16px] font-medium text-[#333333]">#</div>
-                    <div className="w-[163px] shrink-0 flex items-center justify-center text-[16px] font-medium text-[#333333]">난이도</div>
-                    <div className="flex-1 min-w-[300px] flex items-center justify-start px-6 text-[16px] font-medium text-[#333333]">제목</div>
-                    <div className="w-[158px] shrink-0 flex items-center justify-center text-[16px] font-medium text-[#333333]">제출 수</div>
-                    <div className="w-[158px] shrink-0 flex items-center justify-center text-[16px] font-medium text-[#333333]">조회 수</div>
-                    <div className="w-[158px] shrink-0 flex items-center justify-center text-[16px] font-medium text-[#333333]">참여자 수</div>
-                    <div className="w-[158px] shrink-0 flex items-center justify-center text-[16px] font-medium text-[#333333]">정답률</div>
-                    <div className="w-[110px] shrink-0 flex items-center justify-center text-[16px] font-medium text-[#333333]">문제풀기</div>
-                    <div className="w-[110px] shrink-0 flex items-center justify-center text-[16px] font-medium text-[#333333]">통계보기</div>
+                <div className="flex flex-row w-full h-[56px] bg-[#F9FAFB] border-b border-gray-100 text-[14px] text-[#555]">
+                    <div className="w-[60px] shrink-0 flex items-center justify-center font-medium">#</div>
+                    <div className="w-[100px] shrink-0 flex items-center justify-center font-medium">난이도</div>
+                    <div className="flex-1 min-w-[200px] flex items-center justify-start px-4 font-medium">제목</div>
+                    <div className="w-[100px] shrink-0 hidden lg:flex items-center justify-center font-medium">제출 수</div>
+                    <div className="w-[100px] shrink-0 hidden lg:flex items-center justify-center font-medium">조회 수</div>
+                    <div className="w-[100px] shrink-0 hidden md:flex items-center justify-center font-medium">참여자 수</div>
+                    <div className="w-[80px] shrink-0 flex items-center justify-center font-medium">정답률</div>
+                    <div className="w-[80px] shrink-0 flex items-center justify-center font-medium">문제풀기</div>
+                    <div className="w-[80px] shrink-0 flex items-center justify-center font-medium">통계보기</div>
                 </div>
 
                 {/* Table Rows */}
@@ -52,42 +35,42 @@ export default function ProblemListTable({ problems, page, itemsPerPage = 20, is
                     if (!pInfo) return null;
 
                     return (
-                        <div key={item.programProblemId} className="flex flex-row w-full h-[56px] bg-white border-b border-[#F5F5F5] hover:bg-gray-50 transition-colors">
-                            <div className="w-[88px] shrink-0 flex items-center justify-center text-[16px] text-[#333333]">
+                        <div key={item.programProblemId} className="flex flex-row w-full h-[56px] bg-white border-b border-[#F5F5F5] hover:bg-gray-50 transition-colors text-[14px]">
+                            <div className="w-[60px] shrink-0 flex items-center justify-center text-[#333]">
                                 {(page - 1) * itemsPerPage + index + 1}
                             </div>
-                            <div className="w-[163px] shrink-0 flex items-center justify-center">
-                                <LevelBadge platform={pInfo.platformType} difficulty={pInfo.difficultyType} level={item.userDifficultyType} />
+                            <div className="w-[100px] shrink-0 flex items-center justify-center">
+                                <LevelBadge platform={pInfo.platformType} difficulty={pInfo.difficultyType} />
                             </div>
-                            <div className="flex-1 min-w-[300px] flex items-center justify-start px-6 text-[16px] text-[#333333] truncate">
+                            <div className="flex-1 min-w-[200px] flex items-center justify-start px-4 text-[#333] truncate font-medium">
                                 {pInfo.title}
                             </div>
-                            <div className="w-[158px] shrink-0 flex items-center justify-center text-[16px] text-[#333333]">
-                                {item.submissionCount.toLocaleString()}명
+                            <div className="w-[100px] shrink-0 hidden lg:flex items-center justify-center text-[#555]">
+                                {item.submissionCount.toLocaleString()}
                             </div>
-                            <div className="w-[158px] shrink-0 flex items-center justify-center text-[16px] text-[#333333]">
-                                {item.viewCount.toLocaleString()}명
+                            <div className="w-[100px] shrink-0 hidden lg:flex items-center justify-center text-[#555]">
+                                {item.viewCount.toLocaleString()}
                             </div>
-                            <div className="w-[158px] shrink-0 flex items-center justify-center text-[16px] text-[#333333]">
-                                {item.participantCount.toLocaleString()}명
+                            <div className="w-[100px] shrink-0 hidden md:flex items-center justify-center text-[#555]">
+                                {item.participantCount.toLocaleString()}
                             </div>
-                            <div className="w-[158px] shrink-0 flex items-center justify-center text-[16px] text-[#333333]">
+                            <div className="w-[80px] shrink-0 flex items-center justify-center text-[#555]">
                                 {item.submissionCount > 0
                                     ? Math.round((item.solvedCount / item.submissionCount) * 100)
                                     : 0}%
                             </div>
-                            <div className="w-[110px] shrink-0 flex items-center justify-center">
+                            <div className="w-[80px] shrink-0 flex items-center justify-center">
                                 <button
                                     onClick={() => navigate(`/code/${item.programProblemId}`)}
-                                    className="flex items-center justify-center px-3 py-2 border border-[#0D6EFD] rounded-[8px] text-[#0D6EFD] text-[14px] font-medium hover:bg-blue-50"
+                                    className="flex items-center justify-center px-3 py-1.5 border border-[#0D6EFD] rounded-[6px] text-[#0D6EFD] text-[12px] font-medium hover:bg-blue-50 transition-colors"
                                 >
                                     이동
                                 </button>
                             </div>
-                            <div className="w-[110px] shrink-0 flex items-center justify-center">
+                            <div className="w-[80px] shrink-0 flex items-center justify-center">
                                 <button
                                     onClick={() => navigate(`/statistics/${item.programProblemId}`)}
-                                    className="flex items-center justify-center px-3 py-2 border border-[#0D6EFD] rounded-[8px] text-[#0D6EFD] text-[14px] font-medium hover:bg-blue-50"
+                                    className="flex items-center justify-center px-3 py-1.5 border border-[#0D6EFD] rounded-[6px] text-[#0D6EFD] text-[12px] font-medium hover:bg-blue-50 transition-colors"
                                 >
                                     통계
                                 </button>
@@ -101,6 +84,21 @@ export default function ProblemListTable({ problems, page, itemsPerPage = 20, is
                     </div>
                 )}
             </div>
-        </div >
+
+            {/* Login Required Overlay */}
+            {!isLogined && (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center">
+                    <div className="flex flex-col items-center gap-4 p-8">
+                        <p className="text-[#333] text-[16px] font-medium">로그인이 필요한 서비스입니다.</p>
+                        <button
+                            onClick={() => navigate('/login')}
+                            className="px-6 py-2.5 bg-[#0D6EFD] hover:bg-[#0b5ed7] text-white text-[14px] font-medium rounded-lg transition-colors shadow-sm"
+                        >
+                            로그인 하러가기
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 }

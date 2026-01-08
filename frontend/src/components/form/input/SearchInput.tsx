@@ -95,14 +95,14 @@ const SearchInput = ({
             onChange={(e) => setValue(e.target.value)}
             onFocus={() => setIsFocused(true)}
             placeholder="알고리즘 선택"
-            className={`h-10 w-full rounded-md border-2 px-3 py-2 pr-10 transition-colors focus:shadow-[0px_1px_5px_rgba(0,0,0,0.1)] focus:outline-none ${clicked ? "border-primary-300" : "border-primary-main"}`}
+            className={`h-10 w-full rounded-md border px-3 py-2 pr-10 text-sm transition-all focus:outline-none ${clicked ? "border-primary-500 ring-1 ring-primary-500" : "border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"}`}
           />
 
           {value && (
             <button
               type="button"
               onClick={() => setValue("")}
-              className="absolute top-0 right-10 flex size-10 items-center justify-center"
+              className="absolute top-0 right-10 flex size-10 items-center justify-center hover:opacity-75"
             >
               <img src="/icons/clearIcon.svg" className="size-4" alt="clear" />
             </button>
@@ -112,9 +112,9 @@ const SearchInput = ({
             type="submit"
             onMouseDown={handleClick}
             onMouseUp={handleClick}
-            className={`absolute top-0 right-0 flex size-10 items-center justify-center rounded-r-md transition-colors ${clicked ? "bg-primary-300" : "bg-primary-main"}`}
+            className={`absolute top-0 right-0 flex size-10 items-center justify-center rounded-r-md transition-colors ${clicked ? "bg-primary-600" : "bg-primary-500 hover:bg-primary-600"}`}
           >
-            <img src="/icons/searchIcon.svg" className="size-4" alt="search" />
+            <img src="/icons/searchIcon.svg" className="size-4 invert brightness-0" alt="search" />
           </button>
         </form>
 
@@ -124,7 +124,7 @@ const SearchInput = ({
             {searchResults.map((algo) => (
               <div
                 key={algo.id}
-                className="cursor-pointer px-4 py-2 text-gray-700 hover:bg-gray-100"
+                className="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 onClick={() => handleSelectItem(algo)}
               >
                 {algo.name}
@@ -134,7 +134,7 @@ const SearchInput = ({
         )}
         {isFocused && searchResults.length === 0 && (
           <div className="absolute top-full left-0 z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg">
-            <div className="text-grayscale-warm-gray cursor-pointer px-4 py-2 hover:bg-gray-100">
+            <div className="text-gray-500 cursor-pointer px-4 py-2 text-sm hover:bg-gray-100">
               검색된 알고리즘이 없습니다.
             </div>
           </div>
@@ -147,13 +147,13 @@ const SearchInput = ({
           {selectedItems.map((item) => (
             <div
               key={item.id}
-              className="bg-primary-600 text-primary-main flex items-center gap-1 rounded-full px-3 py-1 text-sm font-medium"
+              className="bg-primary-50 border border-primary-200 text-primary-700 flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium"
             >
               <span>{item.name}</span>
               <button
                 type="button"
                 onClick={() => handleRemoveItem(item.id)}
-                className="hover:text-primary-dark"
+                className="hover:text-primary-900 ml-1 font-bold"
               >
                 ×
               </button>

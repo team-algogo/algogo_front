@@ -13,6 +13,7 @@ type BadgeVariant =
 interface BadgeProps {
   variant?: BadgeVariant;
   children: ReactNode;
+  className?: string;
 }
 
 const getVariantStyle = (variant: BadgeVariant) => {
@@ -30,16 +31,13 @@ const getVariantStyle = (variant: BadgeVariant) => {
   return variantStyles[variant];
 };
 
-const Badge = ({ variant = "blue", children, ...rest }: BadgeProps) => {
+const Badge = ({ variant = "blue", children, className = "", ...rest }: BadgeProps) => {
   const badgeStyle = getVariantStyle(variant);
   return (
-    <div
-      className={`inline-block rounded-full border-2 px-3 py-1 text-xs ${badgeStyle}`}
-      {...rest}
-    >
+    <div className={`inline-block rounded-full py-1 px-3 border-2 ${badgeStyle} ${className}`} {...rest} >
       {children}
     </div>
-  );
-};
+  )
+}
 
 export default Badge;

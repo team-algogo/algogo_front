@@ -44,9 +44,9 @@ const Modal = ({ children }: ModalProps) => {
     <div
       ref={overlayRef}
       onClick={handleBackdropClick}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity"
     >
-      <div className="w-full max-w-[430px] mx-6 flex flex-col gap-y-4 rounded-[10px] bg-white p-6">
+      <div className="w-full max-w-[430px] mx-6 flex flex-col gap-y-4 rounded-lg bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-200">
         {children}
       </div>
     </div>,

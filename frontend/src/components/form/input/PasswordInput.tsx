@@ -22,17 +22,17 @@ const PasswordInput = ({
 
   const getBorderColor = () => {
     if (isFocused) {
-      return "border-primary-main";
+      return "border-primary-500 ring-1 ring-primary-500";
     }
     switch (status) {
       case "error":
-        return "border-alert-error";
+        return "border-status-error";
       case "warning":
-        return "border-alert-warning";
+        return "border-status-warning";
       case "success":
-        return "border-alert-success";
+        return "border-status-success";
       default:
-        return "border-grayscale-warm-gray";
+        return "border-gray-300";
     }
   };
 
@@ -53,7 +53,7 @@ const PasswordInput = ({
 
   return (
     <div
-      className={`flex items-center w-full h-12 bg-grayscale-default border rounded-md overflow-hidden ${getBorderColor()}`}
+      className={`flex items-center w-full h-10 bg-white border rounded-md overflow-hidden transition-all duration-200 ${getBorderColor()}`}
     >
       <div className="flex-1 flex items-center relative">
         <input
@@ -65,7 +65,7 @@ const PasswordInput = ({
           onBlur={() => setIsFocused(false)}
           placeholder={placeholder}
           autoComplete="current-password"
-          className="w-full h-full px-4 text-grayscale-dark-gray placeholder-grayscale-warm-gray outline-none bg-transparent"
+          className="w-full h-full px-4 text-gray-900 placeholder-gray-400 outline-none bg-transparent text-sm"
         />
       </div>
 
@@ -78,7 +78,7 @@ const PasswordInput = ({
           type="button"
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => setShowPassword(!showPassword)}
-          className="flex justify-center items-center size-6 rounded-full transition-colors"
+          className="flex justify-center items-center size-6 rounded-full hover:bg-gray-100 transition-colors"
         >
           <img
             src={
@@ -86,7 +86,7 @@ const PasswordInput = ({
                 ? "/icons/viewOkIcon.svg"
                 : "/icons/viewNotOkIcon.svg"
             }
-            className="size-4"
+            className="size-4 opacity-60 hover:opacity-100 transition-opacity"
             alt={showPassword ? "hide password" : "show password"}
           />
         </button>
@@ -97,11 +97,11 @@ const PasswordInput = ({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => onChange("")}
-            className="flex justify-center items-center size-6 rounded-full transition-colors"
+            className="flex justify-center items-center size-6 rounded-full hover:bg-gray-100 transition-colors"
           >
             <img
               src="/icons/clearIconDark.svg"
-              className="size-4"
+              className="size-4 opacity-60 hover:opacity-100 transition-opacity"
               alt="clear"
             />
           </button>

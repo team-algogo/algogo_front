@@ -36,6 +36,13 @@ import {
 } from "@api/code/reviewSubmit";
 import { getProblemInfo, type ProgramProblemProps } from "@api/code/codeSubmit";
 
+// Temporary mock data for list items
+const MOCK_LIST_ITEMS = Array(5).fill(null).map((_, i) => ({
+  id: i,
+  title: "알고리즘 캠페인 시즌 " + (i + 1),
+  count: 10 + i
+}));
+
 const MainPage = () => {
   const [reviewRequire, setReviewRequire] =
     useState<RequiredCodeReviewList | null>(null);
@@ -226,224 +233,199 @@ const MainPage = () => {
   }, [state, openModal, navigate, pathname]);
 
   return (
-    <>
-      <Banner />
-      <BasePage>
-        {/* 로그인 전: 지금 이런 코드들이 리뷰되고 있어요! */}
-        {!isLoggedIn && (
-          <div className="flex flex-col gap-6 py-8">
-            <div className="font-title px-6 text-xl">
-              지금 이런 코드들이 리뷰되고 있어요!
-            </div>
-            <div className="flex justify-center gap-6">
-              {/* Hot Submission */}
-              {/* Hot Submission */}
-              {currentHotSubmission && (
-                <MainSubmissionCard
-                  data={currentHotSubmission}
-                  icon="🔥"
-                  title="지금 가장 많은 코멘트가 달린 코드"
-                  subtitle="코드 몇 줄로 메모리 단축!"
-                  platform={currentHotPlatform}
-                  badges={[{ text: "HOT", variant: "orange" }]}
-                />
-              )}
+    <BasePage>
+      {/* Banner Section */}
+      <section className="w-full">
+        <Banner />
+      </section>
 
-              {/* Popular Problem (Join In) */}
-              {currentPopularProblem && (
-                <MainProblemCard
-                  data={currentPopularProblem}
-                  icon="😎"
-                  title="지금 뜨고 있는 문제"
-                  subtitle="너도 나도 도전 중!"
-                  badges={[{ text: "HOT", variant: "orange" }]}
-                />
+      {/* Featured Reviews Section (로그인 여부에 따라 다른 컨텐츠 표시) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
+        <div className="flex justify-between items-end mb-8">
+          <div className="relative">
+            <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+              {isLoggedIn ? "도착한 리뷰 요청" : "지금 뜨고 있는 "}
+              {!isLoggedIn && (
+                <span className="text-primary-600 relative inline-block">
+                  리뷰
+                  <svg className="absolute w-full h-2 bottom-1 left-0 -z-10 text-primary-200" viewBox="0 0 100 10" preserveAspectRatio="none">
+                    <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="8" fill="none" opacity="0.6" />
+                  </svg>
+                </span>
               )}
+            </h2>
+            <p className="text-gray-500 mt-2">
+              {isLoggedIn
+                ? "다른 사람의 코드를 리뷰하고 함께 성장해보세요!"
+                : "개발자들의 열띤 토론이 진행되고 있어요"
+              }
+            </p>
+          </div>
+          <TextLink src={isLoggedIn ? "/mypage" : "/reviews"} variant="secondary" className="text-sm font-medium hover:text-primary-600 transition-colors">전체보기 →</TextLink>
+        </div>
 
-              {/* Recent Submission */}
-              {currentRecentSubmission && (
-                <MainSubmissionCard
-                  data={currentRecentSubmission}
-                  icon="🆕"
-                  title="최근 올라온 코드"
-                  subtitle="따끈따끈한 새 코드!"
-                  platform={currentRecentPlatform}
-                  badges={[{ text: "NEW", variant: "green" }]}
+        {/* Content Area */}
+        {isLoggedIn ? (
+          // 로그인 시: 리뷰 요청 카드 리스트
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {reviewRequire && reviewRequire.requiredCodeReviews.length > 0 ? (
+              reviewRequire.requiredCodeReviews.slice(0, 3).map((review, index) => (
+                <ReviewRequestCard key={index} {...review} />
+              ))
+            ) : (
+              <div className="col-span-full w-full">
+                <EmptyState
+                  icon="📭"
+                  title="아직 도착한 리뷰 요청이 없어요"
+                  description="다른 활동을 하며 기다려보세요!"
                 />
-              )}
-            </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          // 비로그인 시: Hot/Recent 카드
+          <div className="flex flex-wrap justify-center gap-6">
+            {/* Hot Submission */}
+            {currentHotSubmission && (
+              <MainSubmissionCard
+                data={currentHotSubmission}
+                icon="🔥"
+                title="지금 가장 핫한 코드"
+                subtitle="댓글이 가장 많이 달렸어요"
+                platform={currentHotPlatform}
+                badges={[{ text: "HOT", variant: "orange" }]}
+              />
+            )}
+
+            {/* Popular Problem */}
+            {currentPopularProblem && (
+              <MainProblemCard
+                data={currentPopularProblem}
+                icon="😎"
+                title="인기 급상승 문제"
+                subtitle="많은 사람들이 도전 중!"
+                badges={[{ text: "HOT", variant: "orange" }]}
+              />
+            )}
+
+            {/* Recent Submission */}
+            {currentRecentSubmission && (
+              <MainSubmissionCard
+                data={currentRecentSubmission}
+                icon="🆕"
+                title="최근 올라온 코드"
+                subtitle="따끈따끈한 새 코드 리뷰"
+                platform={currentRecentPlatform}
+                badges={[{ text: "NEW", variant: "green" }]}
+              />
+            )}
           </div>
         )}
+      </section>
 
-        {/* 로그인 후: 탭 + 리뷰 요청 + 내 코드 리뷰 */}
-        {isLoggedIn && (
-          <>
-            {/* 탭 */}
-            <div className="border-grayscale-default flex gap-6 border-b px-6 py-4">
-              {(["All", "Groups", "Campaigns"] as const).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`pb-2 text-sm font-medium transition-colors ${
-                    activeTab === tab
-                      ? "text-primary-main border-primary-main border-b-2"
-                      : "text-grayscale-warm-gray hover:text-grayscale-dark"
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
+      {/* Recommended Problem Sets Section */}
+      <section className="relative py-20 w-full overflow-hidden">
+        <div className="absolute inset-0 bg-gray-100/50 -skew-y-2 transform origin-top-left scale-110 z-[-1]"></div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-end mb-10">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">추천 문제집</h2>
+              <p className="text-gray-500">실력 향상을 위한 엄선된 문제집들입니다</p>
             </div>
-
-            {/* 리뷰 요청 + 내 코드 리뷰 */}
-            <div className="flex gap-6 px-6 py-6">
-              {/* 리뷰 요청이 왔어요! */}
-              <div className="flex flex-1 flex-col">
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">📢</span>
-                    <span className="font-headline text-lg">
-                      리뷰요청이 왔어요!
-                    </span>
-                    <span className="bg-primary-main rounded-full px-2 py-0.5 text-xs text-white">
-                      {reviewRequire
-                        ? reviewRequire.requiredCodeReviews.length
-                        : 0}
-                    </span>
-                  </div>
-                  <TextLink src="/mypage" className="font-body text-base">
-                    전체보기 →
-                  </TextLink>
-                </div>
-                <div className="min-h-[300px] flex-1 rounded-lg">
-                  {reviewRequire ? (
-                    <div className="divide-grayscale-default flex flex-col divide-y">
-                      {reviewRequire.requiredCodeReviews.map(
-                        (review, index) => (
-                          <ReviewRequestCard key={index} {...review} />
-                        ),
-                      )}
-                    </div>
-                  ) : (
-                    <EmptyState
-                      icon="📭"
-                      title="아직 도착한 리뷰 요청이 없어요"
-                      description="다른 사람의 코드를 리뷰하고 실력을 키워보세요!"
-                    />
-                  )}
-                </div>
-              </div>
-
-              {/* 내 코드에 달린 리뷰 */}
-              <div className="flex flex-1 flex-col">
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">👀</span>
-                    <span className="font-title text-lg">
-                      내 코드에 달린 리뷰를 확인해보세요!
-                    </span>
-                    <span className="bg-primary-main rounded-full px-2 py-0.5 text-xs text-white">
-                      {reviewReceive ? reviewReceive.pageInfo.totalElements : 0}
-                    </span>
-                  </div>
-                  <TextLink src="/mypage" className="font-body text-base">
-                    전체보기 →
-                  </TextLink>
-                </div>
-                <div className="min-h-[300px] flex-1 rounded-lg">
-                  {reviewReceive ? (
-                    <div className="divide-grayscale-default flex flex-col divide-y">
-                      {reviewReceive.receiveCodeReviews.map((review, index) => (
-                        <ReviewCard key={index} {...review} />
-                      ))}
-                    </div>
-                  ) : (
-                    <EmptyState
-                      icon="🏃"
-                      title="아직 코드에 달린 리뷰가 없어요"
-                      description="지금 핫한 리뷰들을 먼저 구경해 볼까요?"
-                    />
-                  )}
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* 추천 문제집 */}
-        <div className="flex flex-col gap-4 py-6">
-          <div className="flex items-center justify-between px-6">
-            <div className="font-title text-xl">추천 문제집</div>
-            <TextLink src="/problemset" className="font-body text-base">
-              전체보기 →
-            </TextLink>
+            <TextLink src="/problemset" variant="secondary" className="text-sm font-medium hover:text-primary-600 transition-colors">전체보기 →</TextLink>
           </div>
-          <div className="flex gap-4 overflow-x-auto px-6 pb-2">
-            {recommendProblemSet?.problemSetList.map((item) => (
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {recommendProblemSet?.problemSetList.slice(0, 4).map((item) => (
               <MainProblemSetCard
+                key={item.programId}
                 programId={item.programId}
                 img={img2}
                 title={item.title}
                 count={item.problemCount}
               />
             ))}
+            {!recommendProblemSet && (
+              <>
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="w-full h-[220px] rounded-xl bg-gray-200 animate-pulse relative overflow-hidden">
+                    <div className="absolute bottom-0 w-full p-5 flex flex-col gap-2">
+                      <div className="h-6 w-3/4 bg-gray-300 rounded"></div>
+                      <div className="h-4 w-1/2 bg-gray-300 rounded"></div>
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         </div>
+      </section>
 
-        {/* 캠페인 & 그룹현황 */}
-        <div className="flex gap-8 px-6 py-6">
-          {/* 캠페인 */}
-          <div className="flex flex-1 flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div className="font-title text-xl">캠페인</div>
-              <TextLink src="#">전체보기 →</TextLink>
+      {/* Campaign & Group Status Section */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full mb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+
+          {/* Campaign Column */}
+          <div className="flex flex-col gap-6">
+            <div className="flex justify-between items-center border-b-2 border-gray-100 pb-4">
+              <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <span className="w-2 h-8 bg-primary-500 rounded-full"></span>
+                캠페인
+              </h3>
+              <TextLink src="#" variant="secondary" className="text-sm font-medium text-gray-400 hover:text-primary-600">더보기</TextLink>
             </div>
-            <EmptyState icon="🦥" title="아직 캠페인은 준비가 되지 않았어요!" />
+            <div className="flex flex-col gap-3">
+              <EmptyState icon="🦥" title="아직 캠페인은 준비가 되지 않았어요!" />
+            </div>
           </div>
 
-          {/* 그룹현황 */}
-          <div className="flex flex-1 flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div className="font-title text-xl">그룹현황</div>
-              <TextLink src="/group">전체보기 →</TextLink>
+          {/* Group Column */}
+          <div className="flex flex-col gap-6">
+            <div className="flex justify-between items-center border-b-2 border-gray-100 pb-4">
+              <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <span className="w-2 h-8 bg-teal-500 rounded-full"></span>
+                그룹현황
+              </h3>
+              <TextLink src="/group" variant="secondary" className="text-sm font-medium text-gray-400 hover:text-teal-600">더보기</TextLink>
             </div>
-            <div className="flex flex-col">
-              {!!groupList?.length &&
-                groupList.map((group, index) => (
-                  <a
-                    key={index}
-                    href="#"
-                    className="border-grayscale-light hover:bg-grayscale-lighter flex items-center justify-between border-b py-3 transition-colors"
-                  >
-                    <div className="text-sm">{group.title}</div>
-                    <div className="text-grayscale-warm-gray flex items-center gap-2 text-sm">
-                      <img src="/icons/groupIcon.svg" className="h-4 w-4" />
-                      <span>{group.capacity}</span>
+            <div className="flex flex-col gap-3">
+              {groupList && groupList.length > 0 ? (
+                groupList.slice(0, 5).map((group, index) => (
+                  <a key={index} href={`/group/${group.programId}`} className="flex justify-between items-center p-4 bg-white border border-gray-100 rounded-xl hover:shadow-md hover:border-teal-200 transition-all duration-300 group">
+                    <span className="text-gray-700 font-medium text-lg group-hover:text-teal-600 transition-colors">{group.title}</span>
+                    <div className="flex items-center gap-2 text-gray-400 text-sm bg-gray-50 px-3 py-1 rounded-full group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+                      <img src="/icons/groupIcon.svg" className="size-4 opacity-60" />
+                      <span>{group.capacity}명</span>
                     </div>
                   </a>
-                ))}
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-400">그룹 정보를 불러오는 중...</div>
+              )}
             </div>
           </div>
-        </div>
 
-        {/* 회원가입 성공 모달 */}
-        <AlertModal.Content autoCloseDelay={0}>
-          <div className="mb-4 text-4xl">🥳</div>
-          <AlertModal.Message className="text-lg font-semibold">
-            성공적으로 회원가입이 되었습니다!
-          </AlertModal.Message>
-          <button
-            onClick={() => {
-              closeModal();
-              navigate("/login");
-            }}
-            className="bg-primary-main hover:bg-primary-dark mt-4 rounded-lg px-6 py-2 text-white transition-colors"
-          >
-            로그인하기
-          </button>
-        </AlertModal.Content>
-      </BasePage>
-    </>
+        </div>
+      </section>
+
+      {/* 회원가입 성공 모달 */}
+      <AlertModal.Content autoCloseDelay={0}>
+        <div className="mb-4 text-4xl">🥳</div>
+        <AlertModal.Message className="text-lg font-semibold">
+          성공적으로 회원가입이 되었습니다!
+        </AlertModal.Message>
+        <button
+          onClick={() => {
+            closeModal();
+            navigate("/login");
+          }}
+          className="bg-primary-main hover:bg-primary-dark mt-4 rounded-lg px-6 py-2 text-white transition-colors"
+        >
+          로그인하기
+        </button>
+      </AlertModal.Content>
+    </BasePage>
   );
 };
 

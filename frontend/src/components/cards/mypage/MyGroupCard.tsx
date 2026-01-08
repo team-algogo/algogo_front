@@ -32,7 +32,7 @@ const MyGroupCard = ({
             <div className="flex flex-col items-start gap-3 self-stretch p-4">
                 {/* Title */}
                 <div className="flex flex-col items-start gap-2 self-stretch">
-                    <div className="self-stretch overflow-hidden text-ellipsis text-[#050505] text-base font-semibold leading-[140%] line-clamp-1" style={{ fontFamily: 'IBM Plex Sans KR' }}>
+                    <div className="self-stretch overflow-hidden text-ellipsis text-[#050505] text-base font-semibold leading-[140%] line-clamp-2 min-h-[44px]" style={{ fontFamily: 'IBM Plex Sans KR' }}>
                         {title}
                     </div>
                     <div className="self-stretch overflow-hidden text-ellipsis text-[#333] text-sm font-normal leading-[140%] line-clamp-1" style={{ fontFamily: 'IBM Plex Sans KR' }}>

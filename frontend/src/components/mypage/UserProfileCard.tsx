@@ -6,142 +6,102 @@ import { getReceivedReviews, getWrittenReviews } from "@api/mypage";
 type ViewMode = "참여 현황" | "활동 내역" | "작성 리뷰";
 
 interface UserProfileCardProps {
-  setViewMode: Dispatch<SetStateAction<ViewMode>>;
+    setViewMode: Dispatch<SetStateAction<ViewMode>>;
 }
 
 const UserProfileCard = ({ setViewMode }: UserProfileCardProps) => {
-  const { data: userProfile, isLoading } = useQuery({
-    queryKey: ["userProfile"],
-    queryFn: async () => {
-      const response = await getUserProfile();
-      // getResponse returns the full body: { message: string, data: UserProfileResponse }
-      // We need to return the 'data' property which holds the actual user profile
-      return response.data;
-    },
-  });
+    const { data: userProfile, isLoading } = useQuery({
+        queryKey: ["userProfile"],
+        queryFn: async () => {
+            const response = await getUserProfile();
+            return response.data;
+        },
+    });
 
-  // Fetch stats separately
-  const { data: receivedReviewsData } = useQuery({
-    queryKey: ["receivedReviewsStats"],
-    queryFn: () => getReceivedReviews(0, 1),
-  });
+    const { data: receivedReviewsData } = useQuery({
+        queryKey: ["receivedReviewsStats"],
+        queryFn: () => getReceivedReviews(0, 1),
+    });
 
-  const { data: writtenReviewsData } = useQuery({
-    queryKey: ["writtenReviewsStats"],
-    queryFn: () => getWrittenReviews(0, 1),
-  });
+    const { data: writtenReviewsData } = useQuery({
+        queryKey: ["writtenReviewsStats"],
+        queryFn: () => getWrittenReviews(0, 1),
+    });
 
-  if (isLoading) {
+    // Calculate stats safely
+    const stats = {
+        submittedCodes: 0, // Mock or fetch if available in userProfile?
+        writtenReviews: writtenReviewsData?.pageInfo?.totalElements || 0,
+        receivedReviews: receivedReviewsData?.pageInfo?.totalElements || 0,
+    };
+
+    // Use userProfile description if available, else a default message
+    const description = userProfile?.description || "한 줄 소개가 없습니다.";
+
+
+    if (isLoading) {
+        return (
+            <div className="flex flex-col gap-6 w-full bg-white rounded-lg border border-gray-200 shadow-sm p-6 items-center text-center animate-pulse">
+                <div className="size-24 rounded-full bg-gray-200"></div>
+                <div className="flex flex-col gap-2 w-full items-center">
+                    <div className="h-6 w-32 bg-gray-200 rounded"></div>
+                    <div className="h-4 w-48 bg-gray-200 rounded"></div>
+                </div>
+                <div className="grid grid-cols-3 gap-2 w-full pt-4 border-t border-gray-100">
+                    <div className="h-10 bg-gray-200 rounded"></div>
+                    <div className="h-10 bg-gray-200 rounded"></div>
+                    <div className="h-10 bg-gray-200 rounded"></div>
+                </div>
+            </div>
+        );
+    }
+
     return (
-      <div className="flex h-[200px] w-full animate-pulse rounded-lg bg-gray-100"></div>
+        <div className="flex flex-col gap-6 w-full bg-white rounded-lg border border-gray-200 shadow-sm p-6 items-center text-center">
+            {/* Avatar */}
+            <div className="size-24 rounded-full bg-primary-100 flex items-center justify-center overflow-hidden ring-4 ring-white shadow-sm">
+                {userProfile?.profileImage ? (
+                    <img src={userProfile.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                    <span className="text-primary-600 text-3xl font-display">
+                        {userProfile?.nickname?.charAt(0).toUpperCase()}
+                    </span>
+                )}
+            </div>
+
+            {/* User Info */}
+            <div className="flex flex-col gap-1 w-full">
+                <h2 className="text-xl font-bold text-gray-900 truncate">
+                    {userProfile?.nickname}
+                </h2>
+                <p className="text-sm text-gray-500 truncate px-2">
+                    {description}
+                </p>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-2 w-full pt-4 border-t border-gray-100">
+                <div className="flex flex-col items-center gap-1">
+                    <span className="text-lg font-bold text-gray-900">{stats.submittedCodes}</span>
+                    <span className="text-xs text-gray-500">제출 코드</span>
+                </div>
+                <div
+                    className="flex flex-col items-center gap-1 border-x border-gray-100 cursor-pointer hover:bg-gray-50 rounded transition-colors"
+                    onClick={() => setViewMode("작성 리뷰")}
+                >
+                    <span className="text-lg font-bold text-gray-900">{stats.writtenReviews}</span>
+                    <span className="text-xs text-gray-500">작성 리뷰</span>
+                </div>
+                <div
+                    className="flex flex-col items-center gap-1 cursor-pointer hover:bg-gray-50 rounded transition-colors"
+                    onClick={() => setViewMode("활동 내역")}
+                >
+                    <span className="text-lg font-bold text-gray-900">{stats.receivedReviews}</span>
+                    <span className="text-xs text-gray-500">받은 리뷰</span>
+                </div>
+            </div>
+        </div>
     );
-  }
-
-  const stats = {
-    submittedCodes: 0,
-    writtenReviews: writtenReviewsData?.pageInfo.totalElements || 0,
-    receivedReviews: receivedReviewsData?.pageInfo.totalElements || 0,
-  };
-
-  return (
-    <div className="flex flex-col items-center gap-4 self-stretch overflow-hidden rounded-lg border border-[#F4F6FA] pt-6">
-      {/* Avatar */}
-      <div className="relative flex h-[120px] w-[120px] items-center justify-center overflow-hidden rounded-full bg-[#30AEDC]">
-        {userProfile?.profileImage ? (
-          <img
-            src={userProfile?.profileImage}
-            alt="Profile"
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <span
-            className="text-center text-sm leading-[150%] font-normal text-white select-none"
-            style={{ fontFamily: "Roboto" }}
-          >
-            {userProfile?.nickname.charAt(0).toUpperCase()}
-          </span>
-        )}
-      </div>
-
-      {/* User Info */}
-      <div className="flex flex-col items-center gap-1 self-stretch px-4">
-        <div className="flex items-center justify-center self-stretch">
-          <h2
-            className="line-clamp-1 flex-1 overflow-hidden text-center text-2xl leading-[130%] font-medium tracking-[0.24px] text-ellipsis text-[#050505]"
-            style={{ fontFamily: "IBM Plex Sans KR" }}
-          >
-            {userProfile?.nickname}
-          </h2>
-        </div>
-        <div className="flex items-center justify-center self-stretch">
-          <p
-            className="line-clamp-1 flex-1 overflow-hidden text-center text-xs leading-[130%] font-normal tracking-[-0.12px] text-ellipsis text-[#333]"
-            style={{ fontFamily: "IBM Plex Sans KR" }}
-          >
-            {userProfile?.description}
-          </p>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="flex items-center justify-between self-stretch border-t border-[#F4F6FA] px-4 pt-4 pb-4">
-        <div className="flex flex-col items-center gap-2">
-          <div className="flex items-center justify-center rounded-[100px] bg-[#ECEEF2] px-2.5 py-1">
-            <span
-              className="text-sm leading-none font-bold text-[#777A80]"
-              style={{ fontFamily: "IBM Plex Sans KR" }}
-            >
-              {stats.submittedCodes}
-            </span>
-          </div>
-          <span
-            className="text-center text-sm leading-[130%] font-medium text-[#777A80]"
-            style={{ fontFamily: "IBM Plex Sans KR" }}
-          >
-            제출 코드
-          </span>
-        </div>
-        <div
-          className="flex cursor-pointer flex-col items-center gap-2 transition-opacity hover:opacity-70"
-          onClick={() => setViewMode("작성 리뷰")}
-        >
-          <div className="flex items-center justify-center rounded-[100px] bg-[#ECEEF2] px-2.5 py-1">
-            <span
-              className="text-sm leading-none font-bold text-[#777A80]"
-              style={{ fontFamily: "IBM Plex Sans KR" }}
-            >
-              {stats.writtenReviews}
-            </span>
-          </div>
-          <span
-            className="text-center text-sm leading-[130%] font-medium text-[#777A80]"
-            style={{ fontFamily: "IBM Plex Sans KR" }}
-          >
-            작성 리뷰
-          </span>
-        </div>
-        <div
-          className="flex cursor-pointer flex-col items-center gap-2 transition-opacity hover:opacity-70"
-          onClick={() => setViewMode("활동 내역")}
-        >
-          <div className="flex items-center justify-center rounded-[100px] bg-[#ECEEF2] px-2.5 py-1">
-            <span
-              className="text-sm leading-none font-bold text-[#777A80]"
-              style={{ fontFamily: "IBM Plex Sans KR" }}
-            >
-              {stats.receivedReviews}
-            </span>
-          </div>
-          <span
-            className="text-center text-sm leading-[130%] font-medium text-[#777A80]"
-            style={{ fontFamily: "IBM Plex Sans KR" }}
-          >
-            받은 리뷰
-          </span>
-        </div>
-      </div>
-    </div>
-  );
 };
 
 export default UserProfileCard;

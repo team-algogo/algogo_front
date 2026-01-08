@@ -12,8 +12,8 @@ interface TextLinkProps {
 
 const getVariantStyle = (variant: TextLinkVariant) => {
   const variantStyles = {
-    default: ``,
-    secondary: `text-primary-main`,
+    default: `text-gray-700 hover:text-primary-600`,
+    secondary: `text-primary-500 hover:text-primary-700 font-medium`,
   };
 
   return variantStyles[variant];
@@ -30,7 +30,7 @@ const TextLink = ({
   return (
     <a
       href={src}
-      className={`flex justify-center items-center gap-2 hover:underline ${textLinkStyle} ${className}`}
+      className={`flex justify-center items-center gap-2 transition-colors ${textLinkStyle} ${className}`}
       onClick={onClick}
     >
       {children}

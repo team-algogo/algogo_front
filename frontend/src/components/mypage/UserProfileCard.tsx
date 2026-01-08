@@ -1,46 +1,70 @@
-import { useQuery } from '@tanstack/react-query';
-import { getUserProfile } from '@api/user/userApi';
+import type { Dispatch, SetStateAction } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getUserProfile } from "@api/user/userApi";
+import { getReceivedReviews, getWrittenReviews } from "@api/mypage";
 
+type ViewMode = "참여 현황" | "활동 내역" | "작성 리뷰";
 
-const UserProfileCard = () => {
+interface UserProfileCardProps {
+    setViewMode: Dispatch<SetStateAction<ViewMode>>;
+}
+
+const UserProfileCard = ({ setViewMode }: UserProfileCardProps) => {
     const { data: userProfile, isLoading } = useQuery({
-        queryKey: ['userProfile'],
+        queryKey: ["userProfile"],
         queryFn: async () => {
             const response = await getUserProfile();
-            // getResponse returns the full body: { message: string, data: UserProfileResponse }
-            // We need to return the 'data' property which holds the actual user profile
             return response.data;
         },
     });
 
-    if (isLoading) {
-        return <div className="animate-pulse flex h-[200px] w-full bg-gray-100 rounded-lg"></div>;
-    }
+    const { data: receivedReviewsData } = useQuery({
+        queryKey: ["receivedReviewsStats"],
+        queryFn: () => getReceivedReviews(0, 1),
+    });
 
-    // Map API response to UI needed structure
-    // API: nickname, description, profileImage
-    // UI: name, statusMessage, avatarInitial
-    const name = userProfile?.nickname || 'Guest';
-    const statusMessage = userProfile?.description || '상태 메시지가 없습니다.';
-    const profileImage = userProfile?.profileImage;
-    const avatarInitial = name.charAt(0).toUpperCase();
+    const { data: writtenReviewsData } = useQuery({
+        queryKey: ["writtenReviewsStats"],
+        queryFn: () => getWrittenReviews(0, 1),
+    });
 
-    // Stats are not yet provided by API, defaulting to 0
+    // Calculate stats safely
     const stats = {
-        submittedCodes: 0,
-        writtenReviews: 0,
-        receivedReviews: 0
+        submittedCodes: 0, // Mock or fetch if available in userProfile?
+        writtenReviews: writtenReviewsData?.pageInfo?.totalElements || 0,
+        receivedReviews: receivedReviewsData?.pageInfo?.totalElements || 0,
     };
+
+    // Use userProfile description if available, else a default message
+    const description = userProfile?.description || "한 줄 소개가 없습니다.";
+
+
+    if (isLoading) {
+        return (
+            <div className="flex flex-col gap-6 w-full bg-white rounded-lg border border-gray-200 shadow-sm p-6 items-center text-center animate-pulse">
+                <div className="size-24 rounded-full bg-gray-200"></div>
+                <div className="flex flex-col gap-2 w-full items-center">
+                    <div className="h-6 w-32 bg-gray-200 rounded"></div>
+                    <div className="h-4 w-48 bg-gray-200 rounded"></div>
+                </div>
+                <div className="grid grid-cols-3 gap-2 w-full pt-4 border-t border-gray-100">
+                    <div className="h-10 bg-gray-200 rounded"></div>
+                    <div className="h-10 bg-gray-200 rounded"></div>
+                    <div className="h-10 bg-gray-200 rounded"></div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col gap-6 w-full bg-white rounded-lg border border-gray-200 shadow-sm p-6 items-center text-center">
             {/* Avatar */}
             <div className="size-24 rounded-full bg-primary-100 flex items-center justify-center overflow-hidden ring-4 ring-white shadow-sm">
-                {profileImage ? (
-                    <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                {userProfile?.profileImage ? (
+                    <img src={userProfile.profileImage} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
                     <span className="text-primary-600 text-3xl font-display">
-                        {avatarInitial}
+                        {userProfile?.nickname?.charAt(0).toUpperCase()}
                     </span>
                 )}
             </div>
@@ -48,10 +72,10 @@ const UserProfileCard = () => {
             {/* User Info */}
             <div className="flex flex-col gap-1 w-full">
                 <h2 className="text-xl font-bold text-gray-900 truncate">
-                    {name}
+                    {userProfile?.nickname}
                 </h2>
                 <p className="text-sm text-gray-500 truncate px-2">
-                    {statusMessage}
+                    {description}
                 </p>
             </div>
 
@@ -61,11 +85,17 @@ const UserProfileCard = () => {
                     <span className="text-lg font-bold text-gray-900">{stats.submittedCodes}</span>
                     <span className="text-xs text-gray-500">제출 코드</span>
                 </div>
-                <div className="flex flex-col items-center gap-1 border-x border-gray-100">
+                <div
+                    className="flex flex-col items-center gap-1 border-x border-gray-100 cursor-pointer hover:bg-gray-50 rounded transition-colors"
+                    onClick={() => setViewMode("작성 리뷰")}
+                >
                     <span className="text-lg font-bold text-gray-900">{stats.writtenReviews}</span>
                     <span className="text-xs text-gray-500">작성 리뷰</span>
                 </div>
-                <div className="flex flex-col items-center gap-1">
+                <div
+                    className="flex flex-col items-center gap-1 cursor-pointer hover:bg-gray-50 rounded transition-colors"
+                    onClick={() => setViewMode("활동 내역")}
+                >
                     <span className="text-lg font-bold text-gray-900">{stats.receivedReviews}</span>
                     <span className="text-xs text-gray-500">받은 리뷰</span>
                 </div>

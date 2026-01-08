@@ -200,7 +200,10 @@ const GroupMainPage = () => {
                       memberCount={group.memberCount}
                       problemCount={group.programProblemCount}
                       role={group.role}
-                      onClick={() => navigate(`/group/${group.programId}`)}
+                      onClick={() => {
+                        console.log("Navigating to group:", group.programId);
+                        navigate(`/group/${group.programId}`);
+                      }}
                     />
                   ))
                 ) : (

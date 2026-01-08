@@ -59,9 +59,9 @@ const Header = () => {
           </div>
 
           <div className="flex gap-4 items-center">
-            <button className="p-2 text-gray-500 hover:text-primary-600 hover:bg-gray-50 rounded-full transition-colors">
+            <a href="/search" className="p-2 text-gray-500 hover:text-primary-600 hover:bg-gray-50 rounded-full transition-colors flex items-center justify-center">
               <img src="/icons/searchIconBlack.svg" className="size-5" alt="Search" />
-            </button>
+            </a>
 
             <div className="h-4 w-px bg-gray-300 mx-1 hidden sm:block"></div>
 

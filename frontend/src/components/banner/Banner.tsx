@@ -98,8 +98,8 @@ const Banner = ({
             key={index}
             onClick={() => goToSlide(index)}
             className={`h-1.5 rounded-full transition-all duration-500 ease-out cursor-pointer ${index === currentIndex
-                ? "w-8 bg-white shadow-[0_0_8px_rgba(255,255,255,0.6)]"
-                : "w-2 bg-white/40 hover:bg-white/60"
+              ? "w-8 bg-white shadow-[0_0_8px_rgba(255,255,255,0.6)]"
+              : "w-2 bg-white/40 hover:bg-white/60"
               }`}
             aria-label={`Go to slide ${index + 1}`}
           />

@@ -1,9 +1,16 @@
-import { useNavigate } from 'react-router-dom';
-import { postLogout } from '@api/auth/auth';
-import useAuthStore from '@store/useAuthStore';
-import UserProfileCard from './UserProfileCard';
+import { useNavigate } from "react-router-dom";
+import type { Dispatch, SetStateAction } from "react";
+import { postLogout } from "@api/auth/auth";
+import useAuthStore from "@store/useAuthStore";
+import UserProfileCard from "./UserProfileCard";
 
-const Sidebar = () => {
+type ViewMode = "참여 현황" | "활동 내역" | "작성 리뷰";
+
+interface SidebarProps {
+  setViewMode: Dispatch<SetStateAction<ViewMode>>;
+}
+
+const Sidebar = ({ setViewMode }: SidebarProps) => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -21,7 +28,7 @@ const Sidebar = () => {
 
   return (
     <aside className="sticky top-24 flex w-full max-w-[280px] flex-col gap-6">
-      <UserProfileCard />
+      <UserProfileCard setViewMode={setViewMode} />
 
       {/* Settings */}
       <div className="flex flex-col gap-2">

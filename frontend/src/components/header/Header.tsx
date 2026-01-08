@@ -40,7 +40,7 @@ const Header = () => {
         <TextLink src="/group" className="px-3.5 py-3">
           그룹방
         </TextLink>
-        <a href="#" className="size-10 flex justify-center items-center">
+        <a href="/search" className="size-10 flex justify-center items-center">
           <img src="/icons/searchIconBlack.svg" />
         </a>
       </div>

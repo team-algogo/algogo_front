@@ -21,128 +21,169 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "IbmPlexSans-Semi-bold";
+  src: url("/fonts/IBMPlexSansKR-SemiBold.woff") format("woff");
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IbmPlexSans-Light";
+  src: url("/fonts/IBMPlexSansKR-Light.woff") format("woff");
+  font-weight: 300;
+  font-display: swap;
+}
+
 @theme {
-  --default-font-family: var(--font-body);
-  --font-logo: "Mabinogi_Classic";
-  --font-headline: "IbmPlexSans-Semi-bold";
-  --font-title: "IbmPlexSans-Medium";
-  --font-body: "IbmPlexSans-Regular";
-  --font-content: "IbmPlexSans-Light";
+  /* Fonts */
+  --font-logo: "Mabinogi_Classic", system-ui, sans-serif;
+  --font-sans: "IbmPlexSans-Regular", system-ui, sans-serif;
+  --font-display: "Mabinogi_Classic", system-ui, sans-serif;
 
-  --color-primary-300: #166683;
-  --color-primary-400: #30aedc;
-  --color-primary-500: #98d7ee;
-  --color-primary-600: #ddf4ff;
-  --color-primary-main: var(--color-primary-400);
+  --font-headline: "IbmPlexSans-Semi-bold", system-ui, sans-serif;
+  --font-title: "IbmPlexSans-Medium", system-ui, sans-serif;
+  --font-body: "IbmPlexSans-Regular", system-ui, sans-serif;
+  --font-content: "IbmPlexSans-Light", system-ui, sans-serif;
 
-  --color-grayscale-default: #f5f5f5;
-  --color-grayscale-dark-gray: #333333;
-  --color-grayscale-warm-gray: #999999;
+  /* Color Palette - Programmers Inspired Blue */
+  /* Primary: Clean, Professional Blue */
+  --color-primary-50: #eef4ff;
+  --color-primary-100: #dce9ff;
+  --color-primary-200: #btd9ff;
+  /* Adjusted typo from b9d9ff to valid if needed, keeping manual hex */
+  --color-primary-200-real: #b9d9ff;
+  --color-primary-300: #7eb6ff;
+  --color-primary-400: #4493ff;
+  --color-primary-500: #0d6efd;
+  /* Main Brand Color */
+  --color-primary-600: #0056cf;
+  --color-primary-700: #0044a3;
+  --color-primary-800: #00367f;
+  --color-primary-900: #002d68;
+  --color-primary-main: var(--color-primary-500);
 
-  --color-background-overlay: rgba(0, 0, 0, 0.5);
+  /* Grayscale - Soft & Clean */
+  --color-gray-50: #f8f9fa;
+  /* Backgrounds */
+  --color-gray-100: #f1f3f5;
+  --color-gray-200: #e9ecef;
+  /* Borders */
+  --color-gray-300: #dee2e6;
+  --color-gray-400: #ced4da;
+  --color-gray-500: #adb5bd;
+  /* Disables/Placeholders */
+  --color-gray-600: #868e96;
+  /* Subtle Text */
+  --color-gray-700: #495057;
+  /* Body Text */
+  --color-gray-800: #343a40;
+  /* Headings */
+  --color-gray-900: #212529;
+  /* Deep Text */
 
-  --color-status-hover: var(--color-primary-300);
+  /* Semantic Aliases */
+  --color-grayscale-default: #f8f9fa;
+  --color-grayscale-dark-gray: #343a40;
+  --color-grayscale-warm-gray: #868e96;
+  --color-background-overlay: rgba(0, 0, 0, 0.4);
 
-  --color-alert-error: #f54900;
-  --color-alert-warning: #f9a825;
-  --color-alert-success: #00c950;
+  /* Status Colors */
+  --color-status-success: #00c950;
+  --color-status-warning: #f9a825;
+  --color-status-error: #f54900;
+  --color-status-info: #0d6efd;
 }
 
 :root {
-  --font-display: "Mabinogi_Classic";
-  color: var(--color-grayscale-dark-gray);
-  line-height: 1.5;
-
-  color-scheme: light dark;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  font-family: var(--font-body);
+  color: var(--color-gray-800);
+  background-color: #ffffff;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-@layer utilities {
-  .background-blur {
-    background-image: linear-gradient(
-      to bottom,
-      rgba(255, 255, 255, 0.2) 20%,
-      rgba(255, 255, 255, 0.71) 70%,
-      rgba(255, 255, 255, 1) 100%
-    );
+/* Global Reset & Base Styles */
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
 
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-    display: inline-block;
+/* Typography Utilities */
+@layer utilities {
+  .text-heading-1 {
+    font-family: var(--font-headline);
+    font-size: 2.5rem;
+    /* 40px */
+    line-height: 1.2;
+    color: var(--color-gray-900);
   }
 
+  .text-heading-2 {
+    font-family: var(--font-headline);
+    font-size: 2rem;
+    /* 32px */
+    line-height: 1.3;
+    color: var(--color-gray-900);
+  }
+
+  .text-heading-3 {
+    font-family: var(--font-title);
+    font-size: 1.5rem;
+    /* 24px */
+    line-height: 1.4;
+    color: var(--color-gray-800);
+  }
+
+  .text-body-1 {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    /* 16px */
+    color: var(--color-gray-700);
+  }
+
+  .text-small {
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    /* 14px */
+    color: var(--color-gray-600);
+  }
+
+  .shadow-soft {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  .shadow-card {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Custom Logo Text Style */
   .text-logo {
     font-family: var(--font-display);
-
-    color: transparent;
-    background-clip: text;
+    background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-300) 100%);
     -webkit-background-clip: text;
-
-    background-image: linear-gradient(
-      to left,
-      #ddf4ff 16%,
-      #8cd3ef 48%,
-      #63c3e6 72%,
-      #30aedc 91%
-    );
-
-    width: 50%;
-    /* background-size: 100% 100%; */
-    /* background-repeat: no-repeat;
-    display: inline-block; */
-  }
-
-  .text-title {
-    font-family: "IbmPlexSans-Medium";
-    font-size: 16px;
+    background-clip: text;
+    color: transparent;
   }
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-/* 라벨 기본 커서 설정 */
-label {
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-input[type="radio"] {
-  opacity: 0;
-  -webkit-appearance: none;
-  appearance: none;
-  position: absolute;
+::-webkit-scrollbar-thumb {
+  background: var(--color-gray-300);
+  border-radius: 4px;
 }
 
-input[type="radio"] + span::before {
-  display: inline-block;
-  content: "";
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid var(--color-grayscale-warm-gray);
-  border-radius: 100%;
-  margin: -0.125rem 0.5rem 0 0;
-  vertical-align: middle;
-}
-
-input[type="radio"]:disabled + span::before {
-  border: 3px solid var(--color-grayscale-default);
-  background-color: var(--color-grayscale-warm-gray);
-}
-
-input[type="radio"]:not(:disabled):hover + span::before {
-  box-shadow: inset 0 0 0 3px var(--color-primary-500);
-}
-
-input[type="radio"]:checked:focus + span::before {
-  border-color: var(--color-primary-500);
-  box-shadow: inset 0 0 0 3px var(--color-primary-main);
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-400);
 }

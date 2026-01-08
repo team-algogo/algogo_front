@@ -76,9 +76,14 @@ const Banner = ({
           >
             <div className="flex items-start gap-3">
               <div className="w-1 h-16 bg-white/50 rounded-full" />
-              <div className="flex flex-col gap-2">
-                <span className="text-white/80 text-sm">{item.category}</span>
+              <div className="flex flex-col gap-3">
                 <h2 className="text-white text-2xl font-bold">{item.title}</h2>
+                <a
+                  href="#"
+                  className="text-white/80 text-sm hover:text-white transition-colors"
+                >
+                  CTA 버튼 →
+                </a>
               </div>
             </div>
           </div>

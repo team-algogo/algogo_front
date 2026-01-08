@@ -2,7 +2,7 @@ import CategoryBadge from '@components/badge/CategoryBadge';
 
 interface ProblemSetCardProps {
   title: string;
-  category: '기업대비' | '알고리즘';
+  categories?: string[];
   progress: number;
   problemCount: number;
   memberCount: number;
@@ -13,7 +13,7 @@ interface ProblemSetCardProps {
 
 const ProblemSetCard = ({
   title,
-  category,
+  categories = [],
   progress,
   problemCount,
   memberCount,
@@ -28,7 +28,17 @@ const ProblemSetCard = ({
         className="flex h-[180px] px-4 py-4 flex-col items-start gap-2 self-stretch bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${thumbnailUrl})` }}
       >
-        <CategoryBadge category={category} />
+        <div className="flex flex-wrap gap-1">
+          {categories.length > 0 ? (
+            categories.map((cat, index) => (
+              <CategoryBadge key={index} variant={cat}>
+                {cat}
+              </CategoryBadge>
+            ))
+          ) : (
+            <CategoryBadge variant="algorithm">알고리즘</CategoryBadge>
+          )}
+        </div>
       </div>
 
       {/* Content */}
@@ -41,11 +51,11 @@ const ProblemSetCard = ({
 
           {/* Progress bar */}
           <div className="flex items-center gap-2 self-stretch">
-            <div className="w-[295px] h-2 relative">
-              <div className="w-[295px] h-2 rounded-xl bg-[#E8F0FF] absolute left-0 top-0"></div>
+            <div className="flex-1 h-2 relative">
+              <div className="w-full h-2 rounded-xl bg-[#E8F0FF] absolute left-0 top-0"></div>
               <div
                 className="h-2 rounded-xl bg-[#0D6EFD] absolute left-0 top-0"
-                style={{ width: `${(progress / 100) * 295}px` }}
+                style={{ width: `${progress}%` }}
               ></div>
             </div>
             <div className="w-[42px] text-[#050505] text-right text-sm font-medium leading-[130%] tracking-[0.14px]" style={{ fontFamily: 'IBM Plex Sans KR' }}>

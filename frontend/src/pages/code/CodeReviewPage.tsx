@@ -60,26 +60,35 @@ const CodeReviewPage = () => {
 
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 
+  const updateEditorHeight = () => {
+    if (!editorRef.current) return;
+
+    const editor = editorRef.current;
+    const model = editor.getModel();
+    if (!model) return;
+
+    const contentHeight = editor.getContentHeight();
+    const lineHeight = editor.getOption(monaco.editor.EditorOption.lineHeight);
+
+    const padding = 20;
+    const height = contentHeight + padding + lineHeight;
+
+    setCodeHeight(height);
+
+    editor.layout({ width: editor.getLayoutInfo().width, height });
+  };
+
   const handleEditorDidMount = (
     editor: monaco.editor.IStandaloneCodeEditor,
   ) => {
     editorRef.current = editor;
 
-    const model = editor.getModel();
-    if (!model) return;
-
-    const contentHeight = editor.getContentHeight();
-
-    const lineHeight = editor.getOption(monaco.editor.EditorOption.lineHeight);
-
-    const padding = 20; // 위아래 여백
-    const height = contentHeight + padding + lineHeight;
-
-    setCodeHeight(height);
+    // requestAnimationFrame(() => {
+    //   updateEditorHeight();
+    // });
 
     editor.onDidChangeCursorPosition((e) => {
-      const lineNumber = e.position.lineNumber;
-      setSelectedLine(lineNumber);
+      setSelectedLine(e.position.lineNumber);
     });
   };
 
@@ -309,12 +318,13 @@ const CodeReviewPage = () => {
 
           {/* Right: History */}
           <div className="shrink-0">
-            {!!submissionHistory?.length && (
-              <HistoryBox
-                history={submissionHistory}
-                submissionId={submissionDetail!.submissionId}
-              />
-            )}
+            {!!submissionHistory?.length &&
+              submissionUserDetail?.userId === submissionHistory[0].userId && (
+                <HistoryBox
+                  history={submissionHistory}
+                  submissionId={submissionDetail!.submissionId}
+                />
+              )}
           </div>
         </div>
 
@@ -324,12 +334,13 @@ const CodeReviewPage = () => {
             Write
           </div>
           <Editor
-            height={codeHeight + 10}
-            language={submissionDetail?.language || "java"}
+            height={300}
+            language={submissionDetail?.language.toLowerCase() || "java"}
             value={code || "// Code Loading..."}
             theme="light"
             onMount={handleEditorDidMount}
             options={{
+              automaticLayout: true,
               fontFamily: "Menlo, Monaco, 'Courier New', monospace",
               fontSize: 14,
               minimap: { enabled: false },

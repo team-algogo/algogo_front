@@ -1,11 +1,23 @@
-import type { ReceiveCodeReview } from "../../type/mypage/ReceivedReviews";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import Pagination from "@components/pagination/Pagination";
+import { getWrittenReviews } from "../../api/mypage";
 
-interface ReceivedReviewsProps {
-  reviews: ReceiveCodeReview[];
-  totalElements: number;
-}
+const WrittenReviews = () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
 
-const ReceivedReviews = ({ reviews, totalElements }: ReceivedReviewsProps) => {
+  const { data } = useQuery({
+    queryKey: ["receiveCodeReviews", currentPage],
+    queryFn: () => getWrittenReviews(currentPage - 1, pageSize),
+  });
+
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const reviews =
+    data?.receiveCodeReviews || (data as any)?.writtenCodeReviews || [];
+  const totalPages = data?.pageInfo.totalPages || 1;
+  const totalElements = data?.pageInfo.totalElements || 0;
+
   const getTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -41,7 +53,7 @@ const ReceivedReviews = ({ reviews, totalElements }: ReceivedReviewsProps) => {
         className="text-lg leading-[130%] font-normal tracking-[-0.18px] text-[#050505]"
         style={{ fontFamily: "IBM Plex Sans KR" }}
       >
-        내가 받은 리뷰
+        내가 작성한 리뷰
       </span>
 
       <div className="flex w-full flex-col items-start gap-3">
@@ -52,17 +64,17 @@ const ReceivedReviews = ({ reviews, totalElements }: ReceivedReviewsProps) => {
               className="text-base leading-[130%] font-medium text-[#9FA3AA]"
               style={{ fontFamily: "IBM Plex Sans KR" }}
             >
-              아직 받은 리뷰가 없어요
+              아직 작성한 리뷰가 없어요
             </span>
           </div>
         ) : (
-          reviews.map((review) => {
+          reviews.map((review: any) => {
             const typeColor =
               getProgramTypeLabel(review.programType) === "Group"
-                ? { bg: "bg-[#FFF3E0]", text: "text-[#EF6C00]" } // Group: Orange
+                ? { bg: "bg-[#F3E5F5]", text: "text-[#9C27B0]" } // Group: Purple
                 : getProgramTypeLabel(review.programType) === "Campaign"
-                  ? { bg: "bg-[#E3F2FD]", text: "text-[#1976D2]" } // Campaign: Blue
-                  : { bg: "bg-[#F5F5F5]", text: "text-[#757575]" }; // Problemset: Gray
+                  ? { bg: "bg-[#E3F2FD]", text: "text-[#1976D2]" }
+                  : { bg: "bg-[#F5F5F5]", text: "text-[#757575]" };
 
             return (
               <div
@@ -113,7 +125,7 @@ const ReceivedReviews = ({ reviews, totalElements }: ReceivedReviewsProps) => {
                     className="text-xs leading-[130%] font-normal text-[#727479]"
                     style={{ fontFamily: "IBM Plex Sans KR" }}
                   >
-                    {review.nickname}
+                    {review.nickname}님에게
                   </span>
                   <span
                     className="text-xs leading-[130%] font-normal text-[#9FA3AA]"
@@ -127,8 +139,14 @@ const ReceivedReviews = ({ reviews, totalElements }: ReceivedReviewsProps) => {
           })
         )}
       </div>
+
+      <Pagination
+        pageInfo={{ number: currentPage - 1, totalPages }}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+      />
     </div>
   );
 };
 
-export default ReceivedReviews;
+export default WrittenReviews;

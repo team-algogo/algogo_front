@@ -17,7 +17,10 @@ const MyGroupListCard = ({
 }: MyGroupListCardProps) => {
   return (
     <div
-      onClick={onClick}
+      onClick={() => {
+        console.log("MyGroupListCard clicked");
+        if (onClick) onClick();
+      }}
       className="w-full bg-primary-50 border-2 border-primary-main rounded-2xl p-5 flex flex-col justify-between gap-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
     >
 

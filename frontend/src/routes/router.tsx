@@ -13,6 +13,7 @@ import ProblemSetDetailPage from "@pages/problemset/ProblemSetDetailPage";
 import SearchPage from "@pages/search/SearchPage";
 import MyPage from "@pages/mypage/MyPage";
 import SettingsPage from "@pages/mypage/SettingsPage";
+import ProblemStatisticsPage from "@pages/problemset/ProblemStatisticsPage";
 
 const router = createBrowserRouter([
   {
@@ -23,12 +24,16 @@ const router = createBrowserRouter([
       { path: "login", element: <LoginPage /> },
       { path: "join", element: <JoinPage /> },
       { path: "mypage", element: <MyPage /> },
+      { path: "group", element: <GroupMainPage /> },
+      { path: "group/:groupId", element: <GroupDetailPage /> },
+      { path: "group/:groupId/members", element: <GroupMembersPage /> },
       { path: "mypage/settings", element: <SettingsPage /> },
       { path: "code/:programProblemId", element: <CodeSubmitPage /> },
       { path: "review/:submissionId", element: <CodeReviewPage /> },
       { path: "problemset", element: <ProblemSetPage /> },
       { path: "problemset/:programId", element: <ProblemSetDetailPage /> },
       { path: "search", element: <SearchPage /> },
+      { path: "statistics/:programProblemId", element: <ProblemStatisticsPage /> },
     ],
   },
 ]);

@@ -217,13 +217,15 @@ export default function ProblemStatisticsPage() {
                         <div className="flex flex-col w-full rounded-[12px] border border-[#F4F4F5] overflow-hidden">
                             {/* Table Header */}
                             <div className="flex flex-row w-full h-[50px] bg-[#F9FAFB] border-b border-gray-100 items-center">
-                                <div className="w-[80px] text-center text-sm font-medium text-gray-500">순위</div>
+                                <div className="w-[60px] text-center text-sm font-medium text-gray-500">순위</div>
                                 <div className="w-[120px] text-center text-sm font-medium text-gray-500">사용자</div>
-                                <div className="w-[100px] text-center text-sm font-medium text-gray-500">결과</div>
-                                <div className="w-[100px] text-center text-sm font-medium text-gray-500">메모리</div>
-                                <div className="w-[100px] text-center text-sm font-medium text-gray-500">시간</div>
-                                <div className="w-[100px] text-center text-sm font-medium text-gray-500">언어</div>
-                                <div className="w-[150px] text-center text-sm font-medium text-gray-500">제출 시간</div>
+                                <div className="w-[80px] text-center text-sm font-medium text-gray-500">결과</div>
+                                <div className="w-[80px] text-center text-sm font-medium text-gray-500">메모리</div>
+                                <div className="w-[80px] text-center text-sm font-medium text-gray-500">시간</div>
+                                <div className="w-[80px] text-center text-sm font-medium text-gray-500">언어</div>
+                                <div className="w-[140px] text-center text-sm font-medium text-gray-500">알고리즘</div>
+                                <div className="w-[100px] text-center text-sm font-medium text-gray-500">AI 점수</div>
+                                <div className="w-[100px] text-center text-sm font-medium text-gray-500">제출 시간</div>
                                 <div className="flex-1 text-center text-sm font-medium text-gray-500">코드</div>
                             </div>
 
@@ -231,37 +233,62 @@ export default function ProblemStatisticsPage() {
                             {submissions.map((item: SubmissionItem, index: number) => {
                                 const rank = (page - 1) * itemsPerPage + index + 1;
                                 const { userSimpleResponseDto: user, submissionResponseDto: sub } = item;
+                                const aiScore = sub.aiScore !== null ? `${sub.aiScore}점` : '-';
 
                                 return (
-                                    <div key={sub.submissionId} className="flex flex-row w-full min-h-[56px] bg-white border-b border-gray-50 items-center hover:bg-gray-50 transition-colors py-2">
-                                        <div className="w-[80px] text-center text-sm text-[#333333]">{rank}</div>
-                                        <div className="w-[120px] text-center text-sm text-blue-500 truncate px-2 cursor-pointer hover:underline">{user.nickname}</div>
-                                        <div className="w-[100px] flex justify-center">
+                                    <div key={sub.submissionId} className="flex flex-row w-full min-h-[56px] bg-white border-b border-gray-50 items-center hover:bg-gray-50 transition-colors py-3">
+                                        <div className="w-[60px] text-center text-sm text-[#333333] font-medium">{rank}</div>
+                                        <div className="w-[120px] text-center text-sm text-[#333333] truncate px-2 font-medium">{user.nickname}</div>
+                                        <div className="w-[80px] flex justify-center">
                                             <StateBadge hasText={true} isPassed={sub.isSuccess} />
                                         </div>
-                                        <div className="w-[100px] text-center text-sm text-[#333333]">{sub.memory} KB</div>
-                                        <div className="w-[100px] text-center text-sm text-red-500">{sub.execTime} ms</div>
-                                        <div className="w-[100px] text-center text-sm text-[#333333]">{sub.language}</div>
-                                        <div className="w-[150px] text-center text-sm text-gray-400">
+                                        <div className="w-[80px] text-center text-sm text-[#666666]">{sub.memory} KB</div>
+                                        <div className="w-[80px] text-center text-sm text-[#E54D2E] font-medium">{sub.execTime} ms</div>
+                                        <div className="w-[80px] text-center text-sm text-[#333333] px-2 truncate" title={sub.language}>{sub.language}</div>
+                                        {/* Algorithm */}
+                                        <div className="w-[140px] flex justify-center gap-1 flex-wrap px-2">
+                                            {sub.algorithmList?.length > 0 ? (
+                                                sub.algorithmList.slice(0, 2).map(algo => (
+                                                    <span key={algo.id} className="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded border border-gray-200 truncate max-w-[60px]" title={algo.name}>
+                                                        {algo.name}
+                                                    </span>
+                                                ))
+                                            ) : (
+                                                <span className="text-gray-300 text-xs">-</span>
+                                            )}
+                                        </div>
+                                        {/* AI Score (Tooltip for reason if exists) */}
+                                        <div className="w-[100px] flex justify-center group relative cursor-help">
+                                            <span className={`text-sm font-bold ${sub.aiScore !== null ? 'text-[#0D6EFD]' : 'text-gray-300'}`}>
+                                                {aiScore}
+                                            </span>
+                                            {sub.aiScoreReason && (
+                                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-3 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 pointer-events-none">
+                                                    {sub.aiScoreReason}
+                                                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="w-[100px] text-center text-sm text-gray-400">
                                             {format(new Date(sub.createAt), "MM. dd.")}
                                         </div>
                                         <div className="flex-1 flex justify-center">
-                                            {/* Link to code review or simple view? User request mentioned code/{programProblemId} for solving, maybe review/{submissionId}? 
-                                          The existing router has { path: "review/:submissionId", element: <CodeReviewPage /> }
-                                      */}
                                             <button
-                                                onClick={() => navigate(`/review/${sub.submissionId}`)}
-                                                className="text-sm text-gray-500 underline hover:text-blue-600"
+                                                onClick={() => navigate(`/reviews/${sub.submissionId}`)}
+                                                className="text-sm font-medium text-gray-500 hover:text-[#0D6EFD] underline decoration-gray-300 hover:decoration-[#0D6EFD] underline-offset-2 transition-colors"
                                             >
-                                                보기
+                                                리뷰 보기
                                             </button>
                                         </div>
                                     </div>
                                 );
                             })}
                             {submissions.length === 0 && (
-                                <div className="w-full h-[200px] flex items-center justify-center text-gray-400">
-                                    제출 내역이 없습니다.
+                                <div className="w-full h-[200px] flex flex-col items-center justify-center gap-2 text-gray-400">
+                                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M9 17H15M9 13H15M9 9H13M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                    <p className="text-sm">제출 내역이 없습니다.</p>
                                 </div>
                             )}
                         </div>

@@ -69,7 +69,7 @@ const GroupProblemCard = ({
         <span className="text-gray-400 w-20 text-right">{formattedDate}</span>
 
         {/* Actions */}
-        <div className="flex items-center gap-2 w-16 justify-end" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-2 w-auto justify-end" onClick={(e) => e.stopPropagation()}>
           <Button
             variant="secondary"
             className="!h-7 !px-2.5 !text-xs !border-gray-300"

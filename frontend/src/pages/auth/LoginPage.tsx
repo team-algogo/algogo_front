@@ -1,24 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import BasePage from "@pages/BasePage";
+import Toast from "@components/toast/Toast";
 
 import Button from "@components/button/Button";
 import TextLink from "@components/textLink/TextLink";
 
 import { postLogin } from "@api/auth/auth";
 import useAuthStore from "@store/useAuthStore";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import AlertModal from "@components/modal/alarm/AlertModal";
 import { useModalStore } from "@store/useModalStore";
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [showToast, setShowToast] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
 
   const { setUserType, setAuthorization } = useAuthStore();
   const { openModal, closeModal } = useModalStore();
+
+  useEffect(() => {
+    if (location.state?.signupSuccess) {
+      setShowToast(true);
+      // Clear state so toast doesn't show on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const onSubmitLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,6 +49,13 @@ const LoginPage = () => {
 
   return (
     <BasePage>
+      {showToast && (
+        <Toast
+          message="회원가입이 완료되었습니다. 로그인을 진행해주세요."
+          type="success"
+          onClose={() => setShowToast(false)}
+        />
+      )}
       <div className="w-full min-h-[calc(100vh-200px)] flex justify-center items-center py-10">
         <form
           onSubmit={onSubmitLogin}
@@ -106,13 +124,13 @@ const LoginPage = () => {
               </div>
               <div className="flex justify-center gap-6">
                 <button type="button" className="size-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-colors border border-gray-200">
-                  <img src="/icons/login/googleIcon.svg" className="size-5" alt="Google" />
+                  <img src="/icons/login/GoogleIcon.svg" className="size-5" alt="Google" />
                 </button>
                 <button type="button" className="size-10 rounded-full bg-[#03C75A]/10 flex items-center justify-center hover:bg-[#03C75A]/20 transition-colors border border-transparent">
-                  <img src="/icons/login/naverIcon.svg" className="size-4" alt="Naver" />
+                  <img src="/icons/login/NaverIcon.svg" className="size-4" alt="Naver" />
                 </button>
                 <button type="button" className="size-10 rounded-full bg-[#FEE500]/20 flex items-center justify-center hover:bg-[#FEE500]/40 transition-colors border border-transparent">
-                  <img src="/icons/login/kakaoIcon.svg" className="size-5" alt="Kakao" />
+                  <img src="/icons/login/KakaoIcon.svg" className="size-5" alt="Kakao" />
                 </button>
               </div>
             </div>

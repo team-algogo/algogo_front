@@ -12,7 +12,7 @@ export default function GroupInviteModal({ programId, onClose }: GroupInviteModa
     const [searchQuery, setSearchQuery] = useState("");
 
     // 유저 검색
-    const { data: searchData, isLoading: isSearching, error } = useQuery({
+    const { data: searchData, isLoading: isSearching } = useQuery({
         queryKey: ["searchUsers", searchQuery],
         queryFn: () => searchUsersForGroup(searchQuery),
         enabled: !!searchQuery,

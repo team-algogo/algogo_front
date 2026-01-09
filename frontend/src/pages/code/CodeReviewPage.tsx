@@ -44,7 +44,6 @@ const CodeReviewPage = () => {
   const [currentUser, setCurrentUser] = useState<UserDetailProps | null>(null);
 
   const [code, setCode] = useState("");
-  const [codeHeight, setCodeHeight] = useState(400);
   const [selectedLine, setSelectedLine] = useState<number | null>(null);
 
   const [submissionHistory, setSubmissionHistory] = useState<
@@ -59,24 +58,6 @@ const CodeReviewPage = () => {
   });
 
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
-
-  const updateEditorHeight = () => {
-    if (!editorRef.current) return;
-
-    const editor = editorRef.current;
-    const model = editor.getModel();
-    if (!model) return;
-
-    const contentHeight = editor.getContentHeight();
-    const lineHeight = editor.getOption(monaco.editor.EditorOption.lineHeight);
-
-    const padding = 20;
-    const height = contentHeight + padding + lineHeight;
-
-    setCodeHeight(height);
-
-    editor.layout({ width: editor.getLayoutInfo().width, height });
-  };
 
   const handleEditorDidMount = (
     editor: monaco.editor.IStandaloneCodeEditor,

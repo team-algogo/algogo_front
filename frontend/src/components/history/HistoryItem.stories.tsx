@@ -6,12 +6,16 @@ const meta: Meta<typeof HistoryItem> = {
   component: HistoryItem,
   tags: ["autodocs"],
   args: {
-    isPassed: true,
-    createdAt: "2025.10.24",
+    submissionId: 1,
+    isSuccess: true,
+    createdAt: "2025-10-24T00:00:00Z",
     language: "Java",
+    execTime: 100,
+    memory: 1024,
+    isCurrent: false,
   },
   argTypes: {
-    isPassed: { control: "boolean" },
+    isSuccess: { control: "boolean" },
     createdAt: { control: "text" },
     language: { control: "text" },
   },
@@ -23,6 +27,14 @@ type Story = StoryObj<typeof HistoryItem>;
 export const Default: Story = {};
 
 export const Failed: Story = {
-  args: { isPassed: false },
+  args: { 
+    submissionId: 2,
+    isSuccess: false,
+    createdAt: "2025-10-24T00:00:00Z",
+    language: "Java",
+    execTime: 100,
+    memory: 1024,
+    isCurrent: false,
+  },
 };
 

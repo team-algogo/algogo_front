@@ -198,19 +198,19 @@ const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
             </div>
           </div>
 
-          <div className="flex gap-3 mt-2">
-            <div className="flex-1">
+          <div className="flex justify-end gap-2 mt-2">
+            <div>
+              <Button variant="default" onClick={onClose}>
+                취소
+              </Button>
+            </div>
+            <div>
               <Button
                 variant="primary"
                 onClick={handleCreateGroup}
                 disabled={createMutation.isPending}
               >
                 {createMutation.isPending ? "생성 중..." : "만들기"}
-              </Button>
-            </div>
-            <div className="flex-1">
-              <Button variant="default" onClick={onClose}>
-                취소
               </Button>
             </div>
           </div>

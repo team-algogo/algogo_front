@@ -13,7 +13,7 @@ import {
     joinGroup,
 } from "../../api/group/groupApi";
 import useAuthStore from "@store/useAuthStore";
-import CreateGroupModal from "./CreateGroupModal";
+import EditGroupModal from "./EditGroupModal";
 import GroupMemberModal from "./GroupMembersModal";
 import GroupJoinRequestModal from "./GroupJoinRequestsModal";
 import AddProblemModal from "./AddGroupProblemModal";
@@ -113,14 +113,13 @@ export default function GroupDetailPage() {
         <BasePage>
             {/* 모달들 */}
             {isEditModalOpen && (
-                <CreateGroupModal
-                    isEditMode={true}
+                <EditGroupModal
+                    programId={programId}
                     initialData={{
                         title: groupDetail.title,
                         description: groupDetail.description,
-                        password: "", // 비밀번호는 수정 시 새로 입력받거나 함
+                        capacity: groupDetail.capacity || groupDetail.maxMemberCount || 100, // API response structure check needed, fallback to 100
                     }}
-                    groupId={programId}
                     onClose={() => setIsEditModalOpen(false)}
                 />
             )}

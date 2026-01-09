@@ -188,9 +188,9 @@ const JoinPage = () => {
 
     try {
       await postSignUp(email, password, nickname);
-      navigate("/", {
+      navigate("/login", {
         replace: true,
-        state: { showModal: true },
+        state: { signupSuccess: true },
       });
     } catch (err) {
       console.log(err);
@@ -227,10 +227,10 @@ const JoinPage = () => {
                     placeholder="2~10자"
                     onChange={(e) => setNickname(e.target.value)}
                     className={`flex-1 h-10 px-3 rounded-md border border-gray-300 focus:ring-1 outline-none transition-all text-sm placeholder-gray-400 ${nicknameError
-                        ? "border-status-error focus:border-status-error focus:ring-status-error"
-                        : isNicknameChecked
-                          ? "border-status-success focus:border-status-success focus:ring-status-success"
-                          : "focus:border-primary-500 focus:ring-primary-500"
+                      ? "border-status-error focus:border-status-error focus:ring-status-error"
+                      : isNicknameChecked
+                        ? "border-status-success focus:border-status-success focus:ring-status-success"
+                        : "focus:border-primary-500 focus:ring-primary-500"
                       }`}
                   />
                   <Button
@@ -266,10 +266,10 @@ const JoinPage = () => {
                     placeholder="ssafy@ssafy.com"
                     onChange={(e) => setEmail(e.target.value)}
                     className={`flex-1 h-10 px-3 rounded-md border border-gray-300 focus:ring-1 outline-none transition-all text-sm placeholder-gray-400 ${emailError
-                        ? "border-status-error focus:border-status-error focus:ring-status-error"
-                        : isEmailChecked
-                          ? "border-status-success focus:border-status-success focus:ring-status-success"
-                          : "focus:border-primary-500 focus:ring-primary-500"
+                      ? "border-status-error focus:border-status-error focus:ring-status-error"
+                      : isEmailChecked
+                        ? "border-status-success focus:border-status-success focus:ring-status-success"
+                        : "focus:border-primary-500 focus:ring-primary-500"
                       }`}
                   />
                   <Button
@@ -323,8 +323,8 @@ const JoinPage = () => {
                   placeholder="비밀번호 확인"
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className={`w-full h-10 px-3 rounded-md border border-gray-300 focus:ring-1 outline-none transition-all text-sm placeholder-gray-400 ${confirmPasswordError
-                      ? "border-status-error focus:border-status-error focus:ring-status-error"
-                      : "focus:border-primary-500 focus:ring-primary-500"
+                    ? "border-status-error focus:border-status-error focus:ring-status-error"
+                    : "focus:border-primary-500 focus:ring-primary-500"
                     }`}
                 />
                 {confirmPasswordError && (

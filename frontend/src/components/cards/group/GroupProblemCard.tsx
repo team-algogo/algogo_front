@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import Button from "../../button/Button";
 
 interface GroupProblemCardProps {
@@ -8,6 +9,7 @@ interface GroupProblemCardProps {
   totalMembers: number; // 전체 멤버 수
   problemLink?: string; // 문제 링크 (있다면)
   onDelete?: () => void; // 삭제 핸들러 (옵션)
+  programProblemId?: number;
 }
 
 const GroupProblemCard = ({
@@ -18,7 +20,9 @@ const GroupProblemCard = ({
   totalMembers,
   problemLink = "#",
   onDelete,
+  programProblemId,
 }: GroupProblemCardProps) => {
+  const navigate = useNavigate();
 
   // 난이도별 뱃지 스타일
   // 난이도별 뱃지 스타일 (심플/테크니컬 버전)
@@ -43,7 +47,7 @@ const GroupProblemCard = ({
   return (
     <div
       className="w-full border-b border-gray-200 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-default px-2"
-      onClick={() => window.open(problemLink, "_blank")}
+    // onClick={() => window.open(problemLink, "_blank")} // 외부 링크 대신 문제 풀기 페이지로 이동? 상세 페이지가 따로 없으므로 제거?
     >
       {/* Left: Check/Status info could go here if needed */}
 
@@ -73,7 +77,14 @@ const GroupProblemCard = ({
           <Button
             variant="secondary"
             className="!h-7 !px-2.5 !text-xs !border-gray-300"
-            onClick={() => window.open(problemLink, "_blank")}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (programProblemId) {
+                navigate(`/code/${programProblemId}`);
+              } else {
+                window.open(problemLink, "_blank");
+              }
+            }}
           >
             문제풀기
           </Button>

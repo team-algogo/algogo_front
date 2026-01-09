@@ -64,12 +64,25 @@ export const postReview = async (
   parentReviewId: number | null,
   codeLine: number | null,
 ) => {
-  const response = await client.post("/api/v1/reviews", {
-    parentReviewId: parentReviewId,
+  const body: {
+    submissionId: number;
+    content: string;
+    parentReviewId?: number | null;
+    codeLine?: number | null;
+  } = {
     submissionId: submissionId,
-    codeLine: codeLine,
     content: content,
-  });
+  };
+
+  // parentReviewId와 codeLine은 선택적이므로 값이 있을 때만 포함
+  if (parentReviewId !== null && parentReviewId !== undefined) {
+    body.parentReviewId = parentReviewId;
+  }
+  if (codeLine !== null && codeLine !== undefined) {
+    body.codeLine = codeLine;
+  }
+
+  const response = await client.post("/api/v1/reviews", body);
 
   return response.data;
 };

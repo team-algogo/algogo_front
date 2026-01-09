@@ -19,7 +19,7 @@ export default function ProblemListTable({ problems, page, itemsPerPage = 20, is
                 {/* Table Header */}
                 <div className="flex flex-row w-full h-[56px] bg-[#F9FAFB] border-b border-gray-100 text-[14px] text-[#555]">
                     <div className="w-[60px] shrink-0 flex items-center justify-center font-medium">#</div>
-                    <div className="w-[100px] shrink-0 flex items-center justify-center font-medium">난이도</div>
+                    <div className="w-[120px] shrink-0 flex items-center justify-center font-medium">난이도</div>
                     <div className="flex-1 min-w-[200px] flex items-center justify-start px-4 font-medium">제목</div>
                     <div className="w-[100px] shrink-0 hidden lg:flex items-center justify-center font-medium">제출 수</div>
                     <div className="w-[100px] shrink-0 hidden lg:flex items-center justify-center font-medium">조회 수</div>
@@ -39,7 +39,7 @@ export default function ProblemListTable({ problems, page, itemsPerPage = 20, is
                             <div className="w-[60px] shrink-0 flex items-center justify-center text-[#333]">
                                 {(page - 1) * itemsPerPage + index + 1}
                             </div>
-                            <div className="w-[100px] shrink-0 flex items-center justify-center">
+                            <div className="w-[120px] shrink-0 flex items-center justify-center">
                                 <LevelBadge platform={pInfo.platformType} difficulty={pInfo.difficultyType} />
                             </div>
                             <div className="flex-1 min-w-[200px] flex items-center justify-start px-4 text-[#333] truncate font-medium">

@@ -24,24 +24,7 @@ const images = [
   main10,
 ];
 
-interface MainGroupCardProps {
-  icon?: string;
-  title?: string;
-  subtitle?: string;
-  codeTitle?: string;
-  badges?: { text: string; variant: "orange" | "green" | "white" }[];
-}
-
-const MainGroupCard = ({
-  icon = "🔥",
-  title = "지금 가장 많은 코멘트가 달린 코드 확인하기",
-  subtitle = "코드 몇 줄로 메모리 단축!",
-  codeTitle = "[Python] 다익스트라 알고리즘 구현 리뷰",
-  badges = [
-    { text: "HOT", variant: "orange" },
-    { text: "All", variant: "white" },
-  ],
-}: MainGroupCardProps) => {
+const MainGroupCard = () => {
   const img = images[Math.floor(Math.random() * images.length)];
 
   return (

@@ -71,8 +71,8 @@ export default function NotificationContainer() {
                     queryClient.invalidateQueries({ queryKey: ['notifications'] });
                 });
 
-                eventSource.onerror = (e: any) => {
-                    // console.error("SSE Error:", e);
+                eventSource.onerror = (_e: any) => {
+                    // console.error("SSE Error:", _e);
                     eventSource?.close();
                 };
 

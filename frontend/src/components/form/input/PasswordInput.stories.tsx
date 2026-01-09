@@ -6,9 +6,11 @@ const meta: Meta<typeof PasswordInput> = {
   component: PasswordInput,
   tags: ["autodocs"],
   args: {
-    formId: "password-input",
+    id: "password-input",
+    value: "",
     placeholder: "비밀번호를 입력하세요",
     status: "default",
+    onChange: () => {},
   },
   argTypes: {
     status: {

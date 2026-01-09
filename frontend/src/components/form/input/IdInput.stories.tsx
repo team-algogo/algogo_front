@@ -6,8 +6,9 @@ const meta: Meta<typeof IdInput> = {
   component: IdInput,
   tags: ["autodocs"],
   args: {
-    formId: "id-input",
+    id: "id-input",
     value: "",
+    onChange: () => {},
   },
 };
 

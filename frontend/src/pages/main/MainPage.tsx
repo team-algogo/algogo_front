@@ -5,7 +5,6 @@ import Banner from "@components/banner/Banner";
 
 // import MainCampaignCard from "@components/cards/main/MainCampaignCard";
 import ReviewRequestCard from "@components/cards/main/ReviewRequestCard";
-import ReviewCard from "@components/cards/main/ReviewCard";
 import EmptyState from "@components/empty/EmptyState";
 import TextLink from "@components/textLink/TextLink";
 import MainProblemSetCard from "@components/cards/main/MainProblemSetCard";
@@ -21,9 +20,7 @@ import { getPopularSubmissionList } from "@api/main/getPopularProblem";
 import type { GroupItem } from "@type/group/group";
 import { fetchGroupList, type GroupListParams } from "@api/group/groupApi";
 import {
-  getRecieveReview,
   getRequireReview,
-  type ReceiveReviewList,
   type RequiredCodeReviewList,
 } from "@api/review/manageReview";
 import type { ProblemSetListResponse } from "@type/problemset/problemSet";
@@ -36,19 +33,9 @@ import {
 } from "@api/code/reviewSubmit";
 import { getProblemInfo, type ProgramProblemProps } from "@api/code/codeSubmit";
 
-// Temporary mock data for list items
-const MOCK_LIST_ITEMS = Array(5).fill(null).map((_, i) => ({
-  id: i,
-  title: "알고리즘 캠페인 시즌 " + (i + 1),
-  count: 10 + i
-}));
-
 const MainPage = () => {
   const [reviewRequire, setReviewRequire] =
     useState<RequiredCodeReviewList | null>(null);
-  const [reviewReceive, setReviewReceive] = useState<ReceiveReviewList | null>(
-    null,
-  );
 
   const [recommendProblemSet, setRecommendProblemSet] =
     useState<ProblemSetListResponse | null>(null);
@@ -175,9 +162,7 @@ const MainPage = () => {
   const getReviewList = async () => {
     try {
       const requireReviews = await getRequireReview();
-      const recieveReviews = await getRecieveReview(3, 0);
       setReviewRequire(requireReviews.data);
-      setReviewReceive(recieveReviews.data);
     } catch (err) {
       console.log(err);
     }
@@ -205,9 +190,6 @@ const MainPage = () => {
   };
 
   const isLoggedIn = userType === "User";
-  const [activeTab, setActiveTab] = useState<"All" | "Groups" | "Campaigns">(
-    "All",
-  );
 
   useEffect(() => {
     getPopularLists();

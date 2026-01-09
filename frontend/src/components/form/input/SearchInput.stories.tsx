@@ -7,10 +7,8 @@ const meta: Meta<typeof SearchInput> = {
   tags: ["autodocs"],
   args: {
     formId: "search-input",
-    value: "",
-    onChange: () => {},
-    onClear: () => {},
-    onSubmit: (e: React.FormEvent<HTMLFormElement>) => e.preventDefault(),
+    selectedItems: [],
+    onItemsChange: () => {},
   },
 };
 

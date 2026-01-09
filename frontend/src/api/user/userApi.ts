@@ -1,4 +1,3 @@
-import client from "@api/client";
 import getResponse from "@api/getResponse";
 import type { UserProfileResponse, ParticipationItem, ActivityHistoryItem } from "@type/mypage";
 

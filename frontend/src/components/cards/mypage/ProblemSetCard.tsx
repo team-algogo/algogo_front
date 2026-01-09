@@ -31,7 +31,7 @@ const ProblemSetCard = ({
         <div className="flex flex-wrap gap-1">
           {categories.length > 0 ? (
             categories.map((cat, index) => (
-              <CategoryBadge key={index} variant={cat}>
+              <CategoryBadge key={index} variant={(cat === 'enterprise' || cat === 'algorithm') ? cat : 'algorithm'}>
                 {cat}
               </CategoryBadge>
             ))

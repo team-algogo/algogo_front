@@ -10,9 +10,7 @@ import {
     fetchGroupProblemList,
     deleteGroup,
     deleteGroupProblems,
-    joinGroup,
 } from "../../api/group/groupApi";
-import useAuthStore from "@store/useAuthStore";
 import EditGroupModal from "./EditGroupModal";
 import GroupMemberModal from "./GroupMembersModal";
 import GroupJoinRequestModal from "./GroupJoinRequestsModal";
@@ -23,7 +21,6 @@ export default function GroupDetailPage() {
     const navigate = useNavigate();
     const programId = Number(groupId);
 
-    const { nickname, userType } = useAuthStore();
     const queryClient = useQueryClient();
 
     // --- Modal States ---
@@ -43,10 +40,10 @@ export default function GroupDetailPage() {
 
     // 2. 그룹 문제 리스트
     // 페이징/정렬 상태 관리 (일단 기본값 사용)
-    const [page, setPage] = useState(0);
+    const [page] = useState(0);
     const size = 10;
-    const [sortBy, setSortBy] = useState("startDate");
-    const [sortDirection, setSortDirection] = useState("desc");
+    const [sortBy] = useState("startDate");
+    const [sortDirection] = useState("desc");
 
     const { data: problemData } = useQuery({
         queryKey: ["groupProblems", programId, page, size, sortBy, sortDirection],
@@ -118,7 +115,7 @@ export default function GroupDetailPage() {
                     initialData={{
                         title: groupDetail.title,
                         description: groupDetail.description,
-                        capacity: groupDetail.capacity || groupDetail.maxMemberCount || 100, // API response structure check needed, fallback to 100
+                        capacity: groupDetail.memberCount,
                     }}
                     onClose={() => setIsEditModalOpen(false)}
                 />
@@ -127,7 +124,6 @@ export default function GroupDetailPage() {
                 <GroupMemberModal
                     programId={programId}
                     onClose={() => setIsMemberModalOpen(false)}
-                    isMaster={isMaster}
                 />
             )}
             {isJoinRequestModalOpen && (

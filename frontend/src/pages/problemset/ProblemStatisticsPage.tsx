@@ -8,7 +8,6 @@ import { getProblemStatistics } from "@api/problemset/getProblemStatistics";
 import { getProblemInfo } from "@api/code/codeSubmit";
 import { format } from "date-fns";
 import type { SubmissionItem } from "@type/problemset/statistics";
-import Button from "@components/button/Button";
 
 export default function ProblemStatisticsPage() {
     const { programProblemId } = useParams<{ programProblemId: string }>();

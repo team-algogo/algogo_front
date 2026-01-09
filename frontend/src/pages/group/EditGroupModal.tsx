@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Button from "@components/button/Button";
 import Toast, { type ToastType } from "@components/toast/Toast";

@@ -7,7 +7,10 @@ import StateBadge from "@components/badge/StateBadge";
 import CustomSelect, {
   type SelectOption,
 } from "@components/selectbox/CustomSelect";
-import { getProblemStatistics } from "@api/problemset/getProblemStatistics";
+import {
+  getProblemStatistics,
+  getProblemSubmissionStats,
+} from "@api/problemset/getProblemStatistics";
 import { getProblemInfo } from "@api/code/codeSubmit";
 import { getRequireReview } from "@api/review/manageReview";
 import { format } from "date-fns";
@@ -83,6 +86,13 @@ export default function ProblemStatisticsPage() {
       (review) => review.submission.targetSubmissionId,
     ) || [],
   );
+
+  // Fetch submission stats
+  const { data: submissionStats } = useQuery({
+    queryKey: ["problemSubmissionStats", id],
+    queryFn: () => getProblemSubmissionStats(id),
+    enabled: !isNaN(id),
+  });
 
   const submissions = statisticsData?.submissions || [];
   const pageInfo = statisticsData?.page;
@@ -283,23 +293,31 @@ export default function ProblemStatisticsPage() {
           <div className="flex flex-col items-center gap-1">
             <span className="text-sm font-medium text-gray-500">전체 제출</span>
             <span className="text-2xl font-bold text-[#333333]">
-              {totalSubmissions.toLocaleString()}
+              {submissionStats?.submissionCount.toLocaleString() || "-"}
             </span>
           </div>
           <div className="h-10 w-[1px] bg-gray-200"></div>
           <div className="flex flex-col items-center gap-1">
             <span className="text-sm font-medium text-gray-500">정답 제출</span>
-            <span className="text-2xl font-bold text-[#333333]">-</span>
+            <span className="text-2xl font-bold text-[#333333]">
+              {submissionStats?.successCount.toLocaleString() || "-"}
+            </span>
           </div>
           <div className="h-10 w-[1px] bg-gray-200"></div>
           <div className="flex flex-col items-center gap-1">
             <span className="text-sm font-medium text-gray-500">오답 제출</span>
-            <span className="text-2xl font-bold text-[#333333]">-</span>
+            <span className="text-2xl font-bold text-[#333333]">
+              {submissionStats?.failureCount.toLocaleString() || "-"}
+            </span>
           </div>
           <div className="h-10 w-[1px] bg-gray-200"></div>
           <div className="flex flex-col items-center gap-1">
             <span className="text-sm font-medium text-gray-500">정답률</span>
-            <span className="text-2xl font-bold text-[#0D6EFD]">- %</span>
+            <span className="text-2xl font-bold text-[#0D6EFD]">
+              {submissionStats?.successRate !== undefined
+                ? `${submissionStats.successRate}%`
+                : "- %"}
+            </span>
           </div>
         </div>
 

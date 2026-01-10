@@ -1,5 +1,8 @@
 import client from "@api/client";
-import type { ProblemStatisticsResponse } from "@type/problemset/statistics";
+import type {
+  ProblemStatisticsResponse,
+  SubmissionStats,
+} from "@type/problemset/statistics";
 
 export interface StatisticsParams {
   page?: number;
@@ -22,7 +25,7 @@ export const getProblemStatistics = async (
   const { page = 0, size = 20, ...rest } = params;
 
   const { data } = await client.get<{ data: ProblemStatisticsResponse }>(
-    `/api/v1/submissions/stats/${programProblemId}`,
+    `/api/v1/submissions/stats/${programProblemId}/lists`,
     {
       params: {
         page,
@@ -30,6 +33,13 @@ export const getProblemStatistics = async (
         ...rest,
       },
     },
+  );
+  return data.data;
+};
+
+export const getProblemSubmissionStats = async (programProblemId: number) => {
+  const { data } = await client.get<{ data: SubmissionStats }>(
+    `/api/v1/submissions/stats/${programProblemId}`,
   );
   return data.data;
 };

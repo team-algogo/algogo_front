@@ -1,7 +1,8 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { createProblemSet } from "@api/problemset/createProblemSet";
+import { getCategoryList } from "@api/problemset/getCategoryList";
 import Button from "@components/button/Button";
 import BasePage from "@pages/BasePage";
 
@@ -10,9 +11,16 @@ export default function CreateProblemSetPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // 카테고리 목록 조회
+  const { data: categoryList } = useQuery({
+    queryKey: ["categoryList"],
+    queryFn: getCategoryList,
+  });
 
   const createMutation = useMutation({
     mutationFn: createProblemSet,
@@ -75,6 +83,14 @@ export default function CreateProblemSetPage() {
     }
   };
 
+  const handleCategoryToggle = (categoryName: string) => {
+    setSelectedCategories((prev) =>
+      prev.includes(categoryName)
+        ? prev.filter((name) => name !== categoryName)
+        : [...prev, categoryName]
+    );
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -95,8 +111,16 @@ export default function CreateProblemSetPage() {
     }
 
     const formData = new FormData();
-    formData.append("title", title.trim());
-    formData.append("description", description.trim());
+    
+    // dto를 JSON 문자열로 전송
+    const dto = {
+      title: title.trim(),
+      description: description.trim(),
+      categories: selectedCategories,
+    };
+    formData.append("dto", JSON.stringify(dto));
+    
+    // thumbnail은 파일로 전송
     formData.append("thumbnail", selectedFile);
 
     createMutation.mutate(formData);
@@ -147,6 +171,32 @@ export default function CreateProblemSetPage() {
               rows={6}
               className="w-full rounded-md border border-gray-300 px-4 py-3 text-sm transition-all focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 resize-none"
             />
+          </div>
+
+          {/* Categories Selection */}
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-700">
+              카테고리
+            </label>
+            <div className="flex flex-wrap gap-3">
+              {categoryList?.map((category) => (
+                <label
+                  key={category.name}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedCategories.includes(category.name)}
+                    onChange={() => handleCategoryToggle(category.name)}
+                    className="w-4 h-4 text-primary-500 border-gray-300 rounded focus:ring-primary-500 focus:ring-2"
+                  />
+                  <span className="text-sm text-gray-700">{category.name}</span>
+                </label>
+              ))}
+            </div>
+            {categoryList && categoryList.length === 0 && (
+              <p className="text-sm text-gray-500">카테고리가 없습니다.</p>
+            )}
           </div>
 
           {/* Thumbnail Upload */}

@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getGroupDetail } from "@api/notification/getGroupDetail";
 import { getUserDetailById } from "@api/auth/auth";
@@ -44,9 +45,9 @@ export default function InviteModal({
 
   if (isLoading) return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
@@ -143,6 +144,7 @@ export default function InviteModal({
           <img src="/icons/xIcon.svg" alt="close" className="h-4 w-4" />
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

@@ -11,6 +11,17 @@ export interface UserDetailProps {
   modifiedAt: string;
 }
 
+export interface MeResponse {
+  userId: number;
+  email: string;
+  description: string;
+  nickname: string;
+  profileImage?: string | null;
+  createAt: string;
+  modifiedAt: string;
+  userRole: "USER" | "ADMIN";
+}
+
 // 로그인
 export const postLogin = async (email: string, password: string) => {
   const response = await client.post("/api/v1/auths/login", {
@@ -29,7 +40,7 @@ export const postLogout = async () => {
 
 // 유저 확인
 export const getCheckUser = async () => {
-  const response = await getResponse("/api/v1/auths/me");
+  const response = await getResponse<MeResponse>("/api/v1/auths/me");
   return response;
 };
 

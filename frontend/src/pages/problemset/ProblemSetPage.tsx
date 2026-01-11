@@ -1,11 +1,16 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getCategoryList } from "@api/problemset/getCategoryList";
+import { getCheckUser } from "@api/auth/auth";
 import ProblemSetList from "@components/problemset/ProblemSetList";
 import SortSelect from "@components/selectbox/SortSelect";
+import Button from "@components/button/Button";
+import useAuthStore from "@store/useAuthStore";
 import BasePage from "@pages/BasePage";
 
 export default function ProblemSetPage() {
+  const navigate = useNavigate();
   const [category, setCategory] = useState("전체");
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState("createdAt");
@@ -26,23 +31,49 @@ export default function ProblemSetPage() {
     queryFn: getCategoryList,
   });
 
+  const { userType } = useAuthStore();
+  const isLogined = !!userType;
+
+  // 사용자 정보 조회 (ADMIN 확인용)
+  const { data: meData } = useQuery({
+    queryKey: ["me"],
+    queryFn: () => getCheckUser(),
+    enabled: isLogined,
+  });
+
   const tabs = ["전체", ...(categoryList?.map((c) => c.name) || [])];
   const sortOptions = [
     { label: "최신순", value: "createdAt" },
     { label: "인기순", value: "popular" },
   ];
 
+  const isAdmin = meData?.data?.userRole === "ADMIN";
+
   return (
     <BasePage>
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
         {/* Header Title */}
         <div className="border-b border-gray-200 pb-8">
-          <h1 className="font-headline text-3xl text-gray-900">
-            문제집
-          </h1>
-          <p className="mt-2 text-gray-500">
-            다양한 알고리즘 문제집을 풀어보세요.
-          </p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="font-headline text-3xl text-gray-900">
+                문제집
+              </h1>
+              <p className="mt-2 text-gray-500">
+                다양한 알고리즘 문제집을 풀어보세요.
+              </p>
+            </div>
+            {/* ADMIN일 때만 문제집 생성 버튼 표시 */}
+            {isAdmin && (
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => navigate("/problemset/create")}
+              >
+                문제집 생성
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Controls Row: Category Tabs + Sort Select */}

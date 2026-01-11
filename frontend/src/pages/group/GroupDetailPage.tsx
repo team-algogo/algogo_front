@@ -10,11 +10,14 @@ import {
     fetchGroupProblemList,
     deleteGroup,
     deleteGroupProblems,
+    joinGroup,
 } from "../../api/group/groupApi";
 import EditGroupModal from "./EditGroupModal";
 import GroupMemberModal from "./GroupMembersModal";
 import GroupJoinRequestModal from "./GroupJoinRequestsModal";
 import AddProblemModal from "./AddGroupProblemModal";
+import ConfirmModal from "@components/modal/ConfirmModal";
+import Toast, { type ToastType } from "@components/toast/Toast";
 
 export default function GroupDetailPage() {
     const { groupId } = useParams();
@@ -29,6 +32,19 @@ export default function GroupDetailPage() {
     const [isJoinRequestModalOpen, setIsJoinRequestModalOpen] = useState(false); // 가입 요청 모달
     const [isAddProblemModalOpen, setIsAddProblemModalOpen] = useState(false); // 문제 추가 모달
 
+    const [toastConfig, setToastConfig] = useState<{ message: string; type: ToastType } | null>(null);
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        onConfirm: () => void;
+    }>({
+        isOpen: false,
+        title: "",
+        message: "",
+        onConfirm: () => { },
+    });
+
     // --- Data Fetching ---
     // 1. 그룹 상세 정보를 fetch
     const { data: detailData, isLoading: isDetailLoading } = useQuery({
@@ -39,7 +55,6 @@ export default function GroupDetailPage() {
     const groupDetail = detailData?.data;
 
     // 2. 그룹 문제 리스트
-    // 페이징/정렬 상태 관리 (일단 기본값 사용)
     const [page] = useState(0);
     const size = 10;
     const [sortBy] = useState("startDate");
@@ -57,11 +72,9 @@ export default function GroupDetailPage() {
             }),
         enabled: !!programId,
     });
-    const problemList = problemData?.data?.problemList || []; // API response structure: data.problemList based on groupApi.ts
+    const problemList = problemData?.data?.problemList || [];
 
     // 내 역할 확인
-    // userRole: "MASTER", "MEMBER", or null (비회원/가입대기 등)
-    // 이전 코드 참고: groupInfo?.groupRole
     const myRole = groupDetail?.groupRole;
     const isMaster = myRole === "ADMIN" || myRole === "MASTER";
     const isMember = myRole === "USER" || myRole === "MEMBER" || isMaster;
@@ -71,18 +84,24 @@ export default function GroupDetailPage() {
     const { mutate: deleteGroupMutate } = useMutation({
         mutationFn: () => deleteGroup(programId),
         onSuccess: () => {
-            alert("그룹이 삭제되었습니다.");
-            navigate("/group"); // 목록으로 이동
+            setToastConfig({ message: "그룹이 삭제되었습니다.", type: "success" });
+            setTimeout(() => navigate("/group"), 1000); // 1초 뒤 이동
         },
-        onError: () => alert("그룹 삭제 실패"),
+        onError: () => setToastConfig({ message: "그룹 삭제 실패", type: "error" }),
     });
 
-    // 그룹 탈퇴 (API 필요 - 여기선 예시)
+    // 그룹 탈퇴
     const handleLeaveGroup = () => {
-        if (window.confirm("정말 이 그룹을 탈퇴하시겠습니까?")) {
-            // api call...
-            alert("탈퇴 기능은 아직 구현 중입니다.");
-        }
+        setConfirmModal({
+            isOpen: true,
+            title: "그룹 탈퇴",
+            message: "정말 이 그룹을 탈퇴하시겠습니까?",
+            onConfirm: () => {
+                // api call...
+                setToastConfig({ message: "탈퇴 기능은 아직 구현 중입니다.", type: "success" }); // info -> success temporarily to fix type error
+                setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+            },
+        });
     };
 
     // 문제 삭제
@@ -91,16 +110,47 @@ export default function GroupDetailPage() {
         onSuccess: () => {
             // 리스트 갱신
             queryClient.invalidateQueries({ queryKey: ["groupProblems", programId] });
-            alert("문제가 삭제되었습니다.");
+            setToastConfig({ message: "문제가 삭제되었습니다.", type: "success" });
         },
-        onError: () => alert("문제 삭제 실패"),
+        onError: () => setToastConfig({ message: "문제 삭제 실패", type: "error" }),
+    });
+
+    // 가입 신청 Mutation
+    const { mutate: joinMutation } = useMutation({
+        mutationFn: () => joinGroup(programId),
+        onSuccess: () => {
+            setToastConfig({ message: "가입 신청이 완료되었습니다.", type: "success" });
+            queryClient.invalidateQueries({ queryKey: ["groupDetail", programId] });
+        },
+        onError: (err: any) => {
+            const msg = err.response?.data?.message || "가입 신청 실패";
+            setToastConfig({ message: msg, type: "error" });
+        },
     });
 
     // --- Handlers ---
     const handleDeleteGroup = () => {
-        if (window.confirm("정말 그룹을 삭제하시겠습니까? 복구할 수 없습니다.")) {
-            deleteGroupMutate();
-        }
+        setConfirmModal({
+            isOpen: true,
+            title: "그룹 삭제",
+            message: "정말 그룹을 삭제하시겠습니까? 복구할 수 없습니다.",
+            onConfirm: () => {
+                deleteGroupMutate();
+                setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+            },
+        });
+    };
+
+    const handleJoin = () => {
+        setConfirmModal({
+            isOpen: true,
+            title: "그룹 가입",
+            message: "이 그룹에 가입 신청을 하시겠습니까?",
+            onConfirm: () => {
+                joinMutation();
+                setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+            },
+        });
     };
 
     if (isDetailLoading) return <div>Loading...</div>;
@@ -108,6 +158,15 @@ export default function GroupDetailPage() {
 
     return (
         <BasePage>
+            {/* Toast */}
+            {toastConfig && (
+                <Toast
+                    message={toastConfig.message}
+                    type={toastConfig.type}
+                    onClose={() => setToastConfig(null)}
+                />
+            )}
+
             {/* 모달들 */}
             {isEditModalOpen && (
                 <EditGroupModal
@@ -152,7 +211,7 @@ export default function GroupDetailPage() {
                             <div className="flex gap-2">
                                 <Button
                                     variant="secondary"
-                                    className="!px-3 !py-1 text-xs" // 작게
+                                    className="!px-3 !py-1 text-xs"
                                     onClick={() => setIsEditModalOpen(true)}
                                 >
                                     수정
@@ -174,12 +233,9 @@ export default function GroupDetailPage() {
                                 탈퇴하기
                             </Button>
                         ) : (
-                            // 미가입자 -> 가입신청 버튼 등 (GroupMain에서도 처리하지만 여기서도 가능)
                             <Button
                                 variant="primary"
-                                onClick={() => {
-                                    /* join logic */
-                                }}
+                                onClick={handleJoin}
                             >
                                 가입 신청
                             </Button>
@@ -244,11 +300,15 @@ export default function GroupDetailPage() {
                                     onDelete={
                                         isMaster
                                             ? () => {
-                                                if (
-                                                    window.confirm("이 문제를 그룹에서 제거하시겠습니까?")
-                                                ) {
-                                                    deleteProblemMutate(problem.programProblemId);
-                                                }
+                                                setConfirmModal({
+                                                    isOpen: true,
+                                                    title: "문제 삭제",
+                                                    message: "이 문제를 그룹에서 제거하시겠습니까?",
+                                                    onConfirm: () => {
+                                                        deleteProblemMutate(problem.programProblemId);
+                                                        setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+                                                    },
+                                                });
                                             }
                                             : undefined
                                     }
@@ -262,6 +322,14 @@ export default function GroupDetailPage() {
                     </div>
                 </div>
             </div>
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                onConfirm={confirmModal.onConfirm}
+                onCancel={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+            />
         </BasePage>
     );
 }

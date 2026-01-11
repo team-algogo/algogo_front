@@ -38,8 +38,8 @@ const Header = () => {
       <header className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200 h-16 transition-colors">
         <div className="max-w-7xl mx-auto h-full flex justify-between items-center px-4 sm:px-6 lg:px-8">
           <div className="flex gap-8 items-center h-full">
-            <a href="/" className="text-xl font-bold tracking-tight h-full flex items-center">
-              <span className="text-logo text-2xl">알고가자</span>
+            <a href="/" className="text-xl font-bold tracking-tight h-full flex items-center whitespace-nowrap">
+              <span className="text-logo text-2xl leading-none">알고가자</span>
             </a>
 
             <nav className="hidden md:flex gap-1 h-full items-center">

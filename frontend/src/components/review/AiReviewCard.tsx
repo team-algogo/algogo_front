@@ -7,17 +7,17 @@ interface AiReviewCardProps {
 
 const AiReviewCard: FC<AiReviewCardProps> = ({ score, reason }) => {
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-gray-100 bg-gray-50 p-6">
-      <div className="flex items-center gap-3">
-        <div className="text-primary-main bg-primary-600 flex h-10 w-10 items-center justify-center rounded-full font-bold">
-          AI
+    <div className="flex flex-col gap-5 rounded-xl border border-gray-200/80 bg-white p-6 shadow-lg">
+      <div className="flex items-center gap-4">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-lg">
+          <span className="text-base font-bold text-white">AI</span>
         </div>
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-1">
           <span className="text-lg font-bold text-gray-900">AI 코드 평가</span>
-          <span className="text-sm text-gray-500">
-            종합 점수{" "}
-            <span className="text-primary-300 font-bold">{score}점</span>
-          </span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-sm font-medium text-gray-500">종합 점수</span>
+            <span className="text-xl font-bold text-indigo-600">{score}점</span>
+          </div>
         </div>
       </div>
       <div className="text-sm leading-relaxed whitespace-pre-line text-gray-700">

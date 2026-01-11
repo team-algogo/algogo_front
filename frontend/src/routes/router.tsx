@@ -10,6 +10,7 @@ import CodeSubmitPage from "@pages/code/CodeSubmitPage";
 import CodeReviewPage from "@pages/code/CodeReviewPage";
 import ProblemSetPage from "@pages/problemset/ProblemSetPage";
 import ProblemSetDetailPage from "@pages/problemset/ProblemSetDetailPage";
+import CreateProblemSetPage from "@pages/problemset/CreateProblemSetPage";
 import SearchPage from "@pages/search/SearchPage";
 import MyPage from "@pages/mypage/MyPage";
 import SettingsPage from "@pages/mypage/SettingsPage";
@@ -31,6 +32,7 @@ const router = createBrowserRouter([
       { path: "code/:programProblemId", element: <CodeSubmitPage /> },
       { path: "review/:submissionId", element: <CodeReviewPage /> },
       { path: "problemset", element: <ProblemSetPage /> },
+      { path: "problemset/create", element: <CreateProblemSetPage /> },
       { path: "problemset/:programId", element: <ProblemSetDetailPage /> },
       { path: "search", element: <SearchPage /> },
       { path: "statistics/:programProblemId", element: <ProblemStatisticsPage /> },

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchGroupJoinRequests, respondToJoinRequest, cancelGroupInvitation, fetchGroupInviteList } from "../../api/group/groupApi";
+import Toast, { type ToastType } from "@components/toast/Toast";
+import ConfirmModal from "@components/modal/ConfirmModal";
 
 interface GroupJoinRequestsModalProps {
     programId: number;
@@ -10,6 +12,19 @@ interface GroupJoinRequestsModalProps {
 export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoinRequestsModalProps) {
     const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState<"JOIN_REQUEST" | "INVITE_LIST">("JOIN_REQUEST");
+    const [toastConfig, setToastConfig] = useState<{ message: string; type: ToastType } | null>(null);
+
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        onConfirm: () => void;
+    }>({
+        isOpen: false,
+        title: "",
+        message: "",
+        onConfirm: () => { },
+    });
 
     // 가입 신청 목록 조회
     const { data: requestData, isLoading: isRequestLoading } = useQuery({
@@ -36,13 +51,13 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
             respondToJoinRequest(programId, joinId, isAccepted),
         onSuccess: (_, variables) => {
             const msg = variables.isAccepted === "ACCEPTED" ? "승인되었습니다." : "거절되었습니다.";
-            alert(msg);
+            setToastConfig({ message: msg, type: "success" });
             queryClient.invalidateQueries({ queryKey: ["groupJoinRequests", programId] });
             queryClient.invalidateQueries({ queryKey: ["groupDetail", programId] });
         },
         onError: (err) => {
             console.error(err);
-            alert("처리 중 오류가 발생했습니다.");
+            setToastConfig({ message: "처리 중 오류가 발생했습니다.", type: "error" });
         }
     });
 
@@ -56,29 +71,50 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
     const cancelInviteMutation = useMutation({
         mutationFn: (inviteId: number) => cancelGroupInvitation(programId, inviteId),
         onSuccess: () => {
-            alert("초대가 취소되었습니다.");
+            setToastConfig({ message: "초대가 취소되었습니다.", type: "success" });
             queryClient.invalidateQueries({ queryKey: ["groupInviteList", programId] });
         },
         onError: (err) => {
             console.error(err);
-            alert("초대 취소에 실패했습니다.");
+            setToastConfig({ message: "초대 취소에 실패했습니다.", type: "error" });
         }
     });
 
     const handleAction = (joinId: number, isAccepted: "ACCEPTED" | "DENIED") => {
-        if (!window.confirm(isAccepted === "ACCEPTED" ? "승인하시겠습니까?" : "거절하시겠습니까?")) return;
-        mutation.mutate({ joinId, isAccepted });
+        setConfirmModal({
+            isOpen: true,
+            title: isAccepted === "ACCEPTED" ? "가입 승인" : "가입 거절",
+            message: isAccepted === "ACCEPTED" ? "이 유저의 가입을 승인하시겠습니까?" : "이 유저의 가입을 거절하시겠습니까?",
+            onConfirm: () => {
+                mutation.mutate({ joinId, isAccepted });
+                setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+            },
+        });
     };
 
     const handleCancelInvite = (inviteId: number) => {
-        if (!window.confirm("정말 이 초대를 취소하시겠습니까?")) return;
-        cancelInviteMutation.mutate(inviteId);
+        setConfirmModal({
+            isOpen: true,
+            title: "초대 취소",
+            message: "정말 이 초대를 취소하시겠습니까?",
+            onConfirm: () => {
+                cancelInviteMutation.mutate(inviteId);
+                setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+            },
+        });
     };
 
     const isLoading = activeTab === "JOIN_REQUEST" ? isRequestLoading : isInviteLoading;
 
     return (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+            {toastConfig && (
+                <Toast
+                    message={toastConfig.message}
+                    type={toastConfig.type}
+                    onClose={() => setToastConfig(null)}
+                />
+            )}
             <div className="bg-white w-[800px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl overflow-hidden relative">
 
                 {/* 헤더 */}
@@ -131,9 +167,10 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
                                                         <img
-                                                            src={req.profileImage || "/default-profile.png"}
+                                                            src={req.profileImage || "/icons/userIcon.svg"}
+                                                            onError={(e) => { (e.target as HTMLImageElement).src = "/icons/userIcon.svg"; }}
                                                             alt="profile"
-                                                            className="w-10 h-10 rounded-full object-cover border border-gray-200"
+                                                            className={`w-10 h-10 rounded-full object-cover border border-gray-200 ${!req.profileImage || (req.profileImage as string).includes("userIcon") ? "p-2 bg-gray-100 object-contain" : ""}`}
                                                         />
                                                         <span className="font-bold text-grayscale-dark-gray text-sm">
                                                             {req.nickname}
@@ -147,13 +184,13 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
                                                     <div className="flex justify-center items-center gap-2">
                                                         <button
                                                             onClick={() => handleAction(req.joinId, "ACCEPTED")}
-                                                            className="px-3 py-1 bg-primary-main text-white text-xs rounded hover:bg-primary-dark transition-colors"
+                                                            className="w-16 py-1.5 bg-primary-main text-white text-xs font-bold rounded hover:bg-primary-dark transition-colors"
                                                         >
                                                             승인
                                                         </button>
                                                         <button
                                                             onClick={() => handleAction(req.joinId, "DENIED")}
-                                                            className="px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded hover:bg-gray-200 transition-colors"
+                                                            className="w-16 py-1.5 bg-gray-100 text-gray-600 text-xs font-medium rounded hover:bg-gray-200 transition-colors"
                                                         >
                                                             거절
                                                         </button>
@@ -176,9 +213,10 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
                                                         <img
-                                                            src={invite.profileImage || "/default-profile.png"}
+                                                            src={invite.profileImage || "/icons/userIcon.svg"}
+                                                            onError={(e) => { (e.target as HTMLImageElement).src = "/icons/userIcon.svg"; }}
                                                             alt="profile"
-                                                            className="w-10 h-10 rounded-full object-cover border border-gray-200"
+                                                            className={`w-10 h-10 rounded-full object-cover border border-gray-200 ${!invite.profileImage || (invite.profileImage as string).includes("userIcon") ? "p-2 bg-gray-100 object-contain" : ""}`}
                                                         />
                                                         <span className="font-bold text-grayscale-dark-gray text-sm">
                                                             {invite.nickname}
@@ -224,6 +262,14 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
                     )}
                 </div>
             </div>
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                onConfirm={confirmModal.onConfirm}
+                onCancel={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+            />
         </div>
     );
 }

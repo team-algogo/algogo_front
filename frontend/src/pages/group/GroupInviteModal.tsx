@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { searchUsersForGroup, inviteUserToGroup } from "../../api/group/groupApi";
+import ConfirmModal from "@components/modal/ConfirmModal";
+import Toast, { type ToastType } from "@components/toast/Toast";
 
 interface GroupInviteModalProps {
     programId: number;
@@ -10,6 +12,19 @@ interface GroupInviteModalProps {
 export default function GroupInviteModal({ programId, onClose }: GroupInviteModalProps) {
     const [keyword, setKeyword] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
+    const [toastConfig, setToastConfig] = useState<{ message: string; type: ToastType } | null>(null);
+
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        onConfirm: () => void;
+    }>({
+        isOpen: false,
+        title: "",
+        message: "",
+        onConfirm: () => { },
+    });
 
     // 유저 검색
     const { data: searchData, isLoading: isSearching } = useQuery({
@@ -24,12 +39,12 @@ export default function GroupInviteModal({ programId, onClose }: GroupInviteModa
     const inviteMutation = useMutation({
         mutationFn: (userId: number) => inviteUserToGroup(programId, userId),
         onSuccess: () => {
-            alert("초대 요청을 보냈습니다.");
+            setToastConfig({ message: "초대 요청을 보냈습니다.", type: "success" });
         },
         onError: (err: any) => {
             console.error(err);
             const msg = err.response?.data?.message || "초대에 실패했습니다.";
-            alert(msg);
+            setToastConfig({ message: msg, type: "error" });
         },
     });
 
@@ -40,12 +55,26 @@ export default function GroupInviteModal({ programId, onClose }: GroupInviteModa
     };
 
     const handleInvite = (userId: number, nickname: string) => {
-        if (!window.confirm(`'${nickname}'님을 그룹에 초대하시겠습니까?`)) return;
-        inviteMutation.mutate(userId);
+        setConfirmModal({
+            isOpen: true,
+            title: "멤버 초대",
+            message: `'${nickname}'님을 그룹에 초대하시겠습니까?`,
+            onConfirm: () => {
+                inviteMutation.mutate(userId);
+                setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+            },
+        });
     };
 
     return (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+            {toastConfig && (
+                <Toast
+                    message={toastConfig.message}
+                    type={toastConfig.type}
+                    onClose={() => setToastConfig(null)}
+                />
+            )}
             <div className="bg-white w-[600px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl overflow-hidden relative">
 
                 {/* 헤더 */}
@@ -97,9 +126,10 @@ export default function GroupInviteModal({ programId, onClose }: GroupInviteModa
                                 <div key={user.userId} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
                                     <div className="flex items-center gap-3">
                                         <img
-                                            src={user.profileImage || "/default-profile.png"}
+                                            src={user.profileImage || "/icons/userIcon.svg"}
+                                            onError={(e) => { (e.target as HTMLImageElement).src = "/icons/userIcon.svg"; }}
                                             alt="profile"
-                                            className="w-12 h-12 rounded-full object-cover border border-gray-200"
+                                            className={`w-12 h-12 rounded-full object-cover border border-gray-200 ${!user.profileImage || (user.profileImage as string).includes("userIcon") ? "p-2 bg-gray-100 object-contain" : ""}`}
                                         />
                                         <div>
                                             <div className="font-bold text-grayscale-dark-gray text-sm">
@@ -127,6 +157,14 @@ export default function GroupInviteModal({ programId, onClose }: GroupInviteModa
                     )}
                 </div>
             </div>
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                onConfirm={confirmModal.onConfirm}
+                onCancel={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+            />
         </div>
     );
 }

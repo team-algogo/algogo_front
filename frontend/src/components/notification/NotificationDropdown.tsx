@@ -6,6 +6,7 @@ import { getNotificationList } from "@api/notification/getNotificationList";
 import { deleteNotification } from "@api/notification/deleteNotification";
 import { respondToJoinRequest } from "@api/notification/respondToJoinRequest";
 import { respondToInvite } from "@api/notification/respondToInvite";
+import Toast, { type ToastType } from "@components/toast/Toast";
 import type { Alarm } from "@type/notification/notification.d.ts";
 import { useNavigate } from "react-router-dom";
 
@@ -17,6 +18,7 @@ export default function NotificationDropdown() {
     useState<Alarm | null>(null);
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [toastConfig, setToastConfig] = useState<{ message: string; type: ToastType } | null>(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -43,6 +45,7 @@ export default function NotificationDropdown() {
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
       setSelectedIds([]);
       setIsDeleteMode(false);
+      setToastConfig({ message: "알림이 삭제되었습니다.", type: "success" });
     },
   });
 
@@ -51,39 +54,43 @@ export default function NotificationDropdown() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
       setSelectedNotification(null);
-      alert(
-        variables.isAccepted === "ACCEPTED"
+      setToastConfig({
+        message: variables.isAccepted === "ACCEPTED"
           ? "참여 신청을 수락했습니다."
           : "참여 신청을 거절했습니다.",
-      );
+        type: "success"
+      });
     },
     onError: (error: any) => {
       console.error("Failed to respond to join request", error);
       if (error.response?.status === 400) {
-        alert("이미 처리된 요청입니다.");
+        setToastConfig({ message: "이미 처리된 요청입니다.", type: "error" });
       } else {
-        alert("요청 처리에 실패했습니다.");
+        setToastConfig({ message: "요청 처리에 실패했습니다.", type: "error" });
       }
     },
   });
 
   const respondToInviteMutation = useMutation({
     mutationFn: respondToInvite,
-    onSuccess: (_, variables) => {
+    onSuccess: (data: any, variables) => {
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
       setSelectedNotification(null);
-      alert(
-        variables.isAccepted === "ACCEPTED"
+      setToastConfig({
+        message: data?.message || (variables.isAccepted === "ACCEPTED"
           ? "초대를 수락했습니다."
-          : "초대를 거절했습니다.",
-      );
+          : "초대를 거절했습니다."),
+        type: "success"
+      });
     },
     onError: (error: any) => {
       console.error("Failed to respond to invite", error);
       if (error.response?.status === 400) {
-        alert("이미 처리된 요청입니다.");
+        setToastConfig({ message: "이미 처리된 요청입니다.", type: "error" });
+        // 이미 처리된 경우에도 목록 갱신 필요
+        queryClient.invalidateQueries({ queryKey: ["notifications"] });
       } else {
-        alert("요청 처리에 실패했습니다.");
+        setToastConfig({ message: "요청 처리에 실패했습니다.", type: "error" });
       }
     },
   });
@@ -197,26 +204,31 @@ export default function NotificationDropdown() {
 
   return (
     <>
+      {toastConfig && (
+        <Toast
+          message={toastConfig.message}
+          type={toastConfig.type}
+          onClose={() => setToastConfig(null)}
+        />
+      )}
       <div className="absolute top-[60px] right-0 z-50 flex w-[400px] flex-col overflow-hidden rounded-[12px] border border-[#F4F4F5] bg-white shadow-lg">
         {/* Header / Tabs */}
         <div className="relative flex h-[48px] w-full flex-row border-b border-[#F4F4F5] bg-white">
           <button
             onClick={() => setActiveTab("NOTIFICATION")}
-            className={`flex flex-1 items-center justify-center text-[15px] font-medium transition-colors ${
-              activeTab === "NOTIFICATION"
-                ? "border-b-2 border-[#333333] text-[#333333]"
-                : "text-[#999999] hover:text-[#555555]"
-            }`}
+            className={`flex flex-1 items-center justify-center text-[15px] font-medium transition-colors ${activeTab === "NOTIFICATION"
+              ? "border-b-2 border-[#333333] text-[#333333]"
+              : "text-[#999999] hover:text-[#555555]"
+              }`}
           >
             알림
           </button>
           <button
             onClick={() => setActiveTab("INVITE")}
-            className={`flex flex-1 items-center justify-center text-[15px] font-medium transition-colors ${
-              activeTab === "INVITE"
-                ? "border-b-2 border-[#333333] text-[#333333]"
-                : "text-[#999999] hover:text-[#555555]"
-            }`}
+            className={`flex flex-1 items-center justify-center text-[15px] font-medium transition-colors ${activeTab === "INVITE"
+              ? "border-b-2 border-[#333333] text-[#333333]"
+              : "text-[#999999] hover:text-[#555555]"
+              }`}
           >
             초대
           </button>
@@ -381,11 +393,10 @@ export default function NotificationDropdown() {
               <button
                 onClick={handleBatchDelete}
                 disabled={selectedIds.length === 0}
-                className={`flex-1 rounded-lg py-2 text-[13px] font-medium transition-colors ${
-                  selectedIds.length > 0
-                    ? "bg-red-500 text-white hover:bg-red-600"
-                    : "cursor-not-allowed bg-gray-200 text-gray-400"
-                }`}
+                className={`flex-1 rounded-lg py-2 text-[13px] font-medium transition-colors ${selectedIds.length > 0
+                  ? "bg-red-500 text-white hover:bg-red-600"
+                  : "cursor-not-allowed bg-gray-200 text-gray-400"
+                  }`}
               >
                 삭제 ({selectedIds.length})
               </button>

@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchGroupMembers, updateGroupMemberRole, deleteGroupMember, fetchGroupDetail } from "../../api/group/groupApi";
+import { getUserDetail } from "@api/auth/auth";
 import GroupInviteModal from "./GroupInviteModal";
+import ConfirmModal from "@components/modal/ConfirmModal";
 
 interface GroupMembersModalProps {
     programId: number;
@@ -11,6 +13,26 @@ interface GroupMembersModalProps {
 export default function GroupMembersModal({ programId, onClose }: GroupMembersModalProps) {
     const queryClient = useQueryClient();
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+
+    // 내 정보 조회 (ID 확인용)
+    const { data: myData } = useQuery({
+        queryKey: ["myProfile"],
+        queryFn: getUserDetail,
+    });
+    const myUserId = myData?.userId;
+
+    // Confirm Modal State
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        onConfirm: () => void;
+    }>({
+        isOpen: false,
+        title: "",
+        message: "",
+        onConfirm: () => { },
+    });
 
     // 내 권한 확인을 위해 그룹 상세 정보 조회
     const { data: detailData } = useQuery({
@@ -28,6 +50,26 @@ export default function GroupMembersModal({ programId, onClose }: GroupMembersMo
     });
 
     const members = memberData?.data?.members || [];
+
+    // Sort Members: ADMIN -> Me -> Others
+    const sortedMembers = [...members].sort((a, b) => {
+        // 1. Admin first
+        if (a.role === "ADMIN" && b.role !== "ADMIN") return -1;
+        if (a.role !== "ADMIN" && b.role === "ADMIN") return 1;
+
+        // 2. Me second (if not admin, or if both admin - unlikely but safe)
+        // Group Member API의 programUserId가 userId와 같은지 확인해야 함.
+        // 보통 member.programUserId가 user의 PK인지, group-user relation PK인지 확인 필요.
+        // API 응답 예시를 못봤지만, 보통 list api는 userId를 줄 것임.
+        // GroupMembersModal.tsx의 기존 코드에서 handleDeleteMember(member.programUserId)를 호출함.
+        // deleteGroupMember API는 (programId, userId)를 받음.
+        // 따라서 programUserId는 User Table의 PK일 가능성이 높음.
+        if (myUserId && a.programUserId === myUserId && b.programUserId !== myUserId) return -1;
+        if (myUserId && a.programUserId !== myUserId && b.programUserId === myUserId) return 1;
+
+        // 3. Others (Alphabetical by nickname)
+        return a.nickname.localeCompare(b.nickname);
+    });
 
     // --- Mutations ---
 
@@ -60,15 +102,29 @@ export default function GroupMembersModal({ programId, onClose }: GroupMembersMo
 
 
     // --- Handlers ---
-    const handleRoleChange = (userId: number, newRole: "MANAGER" | "USER") => {
-        // const newRole = currentRole === "ADMIN" ? "USER" : "ADMIN"; // Old logic
-        if (!window.confirm(`해당 멤버의 권한을 '${newRole}'(으)로 변경하시겠습니까?`)) return;
-        updateRoleMutation.mutate({ userId, role: newRole });
+    // --- Handlers ---
+    const handleRoleChange = (targetUserId: number, newRole: "MANAGER" | "USER") => {
+        setConfirmModal({
+            isOpen: true,
+            title: "권한 변경",
+            message: `해당 멤버의 권한을 '${newRole}'(으)로 변경하시겠습니까?`,
+            onConfirm: () => {
+                updateRoleMutation.mutate({ userId: targetUserId, role: newRole });
+                setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+            },
+        });
     };
 
-    const handleDeleteMember = (userId: number, nickname: string) => {
-        if (!window.confirm(`'${nickname}'님을 그룹에서 정말 삭제하시겠습니까?`)) return;
-        deleteMemberMutation.mutate(userId);
+    const handleDeleteMember = (targetUserId: number, nickname: string) => {
+        setConfirmModal({
+            isOpen: true,
+            title: "멤버 강퇴",
+            message: `'${nickname}'님을 그룹에서 정말 삭제하시겠습니까?`,
+            onConfirm: () => {
+                deleteMemberMutation.mutate(targetUserId);
+                setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+            },
+        });
     };
 
     return (
@@ -80,20 +136,22 @@ export default function GroupMembersModal({ programId, onClose }: GroupMembersMo
                     <div className="p-6 border-b border-grayscale-warm-gray flex justify-between items-center bg-gray-50">
                         <h2 className="font-headline text-2xl text-grayscale-dark-gray flex items-center gap-2">
                             그룹 멤버
-                            <span className="text-base font-normal text-grayscale-warm-gray">({members.length})</span>
+                            <span className="text-base font-normal text-grayscale-warm-gray">({sortedMembers.length})</span>
                         </h2>
-                        {userRole === "ADMIN" && (
-                            <button
-                                onClick={() => setIsInviteModalOpen(true)}
-                                className="bg-primary-main/10 text-primary-main hover:bg-primary-main hover:text-white px-3 py-1.5 rounded-lg text-sm font-bold transition-colors flex items-center gap-1"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                                초대
+                        <div className="flex items-center gap-2">
+                            {userRole === "ADMIN" && (
+                                <button
+                                    onClick={() => setIsInviteModalOpen(true)}
+                                    className="bg-primary-main/10 text-primary-main hover:bg-primary-main hover:text-white px-3 py-1.5 rounded-lg text-sm font-bold transition-colors flex items-center gap-1"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                                    초대
+                                </button>
+                            )}
+                            <button onClick={onClose} className="text-grayscale-warm-gray hover:text-grayscale-dark-gray">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
-                        )}
-                        <button onClick={onClose} className="text-grayscale-warm-gray hover:text-grayscale-dark-gray">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
+                        </div>
                     </div>
 
                     {/* 리스트 영역 */}
@@ -113,15 +171,16 @@ export default function GroupMembersModal({ programId, onClose }: GroupMembersMo
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-grayscale-warm-gray/30">
-                                    {members.length > 0 ? (
-                                        members.map((member: any) => (
+                                    {sortedMembers.length > 0 ? (
+                                        sortedMembers.map((member: any) => (
                                             <tr key={member.programUserId} className="hover:bg-gray-50/50 transition-colors">
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
                                                         <img
-                                                            src={member.profileImage || "/default-profile.png"}
+                                                            src={member.profileImage || "/icons/userIcon.svg"}
+                                                            onError={(e) => { (e.target as HTMLImageElement).src = "/icons/userIcon.svg"; }}
                                                             alt="profile"
-                                                            className="w-10 h-10 rounded-full object-cover border border-gray-200"
+                                                            className={`w-10 h-10 rounded-full object-cover border border-gray-200 ${!member.profileImage || (member.profileImage as string).includes("userIcon") ? "p-2 bg-gray-100 object-contain" : ""}`}
                                                         />
                                                         <span className="font-bold text-grayscale-dark-gray text-sm">
                                                             {member.nickname}
@@ -189,6 +248,14 @@ export default function GroupMembersModal({ programId, onClose }: GroupMembersMo
                     onClose={() => setIsInviteModalOpen(false)}
                 />
             )}
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                onConfirm={confirmModal.onConfirm}
+                onCancel={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+            />
         </>
     );
 }

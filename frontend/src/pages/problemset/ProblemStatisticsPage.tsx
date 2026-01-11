@@ -262,11 +262,9 @@ export default function ProblemStatisticsPage() {
                 문제집으로 돌아가기
               </button>
             </div>
-            <h1 className="flex items-center gap-3 text-[28px] font-bold text-[#333333]">
+            <h1 className="flex items-baseline gap-3 text-[28px] font-bold text-[#333333]">
               {problemInfo?.problemNo}. {problemInfo?.title}
-              <span className="text-[16px] font-normal text-gray-400">
-                통계
-              </span>
+              <span className="text-[16px] font-bold text-gray-400">통계</span>
             </h1>
           </div>
 
@@ -525,21 +523,19 @@ export default function ProblemStatisticsPage() {
                           </span>
                         )}
                         {/* Tooltip for Algorithm - Show all algorithms on hover */}
-                        {sub.algorithmList.length > 2 && (
-                          <div className="pointer-events-none invisible absolute bottom-full left-1/2 z-20 mb-2 w-max max-w-[300px] -translate-x-1/2 transform rounded-lg bg-gray-800 p-3 text-xs text-white opacity-0 shadow-lg transition-all group-hover:visible group-hover:opacity-100">
-                            <div className="flex flex-wrap justify-center gap-1.5">
-                              {sub.algorithmList.map((algo) => (
-                                <span
-                                  key={algo.id}
-                                  className="inline-flex items-center justify-center rounded-full border border-gray-600 bg-gray-700 px-2.5 py-1 text-[10px] font-medium text-gray-200"
-                                >
-                                  {algo.name}
-                                </span>
-                              ))}
-                            </div>
-                            <div className="absolute top-full left-1/2 -translate-x-1/2 transform border-4 border-transparent border-t-gray-800"></div>
+                        <div className="pointer-events-none invisible absolute bottom-full left-1/2 z-20 mb-2 w-max max-w-[300px] -translate-x-1/2 transform rounded-lg bg-gray-800 p-3 text-xs text-white opacity-0 shadow-lg transition-all group-hover:visible group-hover:opacity-100">
+                          <div className="flex flex-wrap justify-center gap-1.5">
+                            {sub.algorithmList.map((algo) => (
+                              <span
+                                key={algo.id}
+                                className="inline-flex items-center justify-center rounded-full border border-gray-600 bg-gray-700 px-2.5 py-1 text-[10px] font-medium text-gray-200"
+                              >
+                                {algo.name}
+                              </span>
+                            ))}
                           </div>
-                        )}
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 transform border-4 border-transparent border-t-gray-800"></div>
+                        </div>
                       </>
                     ) : (
                       <span className="text-xs text-gray-300">-</span>

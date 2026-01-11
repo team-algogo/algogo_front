@@ -1,24 +1,32 @@
-import { useState } from "react";
-import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import SortSelect from "@components/selectbox/SortSelect";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import CustomSelect, {
+  type SelectOption,
+} from "@components/selectbox/CustomSelect";
 import { getProblemSetDetail } from "@api/problemset/getProblemSetDetail";
 import { getProblemSetProblems } from "@api/problemset/getProblemSetProblems";
+import { getCheckUser } from "@api/auth/auth";
+import { addProblems } from "@api/problemset/addProblems";
+import { removeProblems } from "@api/problemset/removeProblems";
 import ProblemSetDetailHeader from "@components/problemset/detail/ProblemSetDetailHeader";
 import ProblemListTable from "@components/problemset/detail/ProblemListTable";
+import ProblemSearchModal from "@components/problemset/detail/ProblemSearchModal";
 import Pagination from "@components/pagination/Pagination";
+import Button from "@components/button/Button";
 import useAuthStore from "@store/useAuthStore";
 import BasePage from "@pages/BasePage";
 
 export default function ProblemSetDetailPage() {
   const { programId } = useParams<{ programId: string }>();
   const id = Number(programId);
+  const navigate = useNavigate();
 
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState("startDate");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
-  const sortOptions = [
+  const sortOptions: SelectOption[] = [
     { label: "최신순", value: "startDate" },
     { label: "참여자순", value: "participantCount" },
     { label: "제출순", value: "submissionCount" },
@@ -43,6 +51,71 @@ export default function ProblemSetDetailPage() {
   const { userType } = useAuthStore();
   const isLogined = !!userType;
 
+  // 사용자 정보 조회 (ADMIN 확인용)
+  const { data: meData } = useQuery({
+    queryKey: ["me"],
+    queryFn: () => getCheckUser(),
+    enabled: isLogined,
+  });
+
+  const isAdmin = meData?.data?.userRole === "ADMIN";
+  const queryClient = useQueryClient();
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [existingProblemIds, setExistingProblemIds] = useState<number[]>([]);
+
+  // 기존 문제 ID 수집 (이미 추가된 문제는 검색 결과에서 제외)
+  useEffect(() => {
+    if (problems && problems.length > 0) {
+      // Problem 타입의 problemResponseDto 또는 problem에서 id를 추출
+      const ids = problems
+        .map((p) => p.problemResponseDto?.id || p.problem?.id)
+        .filter((id): id is number => id !== undefined);
+      setExistingProblemIds(ids);
+    }
+  }, [problems]);
+
+  // 문제 추가 mutation
+  const addProblemsMutation = useMutation({
+    mutationFn: (problemIds: number[]) => addProblems(id, problemIds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["problemSetProblems", id],
+      });
+      setIsSearchModalOpen(false);
+    },
+    onError: (error: any) => {
+      console.error("문제 추가 실패:", error);
+    },
+  });
+
+  // 문제 삭제 mutation
+  const removeProblemsMutation = useMutation({
+    mutationFn: (programProblemIds: number[]) =>
+      removeProblems(id, programProblemIds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["problemSetProblems", id],
+      });
+    },
+    onError: (error: any) => {
+      console.error("문제 삭제 실패:", error);
+    },
+  });
+
+  const handleAddProblems = (problemIds: number[]) => {
+    addProblemsMutation.mutate(problemIds);
+  };
+
+  const handleDeleteProblems = (programProblemIds: number[]) => {
+    if (
+      window.confirm(
+        `선택한 ${programProblemIds.length}개 문제를 삭제하시겠습니까?`,
+      )
+    ) {
+      removeProblemsMutation.mutate(programProblemIds);
+    }
+  };
+
   // Handle Page Change
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -50,66 +123,89 @@ export default function ProblemSetDetailPage() {
     }
   };
 
-  const toggleSortDirection = () => {
+  const handleSortToggle = () => {
     setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
   };
 
   return (
     <BasePage>
-      <div className="mx-auto flex h-full w-full max-w-7xl flex-col items-start gap-10 bg-white p-[40px_24px_80px]">
+      <div className="mx-auto flex h-full w-full max-w-[1200px] flex-col items-start gap-8 bg-white p-[40px_0px_80px]">
         {/* Header Section */}
         {detail && (
-          <ProblemSetDetailHeader
-            title={detail.title}
-            description={detail.description}
-            categories={detail.categories}
-          />
+          <div className="flex w-full flex-row items-end justify-between border-b border-gray-200 pb-6">
+            <div className="flex flex-col gap-2">
+              <div className="mb-1 flex items-center gap-3 text-gray-500">
+                <button
+                  onClick={() => navigate("/problemset")}
+                  className="flex items-center gap-1 text-sm transition-colors hover:text-[#333333]"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M10 12L6 8L10 4"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  다른 문제집 살펴보기
+                </button>
+              </div>
+              <ProblemSetDetailHeader
+                title={detail.title}
+                description={detail.description}
+                categories={detail.categories}
+              />
+            </div>
+            {/* ADMIN일 때만 문제 추가 버튼 표시 */}
+            {isAdmin && (
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => setIsSearchModalOpen(true)}
+              >
+                문제 추가
+              </Button>
+            )}
+          </div>
         )}
 
         {/* Content Section: Table + Controls */}
-        <div className="flex w-full flex-col items-start gap-[24px]">
+        <div className="flex w-full flex-col items-start gap-6">
           {/* Controls Header */}
-          <div className="flex h-[34px] w-full flex-row items-center justify-between">
-            <h2 className="font-ibm text-[24px] leading-[130%] font-medium tracking-[0.01em] text-[#333333]">
-              문제 리스트
-            </h2>
+          <div className="flex w-full flex-row items-center justify-between">
+            <h2 className="text-lg font-bold text-[#333333]">문제 리스트</h2>
 
-            <div className="flex flex-row items-center gap-[16px]">
-              {/* Sort Direction Toggle Icon */}
-              <button
-                onClick={toggleSortDirection}
-                className="flex h-[16px] w-[16px] cursor-pointer items-center justify-center"
-                aria-label="Toggle sort direction"
-              >
-                <svg
-                  width="16"
-                  height="14"
-                  viewBox="0 0 16 14"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  {/* Path 1 (Right): Up Arrow (asc) */}
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M11.5 14C11.7761 14 12 13.7761 12 13.5V1.70711L15.1464 4.85355C15.3417 5.04882 15.6583 5.04882 15.8536 4.85355C16.0488 4.65829 16.0488 4.34171 15.8536 4.14645L11.8536 0.146446C11.6583 -0.0488155 11.3417 -0.0488155 11.1464 0.146446L7.14645 4.14645C6.95118 4.34171 6.95118 4.65829 7.14645 4.85355C7.34171 5.04882 7.65829 5.04882 7.85355 4.85355L11 1.70711V13.5C11 13.7761 11.2239 14 11.5 14Z"
-                    fill={sortDirection === "asc" ? "#333333" : "#727479"}
-                  />
-                  {/* Path 2 (Left): Down Arrow (desc) */}
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M4.5 2.38419e-07C4.77614 2.38419e-07 5 0.223858 5 0.5V12.2929L8.14645 9.14645C8.34171 8.95118 8.65829 8.95118 8.85355 9.14645C9.04882 9.34171 9.04882 9.65829 8.85355 9.85355L4.85355 13.8536C4.65829 14.0488 4.34171 14.0488 4.14645 13.8536L0.146447 9.85355C-0.0488155 9.65829 -0.0488155 9.34171 0.146447 9.14645C0.341709 8.95118 0.658292 8.95118 0.853554 9.14645L4 12.2929V0.5C4 0.223858 4.22386 2.38419e-07 4.5 2.38419e-07Z"
-                    fill={sortDirection === "desc" ? "#333333" : "#727479"}
-                  />
-                </svg>
-              </button>
-
-              <SortSelect
+            <div className="flex flex-row items-center gap-2">
+              {/* Sort Controls */}
+              <CustomSelect
                 value={sortBy}
-                onChange={setSortBy}
+                onChange={(value) => {
+                  setSortBy(value);
+                }}
                 options={sortOptions}
               />
+              <button
+                onClick={handleSortToggle}
+                className="flex h-[36px] w-[36px] items-center justify-center rounded-lg bg-gray-100 transition-colors hover:bg-gray-200"
+                title={sortDirection === "asc" ? "오름차순" : "내림차순"}
+              >
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  className={`transform transition-transform duration-200 ${sortDirection === "asc" ? "rotate-180" : ""}`}
+                >
+                  <path d="M6 9L2 5H10L6 9Z" fill="#666666" />
+                </svg>
+              </button>
             </div>
           </div>
 
@@ -118,6 +214,9 @@ export default function ProblemSetDetailPage() {
             problems={problems}
             page={page}
             isLogined={isLogined}
+            programId={id}
+            isAdmin={isAdmin}
+            onDelete={handleDeleteProblems}
           />
 
           {/* Pagination */}
@@ -130,6 +229,14 @@ export default function ProblemSetDetailPage() {
           )}
         </div>
       </div>
+
+      {/* 문제 검색 모달 */}
+      <ProblemSearchModal
+        isOpen={isSearchModalOpen}
+        onClose={() => setIsSearchModalOpen(false)}
+        onSelect={handleAddProblems}
+        selectedProblemIds={existingProblemIds}
+      />
     </BasePage>
   );
 }

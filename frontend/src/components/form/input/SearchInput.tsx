@@ -28,8 +28,15 @@ const SearchInput = ({
       }
       try {
         const response = await getAlgorithm(value);
-        if (response) {
-          setSearchResults(response.algorithmList);
+        if (response && response.algorithmList) {
+          // 이미 선택한 알고리즘은 검색 결과에서 제외
+          const selectedIds = selectedItems.map((item) => item.id);
+          const filteredResults = response.algorithmList.filter(
+            (algo) => !selectedIds.includes(algo.id),
+          );
+          setSearchResults(filteredResults);
+        } else {
+          setSearchResults([]);
         }
       } catch (error) {
         console.error("Failed to fetch algorithms", error);
@@ -42,7 +49,7 @@ const SearchInput = ({
     }, 300);
 
     return () => clearTimeout(debounce);
-  }, [value]);
+  }, [value, selectedItems]);
 
   // Handle clicking outside to close dropdown
   useEffect(() => {
@@ -95,14 +102,14 @@ const SearchInput = ({
             onChange={(e) => setValue(e.target.value)}
             onFocus={() => setIsFocused(true)}
             placeholder="알고리즘 선택"
-            className={`h-10 w-full rounded-md border px-3 py-2 pr-10 text-sm transition-all focus:outline-none ${clicked ? "border-primary-500 ring-1 ring-primary-500" : "border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"}`}
+            className={`h-9 w-full rounded-lg border px-3 py-2 pr-10 text-sm transition-all focus:outline-none ${clicked ? "border-primary-500 ring-primary-500 ring-1" : "border-gray-300 focus:border-[#0D6EFD] focus:ring-1 focus:ring-[#0D6EFD]"}`}
           />
 
           {value && (
             <button
               type="button"
               onClick={() => setValue("")}
-              className="absolute top-0 right-10 flex size-10 items-center justify-center hover:opacity-75"
+              className="absolute top-0 right-10 flex h-9 w-10 items-center justify-center hover:opacity-75"
             >
               <img src="/icons/clearIcon.svg" className="size-4" alt="clear" />
             </button>
@@ -112,9 +119,13 @@ const SearchInput = ({
             type="submit"
             onMouseDown={handleClick}
             onMouseUp={handleClick}
-            className={`absolute top-0 right-0 flex size-10 items-center justify-center rounded-r-md transition-colors ${clicked ? "bg-primary-600" : "bg-primary-500 hover:bg-primary-600"}`}
+            className={`absolute top-0 right-0 flex h-9 w-10 items-center justify-center rounded-r-lg transition-colors ${clicked ? "bg-primary-600" : "bg-primary-500 hover:bg-primary-600"}`}
           >
-            <img src="/icons/searchIcon.svg" className="size-4 invert brightness-0" alt="search" />
+            <img
+              src="/icons/searchIcon.svg"
+              className="size-4 brightness-0 invert"
+              alt="search"
+            />
           </button>
         </form>
 
@@ -134,7 +145,7 @@ const SearchInput = ({
         )}
         {isFocused && searchResults.length === 0 && (
           <div className="absolute top-full left-0 z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg">
-            <div className="text-gray-500 cursor-pointer px-4 py-2 text-sm hover:bg-gray-100">
+            <div className="cursor-pointer px-4 py-2 text-sm text-gray-500 hover:bg-gray-100">
               검색된 알고리즘이 없습니다.
             </div>
           </div>
@@ -147,7 +158,7 @@ const SearchInput = ({
           {selectedItems.map((item) => (
             <div
               key={item.id}
-              className="bg-primary-50 border border-primary-200 text-primary-700 flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium"
+              className="bg-primary-50 border-primary-200 text-primary-700 flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium"
             >
               <span>{item.name}</span>
               <button

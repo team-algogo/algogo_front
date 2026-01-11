@@ -6,19 +6,19 @@ interface ProblemSetDetailHeaderProps {
 
 export default function ProblemSetDetailHeader({ title, description, categories }: ProblemSetDetailHeaderProps) {
     return (
-        <div className="flex flex-col items-start gap-[8px] w-full">
+        <div className="flex flex-col items-start gap-2">
             {categories && categories.length > 0 && (
-                <div className={`flex flex-row justify-center items-center px-[8px] py-[6px] gap-[10px] w-fit h-fit rounded-[100px] ${categories[0] === '알고리즘' ? 'bg-[#F0FDFA]' : 'bg-[#EFF6FF]'}`}>
-                    <span className={`text-[12px] font-medium leading-[130%] tracking-[-0.01em] text-center whitespace-nowrap ${categories[0] === '알고리즘' ? 'text-[#0F766E]' : 'text-[#1D4ED8]'} font-ibm`}>
+                <div className={`flex flex-row justify-center items-center px-[8px] py-[6px] gap-[10px] w-fit h-fit rounded-full ${categories[0] === '알고리즘' ? 'bg-teal-50' : 'bg-blue-50'}`}>
+                    <span className={`text-xs font-medium leading-[130%] text-center whitespace-nowrap ${categories[0] === '알고리즘' ? 'text-teal-700' : 'text-blue-700'}`}>
                         {categories[0]}
                     </span>
                 </div>
             )}
 
-            <h1 className="text-[32px] font-medium font-ibm text-[#0A0A0A] leading-[130%] tracking-[1px]">
+            <h1 className="text-[28px] font-bold text-[#333333]">
                 {title}
             </h1>
-            <p className="text-[14px] font-normal font-ibm text-[#6C757D] leading-[130%]">
+            <p className="text-sm font-normal text-gray-500 leading-[130%]">
                 {description}
             </p>
         </div>

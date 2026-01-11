@@ -30,7 +30,7 @@ export const getProblemInfo = async (program_problem_id: string) => {
 
 export const getAlgorithm = async (keyword: string) => {
   const response = await getResponse<AlgorithmListProps>(
-    `/api/v1/algorithms/search?keyword=${keyword}`,
+    `/api/v1/algorithms/search?keyword=${encodeURIComponent(keyword)}`,
   );
   return response.data;
 };

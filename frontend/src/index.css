@@ -104,6 +104,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Prevent horizontal layout shift from scrollbar */
+html {
+  scrollbar-gutter: stable;
+}
+
 /* Global Reset & Base Styles */
 body {
   margin: 0;
@@ -162,12 +167,23 @@ body {
   /* Custom Logo Text Style */
   .text-logo {
     font-family: var(--font-display);
-    background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-300) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--color-primary-500) 0%,
+      var(--color-primary-300) 100%
+    );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     color: transparent;
     display: inline-block;
+  }
+
+  /* Header Navigation Menu Items - Optimized Korean font rendering */
+  .nav-menu-item {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 

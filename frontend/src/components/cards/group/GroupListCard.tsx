@@ -5,6 +5,8 @@ import Button from "../../button/Button";
 import { joinGroup } from "../../../api/group/groupApi";
 import Toast, { type ToastType } from "@components/toast/Toast";
 
+import ConfirmModal from "@components/modal/ConfirmModal";
+
 interface GroupProps {
   id: number; // programId
   title: string;
@@ -33,6 +35,19 @@ const Group = ({
     type: ToastType;
   } | null>(null);
 
+  // Confirm Modal State
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => { },
+  });
+
   // [React Query] 그룹 참여 Mutation
   const { mutate: joinMutate, isPending } = useMutation({
     mutationFn: () => joinGroup(id),
@@ -58,9 +73,15 @@ const Group = ({
     if (isMember) {
       navigate(`/group/${id}`);
     } else {
-      if (window.confirm(`'${title}' 그룹에 참여 신청하시겠습니까?`)) {
-        joinMutate();
-      }
+      setConfirmModal({
+        isOpen: true,
+        title: "그룹 참여",
+        message: `'${title}' 그룹에 참여 신청하시겠습니까?`,
+        onConfirm: () => {
+          joinMutate();
+          setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+        },
+      });
     }
   };
 
@@ -78,6 +99,14 @@ const Group = ({
           onClose={() => setToastConfig(null)}
         />
       )}
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+      />
 
       {/* Programmers Style: Simpler List Item */}
       <div

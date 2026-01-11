@@ -58,7 +58,7 @@ const EditGroupModal = ({ programId, initialData, onClose }: EditGroupModalProps
             queryClient.invalidateQueries({ queryKey: ["groupDetail", programId] }); // 상세 정보 새로고침
             queryClient.invalidateQueries({ queryKey: ["groups"] }); // 리스트도 갱신
             setToastConfig({ message: "그룹 정보가 수정되었습니다.", type: "success" });
-            setTimeout(() => onClose(), 1500);
+            setTimeout(() => onClose(), 500);
         },
         onError: (error: any) => {
             const errorMsg = error.response?.data?.message || "그룹 수정에 실패했습니다.";
@@ -197,19 +197,19 @@ const EditGroupModal = ({ programId, initialData, onClose }: EditGroupModalProps
                         </div>
                     </div>
 
-                    <div className="flex gap-3 mt-2">
-                        <div className="flex-1">
+                    <div className="flex justify-end gap-2 mt-2">
+                        <div>
+                            <Button variant="default" onClick={onClose}>
+                                취소
+                            </Button>
+                        </div>
+                        <div>
                             <Button
                                 variant="primary"
                                 onClick={handleUpdate}
                                 disabled={updateMutation.isPending}
                             >
                                 {updateMutation.isPending ? "수정 중..." : "수정하기"}
-                            </Button>
-                        </div>
-                        <div className="flex-1">
-                            <Button variant="default" onClick={onClose}>
-                                취소
                             </Button>
                         </div>
                     </div>

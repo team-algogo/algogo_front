@@ -63,16 +63,6 @@ const MyGroupListCard = ({
         </div>
       </div>
 
-      {/* Avatars (Mockup based on design) */}
-      <div className="flex items-center -space-x-2 pt-2">
-        {/* 디자인처럼 동그라미 겹치기 (3개만 예시로 보여줌) */}
-        <div className="size-8 rounded-full bg-primary-main text-white flex items-center justify-center text-[10px] border-2 border-white font-bold">김</div>
-        <div className="size-8 rounded-full bg-primary-main text-white flex items-center justify-center text-[10px] border-2 border-white font-bold">이</div>
-        <div className="size-8 rounded-full bg-primary-main text-white flex items-center justify-center text-[10px] border-2 border-white font-bold">박</div>
-        <div className="size-8 rounded-full bg-grayscale-default text-grayscale-dark-gray flex items-center justify-center text-[10px] border-2 border-white font-bold">
-          +{memberCount > 3 ? memberCount - 3 : 0}
-        </div>
-      </div>
     </div>
   );
 };

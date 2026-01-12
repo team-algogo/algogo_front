@@ -30,6 +30,15 @@ export default function ProblemStatisticsPage() {
 
   const itemsPerPage = 20;
 
+  // localStorage에서 programId 가져오기
+  const getCachedProgramId = () => {
+    if (!programProblemId) return null;
+    const cachedProgramId = localStorage.getItem(
+      `problemSetProgramId_${programProblemId}`,
+    );
+    return cachedProgramId ? Number(cachedProgramId) : null;
+  };
+
   // Language options
   const languageOptions: SelectOption[] = [
     { label: "모든 언어", value: "" },
@@ -241,7 +250,15 @@ export default function ProblemStatisticsPage() {
           <div className="flex flex-col gap-2">
             <div className="mb-1 flex items-center gap-3 text-gray-500">
               <button
-                onClick={() => navigate(-1)}
+                onClick={() => {
+                  const cachedProgramId = getCachedProgramId();
+                  if (cachedProgramId) {
+                    navigate(`/problemset/${cachedProgramId}`);
+                  } else {
+                    // 캐시된 programId가 없으면 뒤로가기
+                    navigate(-1);
+                  }
+                }}
                 className="flex items-center gap-1 text-sm transition-colors hover:text-[#333333]"
               >
                 <svg

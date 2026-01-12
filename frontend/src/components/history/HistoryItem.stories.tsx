@@ -9,7 +9,6 @@ const meta: Meta<typeof HistoryItem> = {
     submissionId: 1,
     isSuccess: true,
     createdAt: "2025-10-24T00:00:00Z",
-    language: "Java",
     execTime: 100,
     memory: 1024,
     isCurrent: false,
@@ -17,7 +16,6 @@ const meta: Meta<typeof HistoryItem> = {
   argTypes: {
     isSuccess: { control: "boolean" },
     createdAt: { control: "text" },
-    language: { control: "text" },
   },
 };
 
@@ -27,14 +25,12 @@ type Story = StoryObj<typeof HistoryItem>;
 export const Default: Story = {};
 
 export const Failed: Story = {
-  args: { 
+  args: {
     submissionId: 2,
     isSuccess: false,
     createdAt: "2025-10-24T00:00:00Z",
-    language: "Java",
     execTime: 100,
     memory: 1024,
     isCurrent: false,
   },
 };
-

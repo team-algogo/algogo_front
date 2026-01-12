@@ -222,38 +222,55 @@ const MainPage = () => {
       </section>
 
       {/* Featured Reviews Section (로그인 여부에 따라 다른 컨텐츠 표시) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
-        <div className="flex justify-between items-end mb-8">
+      <section className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mb-8 flex items-end justify-between">
           <div className="relative">
-            <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900">
               {isLoggedIn ? "도착한 리뷰 요청" : "지금 뜨고 있는 "}
               {!isLoggedIn && (
                 <span className="text-primary-600 relative inline-block">
                   리뷰
-                  <svg className="absolute w-full h-2 bottom-1 left-0 -z-10 text-primary-200" viewBox="0 0 100 10" preserveAspectRatio="none">
-                    <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="8" fill="none" opacity="0.6" />
+                  <svg
+                    className="text-primary-200 absolute bottom-1 left-0 -z-10 h-2 w-full"
+                    viewBox="0 0 100 10"
+                    preserveAspectRatio="none"
+                  >
+                    <path
+                      d="M0 5 Q 50 10 100 5"
+                      stroke="currentColor"
+                      strokeWidth="8"
+                      fill="none"
+                      opacity="0.6"
+                    />
                   </svg>
                 </span>
               )}
             </h2>
-            <p className="text-gray-500 mt-2">
+            <p className="mt-2 text-gray-500">
               {isLoggedIn
                 ? "다른 사람의 코드를 리뷰하고 함께 성장해보세요!"
-                : "개발자들의 열띤 토론이 진행되고 있어요"
-              }
+                : "개발자들의 열띤 토론이 진행되고 있어요"}
             </p>
           </div>
-          <TextLink src={isLoggedIn ? "/mypage" : "/reviews"} variant="secondary" className="text-sm font-medium hover:text-primary-600 transition-colors">전체보기 →</TextLink>
+          <TextLink
+            src={isLoggedIn ? "/mypage" : "/reviews"}
+            variant="secondary"
+            className="hover:text-primary-600 text-sm font-medium transition-colors"
+          >
+            전체보기 →
+          </TextLink>
         </div>
 
         {/* Content Area */}
         {isLoggedIn ? (
           // 로그인 시: 리뷰 요청 카드 리스트
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {reviewRequire && reviewRequire.requiredCodeReviews.length > 0 ? (
-              reviewRequire.requiredCodeReviews.slice(0, 3).map((review, index) => (
-                <ReviewRequestCard key={index} {...review} />
-              ))
+              reviewRequire.requiredCodeReviews
+                .slice(0, 3)
+                .map((review, index) => (
+                  <ReviewRequestCard key={index} {...review} />
+                ))
             ) : (
               <div className="col-span-full w-full">
                 <EmptyState
@@ -265,8 +282,8 @@ const MainPage = () => {
             )}
           </div>
         ) : (
-          // 비로그인 시: Hot/Recent 카드
-          <div className="flex flex-wrap justify-center gap-6">
+          // 비로그인 시: Hot/Recent 카드 - Grid 레이아웃으로 정렬 통일 (컴팩트한 간격)
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 lg:justify-items-center">
             {/* Hot Submission */}
             {currentHotSubmission && (
               <MainSubmissionCard
@@ -306,19 +323,29 @@ const MainPage = () => {
       </section>
 
       {/* Recommended Problem Sets Section */}
-      <section className="relative py-20 w-full overflow-hidden">
-        <div className="absolute inset-0 bg-gray-100/50 -skew-y-2 transform origin-top-left scale-110 z-[-1]"></div>
+      <section className="relative w-full overflow-hidden py-20">
+        <div className="absolute inset-0 z-[-1] origin-top-left scale-110 -skew-y-2 transform bg-gray-100/50"></div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-end mb-10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-10 flex items-end justify-between">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">추천 문제집</h2>
-              <p className="text-gray-500">실력 향상을 위한 엄선된 문제집들입니다</p>
+              <h2 className="mb-2 text-3xl font-bold tracking-tight text-gray-900">
+                추천 문제집
+              </h2>
+              <p className="text-gray-500">
+                실력 향상을 위한 엄선된 문제집들입니다
+              </p>
             </div>
-            <TextLink src="/problemset" variant="secondary" className="text-sm font-medium hover:text-primary-600 transition-colors">전체보기 →</TextLink>
+            <TextLink
+              src="/problemset"
+              variant="secondary"
+              className="hover:text-primary-600 text-sm font-medium transition-colors"
+            >
+              전체보기 →
+            </TextLink>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {recommendProblemSet?.problemSetList.slice(0, 4).map((item) => (
               <MainProblemSetCard
                 key={item.programId}
@@ -331,10 +358,13 @@ const MainPage = () => {
             {!recommendProblemSet && (
               <>
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="w-full h-[220px] rounded-xl bg-gray-200 animate-pulse relative overflow-hidden">
-                    <div className="absolute bottom-0 w-full p-5 flex flex-col gap-2">
-                      <div className="h-6 w-3/4 bg-gray-300 rounded"></div>
-                      <div className="h-4 w-1/2 bg-gray-300 rounded"></div>
+                  <div
+                    key={i}
+                    className="relative h-[220px] w-full animate-pulse overflow-hidden rounded-xl bg-gray-200"
+                  >
+                    <div className="absolute bottom-0 flex w-full flex-col gap-2 p-5">
+                      <div className="h-6 w-3/4 rounded bg-gray-300"></div>
+                      <div className="h-4 w-1/2 rounded bg-gray-300"></div>
                     </div>
                   </div>
                 ))}
@@ -345,49 +375,73 @@ const MainPage = () => {
       </section>
 
       {/* Campaign & Group Status Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full mb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-
+      <section className="mx-auto mb-12 w-full max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-16 lg:grid-cols-2">
           {/* Campaign Column */}
           <div className="flex flex-col gap-6">
-            <div className="flex justify-between items-center border-b-2 border-gray-100 pb-4">
-              <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <span className="w-2 h-8 bg-primary-500 rounded-full"></span>
+            <div className="flex items-center justify-between border-b-2 border-gray-100 pb-4">
+              <h3 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
+                <span className="bg-primary-500 h-8 w-2 rounded-full"></span>
                 캠페인
               </h3>
-              <TextLink src="#" variant="secondary" className="text-sm font-medium text-gray-400 hover:text-primary-600">더보기</TextLink>
+              <TextLink
+                src="#"
+                variant="secondary"
+                className="hover:text-primary-600 text-sm font-medium text-gray-400"
+              >
+                더보기
+              </TextLink>
             </div>
             <div className="flex flex-col gap-3">
-              <EmptyState icon="🦥" title="아직 캠페인은 준비가 되지 않았어요!" />
+              <EmptyState
+                icon="🦥"
+                title="아직 캠페인은 준비가 되지 않았어요!"
+              />
             </div>
           </div>
 
           {/* Group Column */}
           <div className="flex flex-col gap-6">
-            <div className="flex justify-between items-center border-b-2 border-gray-100 pb-4">
-              <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <span className="w-2 h-8 bg-teal-500 rounded-full"></span>
+            <div className="flex items-center justify-between border-b-2 border-gray-100 pb-4">
+              <h3 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
+                <span className="h-8 w-2 rounded-full bg-teal-500"></span>
                 그룹현황
               </h3>
-              <TextLink src="/group" variant="secondary" className="text-sm font-medium text-gray-400 hover:text-teal-600">더보기</TextLink>
+              <TextLink
+                src="/group"
+                variant="secondary"
+                className="text-sm font-medium text-gray-400 hover:text-teal-600"
+              >
+                더보기
+              </TextLink>
             </div>
             <div className="flex flex-col gap-3">
               {groupList && groupList.length > 0 ? (
                 groupList.slice(0, 5).map((group, index) => (
-                  <a key={index} href={`/group/${group.programId}`} className="flex justify-between items-center p-4 bg-white border border-gray-100 rounded-xl hover:shadow-md hover:border-teal-200 transition-all duration-300 group">
-                    <span className="text-gray-700 font-medium text-lg group-hover:text-teal-600 transition-colors">{group.title}</span>
-                    <div className="flex items-center gap-2 text-gray-400 text-sm bg-gray-50 px-3 py-1 rounded-full group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
-                      <img src="/icons/groupIcon.svg" className="size-4 opacity-60" />
+                  <a
+                    key={index}
+                    href={`/group/${group.programId}`}
+                    className="group flex items-center justify-between rounded-xl border border-gray-100 bg-white p-4 transition-all duration-300 hover:border-teal-200 hover:shadow-md"
+                  >
+                    <span className="text-lg font-medium text-gray-700 transition-colors group-hover:text-teal-600">
+                      {group.title}
+                    </span>
+                    <div className="flex items-center gap-2 rounded-full bg-gray-50 px-3 py-1 text-sm text-gray-400 transition-colors group-hover:bg-teal-50 group-hover:text-teal-600">
+                      <img
+                        src="/icons/groupIcon.svg"
+                        className="size-4 opacity-60"
+                      />
                       <span>{group.capacity}명</span>
                     </div>
                   </a>
                 ))
               ) : (
-                <div className="text-center py-8 text-gray-400">그룹 정보를 불러오는 중...</div>
+                <div className="py-8 text-center text-gray-400">
+                  그룹 정보를 불러오는 중...
+                </div>
               )}
             </div>
           </div>
-
         </div>
       </section>
 

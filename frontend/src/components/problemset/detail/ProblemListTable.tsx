@@ -144,8 +144,22 @@ export default function ProblemListTable({
                     difficulty={pInfo.difficultyType}
                   />
                 </div>
-                <div className="min-w-[200px] flex-1 truncate px-4 text-left text-sm font-medium text-[#333333]">
-                  {pInfo.title}
+                <div className="min-w-[200px] flex-1 px-4 text-left text-sm font-medium text-[#333333]">
+                  <button
+                    onClick={() => {
+                      if (pInfo.problemLink) {
+                        window.open(
+                          pInfo.problemLink,
+                          "_blank",
+                          "noopener,noreferrer",
+                        );
+                      }
+                    }}
+                    className="cursor-pointer truncate text-left transition-colors hover:text-[#0D6EFD]"
+                    title={pInfo.title}
+                  >
+                    {pInfo.title}
+                  </button>
                 </div>
                 <div className="hidden w-[100px] text-center text-sm font-medium text-[#333333] tabular-nums lg:flex lg:items-center lg:justify-center">
                   {item.submissionCount.toLocaleString()}
@@ -166,7 +180,16 @@ export default function ProblemListTable({
                 </div>
                 <div className="flex w-[80px] justify-center">
                   <button
-                    onClick={() => navigate(`/code/${item.programProblemId}`)}
+                    onClick={() => {
+                      // programId를 localStorage에 저장 (programProblemId -> programId 매핑)
+                      if (programId) {
+                        localStorage.setItem(
+                          `problemSetProgramId_${item.programProblemId}`,
+                          programId.toString(),
+                        );
+                      }
+                      navigate(`/code/${item.programProblemId}`);
+                    }}
                     className="flex items-center justify-center rounded-lg bg-[#0D6EFD] px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition-all duration-200 hover:bg-[#0B5ED7] hover:shadow-md active:bg-[#0A56C2] active:shadow-sm"
                   >
                     이동

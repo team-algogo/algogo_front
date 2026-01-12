@@ -378,6 +378,8 @@ const CodeReviewPage = () => {
               <button
                 onClick={() => {
                   if (submissionDetail?.programProblemId) {
+                    // localStorage에 저장된 programId가 있으면 유지 (이미 ProblemListTable에서 저장됨)
+                    // 새로 저장하지 않고 기존 값을 유지하여 통계 페이지에서 "문제집으로 돌아가기"가 작동하도록 함
                     navigate(
                       `/statistics/${submissionDetail.programProblemId}`,
                     );

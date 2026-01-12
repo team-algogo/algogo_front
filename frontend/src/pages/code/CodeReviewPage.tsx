@@ -3,7 +3,7 @@ import { Editor } from "@monaco-editor/react";
 import * as monaco from "monaco-editor";
 
 import BasePage from "@pages/BasePage";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { getProblemInfo, type ProgramProblemProps } from "@api/code/codeSubmit";
 import {
   getSubmissionDetail,
@@ -33,6 +33,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 const CodeReviewPage = () => {
   const param = useParams();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const [problemInfo, setProblemInfo] = useState<ProgramProblemProps | null>(
     null,
@@ -46,6 +47,7 @@ const CodeReviewPage = () => {
   const [code, setCode] = useState("");
   const [selectedLine, setSelectedLine] = useState<number | null>(null);
   const [isCopied, setIsCopied] = useState(false);
+  const shouldScrollRef = useRef(false);
 
   const [submissionHistory, setSubmissionHistory] = useState<
     SubmissionDetailProps[] | null
@@ -70,8 +72,8 @@ const CodeReviewPage = () => {
     //   updateEditorHeight();
     // });
 
-    editor.onDidChangeCursorPosition((e) => {
-      setSelectedLine(e.position.lineNumber);
+    editor.onDidChangeCursorPosition(() => {
+      // Don't set selectedLine on cursor change, only on mouse click
     });
 
     // Handle line click to scroll to comment input
@@ -79,6 +81,7 @@ const CodeReviewPage = () => {
       if (e.target.type === monaco.editor.MouseTargetType.CONTENT_TEXT) {
         const lineNumber = e.target.position?.lineNumber;
         if (lineNumber) {
+          shouldScrollRef.current = true;
           setSelectedLine(lineNumber);
         }
       }
@@ -86,6 +89,7 @@ const CodeReviewPage = () => {
   };
 
   const initSelectedLine = () => {
+    shouldScrollRef.current = false;
     setSelectedLine(null);
   };
 
@@ -346,41 +350,70 @@ const CodeReviewPage = () => {
     }
   }, [submissionDetail]);
 
-  // Scroll to comment input when a line is selected
+  // Scroll to comment input when a line is selected by user
   useEffect(() => {
-    if (selectedLine !== null && commentInputRef.current) {
+    if (
+      selectedLine !== null &&
+      commentInputRef.current &&
+      shouldScrollRef.current
+    ) {
       // Small delay to ensure DOM is updated
       setTimeout(() => {
         commentInputRef.current?.scrollIntoView({
           behavior: "smooth",
           block: "center",
         });
+        shouldScrollRef.current = false;
       }, 100);
     }
   }, [selectedLine]);
 
   return (
     <BasePage>
-      <div className="flex max-w-7xl flex-col gap-8 px-4 py-10">
-        {/* Header Section */}
-        <div className="flex flex-col gap-3">
-          <div className="flex items-baseline gap-3">
-            <span className="text-lg font-semibold text-gray-400">
-              {problemInfo?.problemNo}.
-            </span>
-            <a
-              target="_blank"
-              href={problemInfo?.problemLink}
-              className="text-3xl font-bold text-[#0D6EFD] transition-all duration-200 hover:text-[#0B5ED7] hover:underline"
-            >
-              {problemInfo?.title}
-            </a>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <span className="font-semibold text-gray-700">
-              {submissionUserDetail?.nickname}
-            </span>
-            <span className="text-gray-500">님의 코드</span>
+      <div className="mx-auto flex h-full w-full max-w-[1200px] flex-col items-start gap-8 bg-white p-[40px_0px_80px]">
+        {/* Header Section - 통계 페이지와 동일한 레이아웃 */}
+        <div className="flex w-full flex-row items-end justify-between border-b border-gray-200 pb-6">
+          <div className="flex flex-col gap-2">
+            <div className="mb-1 flex items-center gap-3 text-gray-500">
+              <button
+                onClick={() => {
+                  if (submissionDetail?.programProblemId) {
+                    navigate(
+                      `/statistics/${submissionDetail.programProblemId}`,
+                    );
+                  }
+                }}
+                className="flex items-center gap-1 text-sm transition-colors hover:text-[#333333]"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M10 12L6 8L10 4"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                통계로 돌아가기
+              </button>
+            </div>
+            <div className="flex flex-col gap-2">
+              <h1 className="flex items-center gap-3 text-[28px] font-bold text-[#333333]">
+                {problemInfo?.problemNo}. {problemInfo?.title}
+              </h1>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-semibold text-gray-700">
+                  {submissionUserDetail?.nickname}
+                </span>
+                <span className="text-gray-500">님의 코드</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -566,10 +599,10 @@ const CodeReviewPage = () => {
         )}
 
         {/* Comment Section */}
-        <div className="flex flex-col gap-6">
+        <div className="flex w-full flex-col gap-6">
           {/* Existing Comments */}
-          <div className="flex flex-col overflow-hidden rounded-xl bg-white shadow-sm">
-            <div className="flex flex-col gap-4 px-4 py-4">
+          <div className="flex w-full flex-col overflow-hidden rounded-xl border border-gray-200/80 bg-white p-6 shadow-lg">
+            <div className="flex flex-col gap-4">
               {Array.isArray(comments) &&
                 comments.map((comment, index) => (
                   <CommentItem

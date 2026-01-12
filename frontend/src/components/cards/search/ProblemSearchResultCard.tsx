@@ -17,7 +17,6 @@ const ProblemSearchResultCard = ({
   title,
   description,
   problemCount,
-  categories,
   searchKeyword,
 }: ProblemSearchResultCardProps) => {
   const navigate = useNavigate();

@@ -1,4 +1,4 @@
-import React from "react";
+
 import type { RequiredCodeReview } from "../../type/mypage/RequiredReviews";
 
 interface ReviewRequestsProps {
@@ -7,38 +7,37 @@ interface ReviewRequestsProps {
 }
 
 // Helper Component for Timer
-const CountdownTimer = ({ createAt }: { createAt?: string }) => {
-  const [timeLeft, setTimeLeft] = React.useState("");
+const getRelativeTime = (dateString?: string) => {
+  if (!dateString) return "";
+  const created = new Date(dateString);
+  const now = new Date();
+  const diff = now.getTime() - created.getTime();
 
-  React.useEffect(() => {
-    if (!createAt) return;
+  // Convert to units
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const weeks = Math.floor(days / 7);
+  const months = Math.floor(days / 30);
+  const years = Math.floor(days / 365);
 
-    const calculateTimeLeft = () => {
-      const createdDate = new Date(createAt);
-      const deadline = new Date(createdDate.getTime() + 48 * 60 * 60 * 1000); // +2 days
-      const now = new Date();
-      const difference = deadline.getTime() - now.getTime();
+  if (hours < 24) {
+    if (hours < 1) return `방금 전`;
+    return `${hours}시간 전`;
+  }
+  if (days < 7) {
+    return `${days}일 전`;
+  }
+  if (weeks < 4) {
+    return `${weeks}주 전`;
+  }
+  if (months < 12) {
+    return `${months}달 전`;
+  }
+  return `${years}년 전`;
+};
 
-      if (difference > 0) {
-        // Calculate time components
-        const totalHours = Math.floor(difference / (1000 * 60 * 60));
-        const minutes = Math.floor((difference / 1000 / 60) % 60);
-        const seconds = Math.floor((difference / 1000) % 60);
-
-        const formatted = `${String(totalHours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-        setTimeLeft(formatted);
-      } else {
-        setTimeLeft("00:00:00");
-      }
-    };
-
-    calculateTimeLeft();
-    const timer = setInterval(calculateTimeLeft, 1000);
-
-    return () => clearInterval(timer);
-  }, [createAt]);
-
-  if (!timeLeft) return null;
+const TimeDisplay = ({ createAt }: { createAt?: string }) => {
+  const relativeTime = getRelativeTime(createAt);
 
   return (
     <div className="flex items-center gap-1">
@@ -49,23 +48,24 @@ const CountdownTimer = ({ createAt }: { createAt?: string }) => {
         viewBox="0 0 16 16"
         fill="none"
       >
-        <circle cx="8" cy="8" r="6" stroke="#FF3B30" strokeWidth="1.5" />
+        <circle cx="8" cy="8" r="6" stroke="#ff8e8eff" strokeWidth="1.5" />
         <path
           d="M8 4V8L10.5 10.5"
-          stroke="#FF3B30"
+          stroke="#FF6B6B"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
       </svg>
       <span
-        className="text-sm leading-[130%] font-normal text-[#FF3B30]"
+        className="text-sm leading-[130%] font-normal text-[#FF6B6B]"
         style={{ fontFamily: "IBM Plex Sans KR" }}
       >
-        {timeLeft} 남음
+        {relativeTime}
       </span>
     </div>
   );
 };
+
 
 const ReviewRequests = ({ requests, totalCount }: ReviewRequestsProps) => {
   const getProgramTypeLabel = (type: string) => {
@@ -212,7 +212,7 @@ const ReviewRequests = ({ requests, totalCount }: ReviewRequestsProps) => {
                   </div>
 
                   {/* Timer */}
-                  <CountdownTimer createAt={req.submission?.createAt} />
+                  <TimeDisplay createAt={req.submission?.createAt} />
                 </div>
                 {idx < requests.length - 1 && (
                   <div className="my-2 h-px w-full bg-[#F2F2F2]"></div>

@@ -134,7 +134,7 @@ const CommentItem: FC<CommentItemProps> = ({
 
     // If no code blocks found, return original text
     if (parts.length === 0) {
-      return <div className="whitespace-pre-wrap">{text}</div>;
+      return <div className="break-words whitespace-pre-wrap">{text}</div>;
     }
 
     return (
@@ -142,7 +142,7 @@ const CommentItem: FC<CommentItemProps> = ({
         {parts.map((part, index) => {
           if (typeof part === "string") {
             return (
-              <div key={index} className="whitespace-pre-wrap">
+              <div key={index} className="break-words whitespace-pre-wrap">
                 {part}
               </div>
             );
@@ -293,7 +293,7 @@ const CommentItem: FC<CommentItemProps> = ({
                   />
                 </div>
               ) : (
-                <div className="text-sm leading-relaxed text-gray-800">
+                <div className="break-words text-sm leading-relaxed text-gray-800">
                   {parseCommentContent(content)}
                 </div>
               )}

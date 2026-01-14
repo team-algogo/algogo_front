@@ -1,5 +1,7 @@
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
+import HistoryAlgorithmPopover from "./HistoryAlgorithmPopover";
 
 interface HistoryProps {
   submissionId: number;
@@ -20,6 +22,10 @@ const HistoryItem = ({
   isCurrent,
   algorithmList = [],
 }: HistoryProps) => {
+  const [showPopover, setShowPopover] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const formatDate = (createdAt: string) => {
     const date = new Date(createdAt);
     return format(date, "yyyy-MM-dd HH:mm");
@@ -32,103 +38,166 @@ const HistoryItem = ({
     return `${memoryKB} KB`;
   };
 
+  const handleMouseEnter = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    if (algorithmList.length > 0) {
+      setShowPopover(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    hoverTimeoutRef.current = setTimeout(() => {
+      setShowPopover(false);
+    }, 150);
+  };
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (algorithmList.length > 0) {
+      setShowPopover(!showPopover);
+    }
+  };
+
   return (
-    <Link
-      to={`/review/${submissionId}`}
-      className={`group flex flex-col gap-3 rounded-xl border p-3.5 transition-all duration-200 ${
-        isCurrent
-          ? "border-purple-400/60 bg-gradient-to-br from-purple-50/80 to-purple-50/40 shadow-md"
-          : "border-gray-200/60 bg-white shadow-sm hover:border-gray-300 hover:bg-gray-50/50 hover:shadow-md"
-      }`}
-    >
-      {/* Header: Date and Status Badges */}
-      <div className="flex items-center justify-between gap-2">
-        <span className="flex-shrink-0 text-xs font-semibold text-gray-500">
-          {formatDate(createdAt)}
-        </span>
-        <div className="flex flex-shrink-0 items-center gap-1.5">
-          {isCurrent && (
-            <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-1 text-[10px] font-bold text-blue-700 shadow-sm whitespace-nowrap">
-              현재
+    <>
+      <div className="relative">
+        <Link
+          to={`/review/${submissionId}`}
+          className={`group flex flex-col gap-2 px-3 py-2.5 transition-colors ${
+            isCurrent
+              ? "bg-[#f6f8fa]"
+              : "hover:bg-[#f6f8fa]"
+          }`}
+        >
+          {/* Header: Date and Status Badges */}
+          <div className="flex items-center justify-between gap-2">
+            <span className="flex-shrink-0 text-xs text-[#656d76]">
+              {formatDate(createdAt)}
             </span>
-          )}
-          <span
-            className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-bold shadow-sm whitespace-nowrap ${
-              isSuccess
-                ? "bg-emerald-100 text-emerald-700"
-                : "bg-red-100 text-red-700"
-            }`}
-          >
-            {isSuccess ? "성공" : "실패"}
-          </span>
-        </div>
+            <div className="flex flex-shrink-0 items-center gap-1.5">
+              {isCurrent && (
+                <span className="inline-flex items-center rounded-md border border-[#0969da]/30 bg-[#e6f6ff] px-2 py-0.5 text-xs font-semibold text-[#0969da] whitespace-nowrap">
+                  Current
+                </span>
+              )}
+              <span
+                className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-semibold whitespace-nowrap ${
+                  isSuccess
+                    ? "border-[#1a7f37]/30 bg-[#dafbe1] text-[#1a7f37]"
+                    : "border-[#cf222e]/30 bg-[#ffebe9] text-[#cf222e]"
+                }`}
+              >
+                {isSuccess ? "Success" : "Failed"}
+              </span>
+            </div>
+          </div>
+
+          {/* Performance Metrics */}
+          <div className="flex items-center gap-3 text-xs text-[#656d76]">
+            {/* Execution Time */}
+            <div className="flex items-center gap-1.5">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 16 16"
+                fill="none"
+                className="text-[#656d76]"
+              >
+                <path
+                  d="M8 1.5C4.41 1.5 1.5 4.41 1.5 8C1.5 11.59 4.41 14.5 8 14.5C11.59 14.5 14.5 11.59 14.5 8C14.5 4.41 11.59 1.5 8 1.5ZM8 13C5.24 13 3 10.76 3 8C3 5.24 5.24 3 8 3C10.76 3 13 5.24 13 8C13 10.76 10.76 13 8 13Z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M8.5 4.5V8.5L11 10.5"
+                  stroke="currentColor"
+                  strokeWidth="1.2"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <span>{execTime}ms</span>
+            </div>
+
+            {/* Memory */}
+            <div className="flex items-center gap-1.5">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 16 16"
+                fill="none"
+                className="text-[#656d76]"
+              >
+                <path
+                  d="M2 2.5H14C14.2761 2.5 14.5 2.72386 14.5 3V13C14.5 13.2761 14.2761 13.5 14 13.5H2C1.72386 13.5 1.5 13.2761 1.5 13V3C1.5 2.72386 1.72386 2.5 2 2.5Z"
+                  stroke="currentColor"
+                  strokeWidth="1.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M3 3.5H13V4.5H3V3.5ZM3 5.5H13V6.5H3V5.5ZM3 7.5H9V8.5H3V7.5Z"
+                  fill="currentColor"
+                />
+              </svg>
+              <span>{formatMemory(memory)}</span>
+            </div>
+
+            {/* 알고리즘 버튼 */}
+            {algorithmList.length > 0 && (
+              <button
+                ref={triggerRef}
+                onClick={handleClick}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                className="ml-auto flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium text-[#656d76] hover:bg-[#f6f8fa] hover:text-[#1f2328] transition-colors"
+                type="button"
+              >
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  className="text-[#656d76]"
+                >
+                  <path
+                    d="M3 3.5H13C13.2761 3.5 13.5 3.72386 13.5 4V12C13.5 12.2761 13.2761 12.5 13 12.5H3C2.72386 12.5 2.5 12.2761 2.5 12V4C2.5 3.72386 2.72386 3.5 3 3.5Z"
+                    stroke="currentColor"
+                    strokeWidth="1"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M5.5 6.5H10.5M5.5 8.5H10.5M5.5 10.5H8.5"
+                    stroke="currentColor"
+                    strokeWidth="1"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <span>알고리즘 ({algorithmList.length})</span>
+              </button>
+            )}
+          </div>
+        </Link>
       </div>
 
-      {/* Performance Metrics */}
-      <div className="flex items-center gap-4">
-        {/* Execution Time */}
-        <div className="flex items-center gap-1.5">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 14 14"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="text-gray-500"
-          >
-            <path
-              d="M7 1.75C4.10051 1.75 1.75 4.10051 1.75 7C1.75 9.89949 4.10051 12.25 7 12.25C9.89949 12.25 12.25 9.89949 12.25 7C12.25 4.10051 9.89949 1.75 7 1.75ZM7 11.375C4.72233 11.375 2.875 9.52767 2.875 7.25C2.875 4.97233 4.72233 3.125 7 3.125C9.27767 3.125 11.125 4.97233 11.125 7.25C11.125 9.52767 9.27767 11.375 7 11.375Z"
-              fill="currentColor"
-            />
-            <path
-              d="M7.4375 4.375H6.5625V7.21875L9.15625 8.53125L9.625 7.78125L7.4375 6.71875V4.375Z"
-              fill="currentColor"
-            />
-          </svg>
-          <span className="text-xs font-semibold text-gray-700">
-            {execTime} ms
-          </span>
-        </div>
-
-        {/* Memory */}
-        <div className="flex items-center gap-1.5">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 14 14"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="text-gray-500"
-          >
-            <path
-              d="M2.625 2.625V11.375C2.625 11.8582 3.01675 12.25 3.5 12.25H10.5C10.9832 12.25 11.375 11.8582 11.375 11.375V2.625C11.375 2.14175 10.9832 1.75 10.5 1.75H3.5C3.01675 1.75 2.625 2.14175 2.625 2.625ZM3.5 2.625H10.5V11.375H3.5V2.625Z"
-              fill="currentColor"
-            />
-            <path
-              d="M4.375 3.5H9.625V4.375H4.375V3.5ZM4.375 5.25H9.625V6.125H4.375V5.25ZM4.375 7H7.875V7.875H4.375V7Z"
-              fill="currentColor"
-            />
-          </svg>
-          <span className="text-xs font-semibold text-gray-700">
-            {formatMemory(memory)}
-          </span>
-        </div>
-      </div>
-
-      {/* Algorithms */}
+      {/* Portal 기반 Popover */}
       {algorithmList.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {algorithmList.map((algo) => (
-            <span
-              key={algo.id}
-              className="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold text-slate-700 shadow-sm"
-            >
-              {algo.name}
-            </span>
-          ))}
-        </div>
+        <HistoryAlgorithmPopover
+          algorithms={algorithmList}
+          triggerElement={triggerRef.current}
+          isOpen={showPopover}
+          onClose={() => setShowPopover(false)}
+          onMouseEnter={() => {
+            if (hoverTimeoutRef.current) {
+              clearTimeout(hoverTimeoutRef.current);
+            }
+          }}
+          onMouseLeave={handleMouseLeave}
+        />
       )}
-    </Link>
+    </>
   );
 };
 

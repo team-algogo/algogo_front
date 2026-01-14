@@ -66,20 +66,20 @@ const HistoryItem = ({
       <div className="relative">
         <Link
           to={`/review/${submissionId}`}
-          className={`group flex flex-col gap-2 px-3 py-2.5 transition-colors ${
+          className={`group flex flex-col gap-2.5 rounded-lg border bg-white px-3.5 py-3 transition-all ${
             isCurrent
-              ? "bg-[#f6f8fa]"
-              : "hover:bg-[#f6f8fa]"
+              ? "border-[#0969da]/40 bg-[#f0f7ff] shadow-sm"
+              : "border-[#e1e4e8] hover:border-[#d0d7de] hover:shadow-sm"
           }`}
         >
           {/* Header: Date and Status Badges */}
           <div className="flex items-center justify-between gap-2">
-            <span className="flex-shrink-0 text-xs text-[#656d76]">
+            <span className="text-sm font-medium text-[#1f2328]">
               {formatDate(createdAt)}
             </span>
             <div className="flex flex-shrink-0 items-center gap-1.5">
               {isCurrent && (
-                <span className="inline-flex items-center rounded-md border border-[#0969da]/30 bg-[#e6f6ff] px-2 py-0.5 text-xs font-semibold text-[#0969da] whitespace-nowrap">
+                <span className="inline-flex items-center rounded-md border border-[#0969da]/30 bg-[#e6f6ff] px-2 py-0.5 text-xs font-semibold whitespace-nowrap text-[#0969da]">
                   Current
                 </span>
               )}
@@ -96,12 +96,12 @@ const HistoryItem = ({
           </div>
 
           {/* Performance Metrics */}
-          <div className="flex items-center gap-3 text-xs text-[#656d76]">
+          <div className="flex items-center gap-3 text-sm text-[#656d76]">
             {/* Execution Time */}
             <div className="flex items-center gap-1.5">
               <svg
-                width="12"
-                height="12"
+                width="14"
+                height="14"
                 viewBox="0 0 16 16"
                 fill="none"
                 className="text-[#656d76]"
@@ -117,14 +117,14 @@ const HistoryItem = ({
                   strokeLinecap="round"
                 />
               </svg>
-              <span>{execTime}ms</span>
+              <span>{execTime} ms</span>
             </div>
 
             {/* Memory */}
             <div className="flex items-center gap-1.5">
               <svg
-                width="12"
-                height="12"
+                width="14"
+                height="14"
                 viewBox="0 0 16 16"
                 fill="none"
                 className="text-[#656d76]"
@@ -151,7 +151,7 @@ const HistoryItem = ({
                 onClick={handleClick}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
-                className="ml-auto flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium text-[#656d76] hover:bg-[#f6f8fa] hover:text-[#1f2328] transition-colors"
+                className="ml-auto flex items-center gap-1 text-[12px] font-medium text-[#656d76] transition-colors hover:text-[#1f2328]"
                 type="button"
               >
                 <svg

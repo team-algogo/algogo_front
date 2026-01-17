@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Button from "@components/button/Button";
 import Toast, { type ToastType } from "@components/toast/Toast";
+import DateTimePicker from "@components/common/DateTimePicker";
 import { postGroupProblems } from "../../api/group/groupApi";
 import { searchProblems, type ProblemSearchResult } from "../../api/problem/problemApi";
 import type { ProblemItem } from "../../type/group/group";
@@ -41,8 +42,8 @@ const AddGroupProblemModal = ({ programId, onClose }: AddGroupProblemModalProps)
         mutationFn: (data: { problems: ProblemItem[] }) => postGroupProblems(programId, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["groupProblems", programId] });
-            setToastConfig({ message: "선택한 문제들이 추가되었습니다!", type: "success" });
-            setTimeout(() => onClose(), 500);
+            // setToastConfig({ message: "선택한 문제들이 추가되었습니다!", type: "success" });
+            setTimeout(() => onClose(), 50);
         },
         onError: (error: any) => {
             const errorMsg = error.response?.data?.message || "문제 추가에 실패했습니다.";
@@ -94,7 +95,7 @@ const AddGroupProblemModal = ({ programId, onClose }: AddGroupProblemModalProps)
                     startDate: "",
                     endDate: "",
                     userDifficultyType: "MEDIUM",
-                    difficultyViewType: "USER_DIFFICULTY",
+                    difficultyViewType: "PROBLEM_DIFFICULTY", // Default change requested
                 },
             }));
         }
@@ -127,15 +128,25 @@ const AddGroupProblemModal = ({ programId, onClose }: AddGroupProblemModalProps)
                 setToastConfig({ message: `"${problem.title}"의 기간을 설정해주세요.`, type: "error" });
                 return;
             }
-            if (new Date(config.startDate) > new Date(config.endDate)) {
+            const start = new Date(config.startDate);
+            const end = new Date(config.endDate);
+            const now = new Date();
+
+            if (start > end) {
                 setToastConfig({ message: `"${problem.title}"의 종료일이 시작일보다 빠릅니다.`, type: "error" });
+                return;
+            }
+
+            // 종료일은 미래만 가능 (현재보다 뒤여야 함)
+            if (end <= now) {
+                setToastConfig({ message: `"${problem.title}"의 종료일은 현재 시간 이후여야 합니다.`, type: "error" });
                 return;
             }
 
             itemsPayload.push({
                 problemId: problem.id,
-                startDate: new Date(config.startDate).toISOString(),
-                endDate: new Date(config.endDate).toISOString(),
+                startDate: config.startDate, // Already ISO string from DateTimePicker
+                endDate: config.endDate,
                 userDifficultyType: config.userDifficultyType,
                 difficultyViewType: config.difficultyViewType,
             });
@@ -157,11 +168,11 @@ const AddGroupProblemModal = ({ programId, onClose }: AddGroupProblemModalProps)
 
             {/* 모달 배경 */}
             <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                {/* 모달 컨텐츠 (크기 고정: w-[1000px], h-[700px]) */}
-                <div className="bg-white w-[1000px] h-[700px] rounded-2xl flex flex-col shadow-2xl overflow-hidden relative">
+                {/* 모달 컨텐츠 (크기 고정: w-[1200px], h-[850px]) */}
+                <div className="bg-white w-[1200px] h-[850px] rounded-2xl flex flex-col shadow-2xl overflow-hidden relative">
 
                     {/* 헤더 */}
-                    <div className="p-6 border-b border-grayscale-warm-gray flex justify-between items-center bg-gray-50">
+                    <div className="p-4 border-b border-grayscale-warm-gray flex justify-between items-center bg-gray-50">
                         <div>
                             <h2 className="font-headline text-2xl text-grayscale-dark-gray">문제 추가</h2>
                             <p className="text-grayscale-warm-gray text-sm mt-1">
@@ -273,26 +284,39 @@ const AddGroupProblemModal = ({ programId, onClose }: AddGroupProblemModalProps)
 
                                             <div className="grid grid-cols-2 gap-3 mb-3">
                                                 <div className="flex flex-col gap-1">
-                                                    <label className="text-xs font-bold text-gray-500">시작일</label>
-                                                    <input
-                                                        type="datetime-local"
-                                                        className="bg-gray-50 border border-gray-200 rounded px-2 py-2 text-xs outline-none focus:border-primary-main"
+                                                    <DateTimePicker
+                                                        label="시작일"
                                                         value={problemConfigs[problem.id]?.startDate || ""}
-                                                        onChange={(e) => updateConfig(problem.id, "startDate", e.target.value)}
+                                                        onChange={(val) => updateConfig(problem.id, "startDate", val)}
+                                                        placeholder="시작 날짜 선택"
                                                     />
                                                 </div>
                                                 <div className="flex flex-col gap-1">
-                                                    <label className="text-xs font-bold text-gray-500">종료일</label>
-                                                    <input
-                                                        type="datetime-local"
-                                                        className="bg-gray-50 border border-gray-200 rounded px-2 py-2 text-xs outline-none focus:border-primary-main"
+                                                    <DateTimePicker
+                                                        label="종료일"
                                                         value={problemConfigs[problem.id]?.endDate || ""}
-                                                        onChange={(e) => updateConfig(problem.id, "endDate", e.target.value)}
+                                                        onChange={(val) => updateConfig(problem.id, "endDate", val)}
+                                                        minDate={new Date()} // End Date must be in future (relative to absolute now, but practically user might pick today later time)
+                                                        placeholder="종료 날짜 선택"
                                                     />
                                                 </div>
                                             </div>
 
                                             <div className="grid grid-cols-2 gap-3">
+                                                <div className="flex flex-col gap-1">
+                                                    <label className="text-xs font-bold text-gray-500">표시 난이도</label>
+                                                    <select
+                                                        className="bg-gray-50 border border-gray-200 rounded px-2 py-2 text-xs outline-none focus:border-primary-main"
+                                                        value={problemConfigs[problem.id]?.difficultyViewType}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            updateConfig(problem.id, "difficultyViewType", val);
+                                                        }}
+                                                    >
+                                                        <option value="PROBLEM_DIFFICULTY">문제 난이도</option>
+                                                        <option value="USER_DIFFICULTY">커스텀 난이도</option>
+                                                    </select>
+                                                </div>
                                                 <div className="flex flex-col gap-1">
                                                     <label className="text-xs font-bold text-gray-500">커스텀 난이도</label>
                                                     <select
@@ -304,21 +328,6 @@ const AddGroupProblemModal = ({ programId, onClose }: AddGroupProblemModalProps)
                                                         <option value="EASY">EASY</option>
                                                         <option value="MEDIUM">MEDIUM</option>
                                                         <option value="HARD">HARD</option>
-                                                    </select>
-                                                </div>
-                                                <div className="flex flex-col gap-1">
-                                                    <label className="text-xs font-bold text-gray-500">표시 난이도</label>
-                                                    <select
-                                                        className="bg-gray-50 border border-gray-200 rounded px-2 py-2 text-xs outline-none focus:border-primary-main"
-                                                        value={problemConfigs[problem.id]?.difficultyViewType}
-                                                        onChange={(e) => {
-                                                            const val = e.target.value;
-                                                            updateConfig(problem.id, "difficultyViewType", val);
-                                                            // 만약 문제 난이도를 선택하면 -> 체감 난이도 선택 불가 (로직 상 필요하다면 값도 초기화할 수 있음)
-                                                        }}
-                                                    >
-                                                        <option value="USER_DIFFICULTY">커스텀 난이도</option>
-                                                        <option value="PROBLEM_DIFFICULTY">문제 난이도</option>
                                                     </select>
                                                 </div>
                                             </div>

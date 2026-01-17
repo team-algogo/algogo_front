@@ -113,27 +113,7 @@ const LoginPage = () => {
 
           {/** etc */}
           <div className="flex flex-col gap-6">
-            {/** oAuth */}
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-3 w-full">
-                <div className="flex-1 h-px bg-gray-200"></div>
-                <span className="text-gray-400 text-xs font-medium whitespace-nowrap">
-                  SNS 계정으로 간편 로그인
-                </span>
-                <div className="flex-1 h-px bg-gray-200"></div>
-              </div>
-              <div className="flex justify-center gap-6">
-                <button type="button" className="size-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-colors border border-gray-200">
-                  <img src="/icons/login/GoogleIcon.svg" className="size-5" alt="Google" />
-                </button>
-                <button type="button" className="size-10 rounded-full bg-[#03C75A]/10 flex items-center justify-center hover:bg-[#03C75A]/20 transition-colors border border-transparent">
-                  <img src="/icons/login/NaverIcon.svg" className="size-4" alt="Naver" />
-                </button>
-                <button type="button" className="size-10 rounded-full bg-[#FEE500]/20 flex items-center justify-center hover:bg-[#FEE500]/40 transition-colors border border-transparent">
-                  <img src="/icons/login/KakaoIcon.svg" className="size-5" alt="Kakao" />
-                </button>
-              </div>
-            </div>
+
             {/** find login info / join */}
             <div className="flex justify-center gap-4 text-gray-500 text-sm">
               <TextLink src="#">

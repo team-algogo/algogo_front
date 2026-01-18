@@ -150,11 +150,10 @@ export default function ProblemSetPage() {
                 <button
                   key={tab}
                   onClick={() => handleCategoryChange(tab)}
-                  className={`border-b-2 pb-4 text-base font-medium whitespace-nowrap transition-colors ${
-                    category === tab
+                  className={`border-b-2 pb-4 text-base font-medium whitespace-nowrap transition-colors ${category === tab
                       ? "border-[#0D6EFD] text-[#0D6EFD]"
                       : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-                  }`}
+                    }`}
                 >
                   {tab}
                 </button>
@@ -179,6 +178,7 @@ export default function ProblemSetPage() {
               page={page}
               onPageChange={setPage}
               isAdmin={isAdmin}
+              isLoggedIn={isLogined}
               onEdit={handleEdit}
               onDelete={handleDelete}
             />

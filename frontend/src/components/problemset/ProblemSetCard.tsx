@@ -7,16 +7,11 @@ interface ProblemSetCardProps {
   thumbnail: string;
   categories: string[];
   totalParticipants: number;
-  // Computed or extra props if needed
-  problemCount?: number; // API doesn't seem to have "count" in the User JSON? "10개" in CSS.
-  // User JSON: "programId", "title", "description", "thumbnail", "createAt", "modifiedAt", "programType", "categories", "totalParticipants".
-  // The CSS shows "10개" (problems count?) and "100명" (participants).
-  // API response MISSES problem count. I will default to 0 or hidden if missing.
-  // Wait, the User JSON doesn't have problem count.
-  // I will use a default or optional prop.
-  isAdmin?: boolean; // ADMIN 여부
-  onEdit?: (programId: number) => void; // 수정 핸들러
-  onDelete?: (programId: number) => void; // 삭제 핸들러
+  problemCount?: number;
+  isAdmin?: boolean;
+  isLoggedIn?: boolean;
+  onEdit?: (programId: number) => void;
+  onDelete?: (programId: number) => void;
 }
 
 export default function ProblemSetCard({
@@ -28,6 +23,7 @@ export default function ProblemSetCard({
   totalParticipants,
   problemCount = 0,
   isAdmin = false,
+  isLoggedIn = false,
   onEdit,
   onDelete,
 }: ProblemSetCardProps) {
@@ -51,7 +47,7 @@ export default function ProblemSetCard({
 
   return (
     <div
-      onClick={() => navigate(`/problemset/${programId}`)}
+      onClick={() => isLoggedIn ? navigate(`/problemset/${programId}`) : window.location.href = "https://algogo.kr/intro"}
       className="group relative flex w-full cursor-pointer flex-col overflow-hidden rounded-lg border border-gray-200 bg-white transition-all hover:border-gray-300 hover:shadow-md"
     >
       {/* Thumbnail Section */}
@@ -73,11 +69,10 @@ export default function ProblemSetCard({
         <div className="absolute top-4 left-4 z-10">
           {displayCategory && (
             <div
-              className={`rounded-full px-3 py-1.5 text-xs font-medium ${
-                displayCategory.includes("알고리즘")
+              className={`rounded-full px-3 py-1.5 text-xs font-medium ${displayCategory.includes("알고리즘")
                   ? "bg-teal-50 text-teal-700"
                   : "bg-blue-50 text-blue-700"
-              }`}
+                }`}
             >
               {displayCategory}
             </div>

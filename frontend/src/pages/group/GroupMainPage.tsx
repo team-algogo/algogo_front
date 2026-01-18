@@ -64,13 +64,7 @@ const GroupMainPage = () => {
   // --- 4. Handlers ---
   const handleOpenModal = () => {
     if (!isLoggedIn) {
-      if (
-        window.confirm(
-          "로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하시겠습니까?"
-        )
-      ) {
-        navigate("/login");
-      }
+      window.location.href = "https://algogo.kr/intro";
       return;
     }
     setIsModalOpen(true);
@@ -331,7 +325,7 @@ const GroupMainPage = () => {
                         </p>
                         <Button
                           variant="primary"
-                          onClick={() => navigate("/login")}
+                          onClick={() => window.location.href = "https://algogo.kr/intro"}
                           className="!w-fit !px-8 !py-3 !h-auto text-base shadow-lg hover:shadow-xl transition-all hover:-translate-y-1"
                         >
                           로그인 하러가기

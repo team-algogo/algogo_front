@@ -119,7 +119,7 @@ const Group = ({
       />
 
       <div
-        onClick={() => navigate(`/group/${id}`)}
+        onClick={() => isLoggedIn ? navigate(`/group/${id}`) : window.location.href = "https://algogo.kr/intro"}
         className="group relative flex flex-col md:flex-row items-start md:items-center justify-between w-full p-6 bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden gap-6"
       >
         <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gray-100 group-hover:bg-primary-main transition-colors hidden md:block"></div>

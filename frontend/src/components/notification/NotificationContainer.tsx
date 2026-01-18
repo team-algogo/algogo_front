@@ -122,7 +122,7 @@ export default function NotificationContainer() {
                 )}
             </button>
 
-            {isOpen && <NotificationDropdown />}
+            {isOpen && <NotificationDropdown onClose={() => setIsOpen(false)} />}
         </div>
     );
 }

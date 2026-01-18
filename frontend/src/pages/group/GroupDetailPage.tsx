@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import BasePage from "@pages/BasePage";
 import GroupDetailInfo from "@components/cards/group/GroupDetailInfo";
@@ -22,6 +22,7 @@ import Toast, { type ToastType } from "@components/toast/Toast";
 export default function GroupDetailPage() {
     const { groupId } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const programId = Number(groupId);
 
     const queryClient = useQueryClient();
@@ -31,6 +32,15 @@ export default function GroupDetailPage() {
     const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
     const [isJoinRequestModalOpen, setIsJoinRequestModalOpen] = useState(false); // 가입 요청 모달
     const [isAddProblemModalOpen, setIsAddProblemModalOpen] = useState(false); // 문제 추가 모달
+
+    // 알람에서 그룹방으로 이동 시 가입 요청 모달 자동 오픈
+    useEffect(() => {
+        if (location.state?.openJoinRequestModal) {
+            setIsJoinRequestModalOpen(true);
+            // state를 제거하여 새로고침 시 모달이 다시 뜨지 않도록 함
+            navigate(location.pathname, { replace: true, state: null });
+        }
+    }, [location.state, navigate, location.pathname]);
 
     const [toastConfig, setToastConfig] = useState<{ message: string; type: ToastType } | null>(null);
     const [confirmModal, setConfirmModal] = useState<{

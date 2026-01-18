@@ -1,67 +1,82 @@
-import { useEffect, useState } from "react";
-
-// 타입 정의: 성공(초록/검정) 혹은 에러(빨강)
-export type ToastType = "success" | "error";
+import { useEffect, useRef } from "react";
+import useToastStore, { type ToastType, type ToastPosition } from "@store/useToastStore";
 
 interface ToastProps {
   message: string;
-  type?: ToastType; // type은 선택사항 (기본값 success)
+  type?: ToastType;
   onClose: () => void;
 }
 
+/**
+ * 기존 코드와의 호환성을 위한 Toast 래퍼 컴포넌트
+ * 내부적으로 useToastStore를 사용하여 전역 토스트 시스템에 토스트를 추가합니다.
+ * ToastViewport가 자동으로 토스트를 표시하고 5초 후 제거합니다.
+ */
 const Toast = ({ message, type = "success", onClose }: ToastProps) => {
-  const [isVisible, setIsVisible] = useState(false);
+  const { addToast } = useToastStore();
+  const prevMessageRef = useRef<string>("");
+  const prevTypeRef = useRef<ToastType>("success");
+
+  // 내가 한 행동에 대한 메시지 패턴 감지 (상단 가운데로 표시)
+  const getPosition = (msg: string): ToastPosition => {
+    const myActionPatterns = [
+      "참여신청이 완료되었습니다",
+      "관리자의 승인이 될 때까지 기다려주세요",
+      "초대가 취소되었습니다",
+      "초대 요청을 보냈습니다",
+      "초대를 보냈습니다",
+      "초대를 보냈습니다",
+      "승인되었습니다",
+      "거절되었습니다",
+      "그룹이 성공적으로 생성되었습니다",
+      "그룹 생성에 실패했습니다",
+      "처리 중 오류가 발생했습니다",
+      "초대 취소에 실패했습니다",
+      "중복 확인 중 오류가 발생했습니다",
+      "참여 신청 중 오류가 발생했습니다",
+    ];
+
+    // 내가 한 행동 메시지 패턴이 포함되어 있으면 상단 가운데
+    if (myActionPatterns.some((pattern) => msg.includes(pattern))) {
+      return "top-center";
+    }
+
+    // 기본값: 우하단 (남이 한 행동에 대한 알람)
+    return "bottom-right";
+  };
 
   useEffect(() => {
-    requestAnimationFrame(() => setIsVisible(true));
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-      setTimeout(onClose, 500);
-    }, 2500);
-    return () => clearTimeout(timer);
-  }, [onClose]);
+    // message나 type이 변경되었을 때만 토스트 추가
+    const messageChanged = prevMessageRef.current !== message;
+    const typeChanged = prevTypeRef.current !== type;
+    
+    if (messageChanged || typeChanged || (prevMessageRef.current === "" && message)) {
+      // 토스트 추가 (내가 한 행동은 상단, 남이 한 행동은 우하단)
+      addToast({
+        message,
+        type,
+        position: getPosition(message),
+      });
 
-  // 타입에 따른 아이콘 색상 및 SVG 설정
-  const isSuccess = type === "success";
+      // 이전 값 업데이트
+      prevMessageRef.current = message;
+      prevTypeRef.current = type;
 
-  return (
-    <div
-      className={`
-        fixed top-[10%] left-1/2 -translate-x-1/2 z-[100]
-        flex items-center gap-3 px-6 py-3 
-        bg-white border rounded-full shadow-[0_4px_10px_rgba(0,0,0,0.1)]
-        transition-opacity duration-500 ease-in-out
-        ${isVisible ? "opacity-100" : "opacity-0"}
-        ${isSuccess ? "border-grayscale-warm-gray" : "border-alert-error"} 
-      `}
-    >
-      {/* 아이콘 영역 */}
-      <div 
-        className={`
-          rounded-full border-2 p-0.5 flex items-center justify-center
-          ${isSuccess ? "border-grayscale-dark-gray" : "border-alert-error"}
-        `}
-      >
-        {isSuccess ? (
-          // 성공 아이콘 (체크)
-          <svg width="12" height="12" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1 5L4.5 8.5L13 1" stroke="#111111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        ) : (
-          // 에러 아이콘 (느낌표) - 빨간색
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-             <path d="M12 8V12" stroke="#FF4D4D" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-             <path d="M12 16H12.01" stroke="#FF4D4D" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        )}
-      </div>
-      
-      {/* 텍스트 */}
-      <span className={`font-headline text-sm md:text-base ${isSuccess ? "text-grayscale-dark-gray" : "text-alert-error"}`}>
-        {message}
-      </span>
-    </div>
-  );
+      // onClose는 단순히 로컬 상태 초기화용 (실제 토스트는 ToastViewport가 제거)
+      const timer = setTimeout(() => {
+        onClose();
+      }, 5000);
+
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+  }, [message, type, addToast, onClose]);
+
+  // 이 컴포넌트는 렌더링하지 않습니다 (ToastViewport가 처리)
+  return null;
 };
 
 export default Toast;
+export type { ToastType };
+

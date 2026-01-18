@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 // 타입 정의: 성공(초록/검정) 혹은 에러(빨강)
 export type ToastType = "success" | "error";
@@ -24,7 +25,7 @@ const Toast = ({ message, type = "success", onClose }: ToastProps) => {
   // 타입에 따른 아이콘 색상 및 SVG 설정
   const isSuccess = type === "success";
 
-  return (
+  return createPortal(
     <div
       className={`
         fixed top-[10%] left-1/2 -translate-x-1/2 z-[100]
@@ -36,7 +37,7 @@ const Toast = ({ message, type = "success", onClose }: ToastProps) => {
       `}
     >
       {/* 아이콘 영역 */}
-      <div 
+      <div
         className={`
           rounded-full border-2 p-0.5 flex items-center justify-center
           ${isSuccess ? "border-grayscale-dark-gray" : "border-alert-error"}
@@ -45,22 +46,23 @@ const Toast = ({ message, type = "success", onClose }: ToastProps) => {
         {isSuccess ? (
           // 성공 아이콘 (체크)
           <svg width="12" height="12" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1 5L4.5 8.5L13 1" stroke="#111111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M1 5L4.5 8.5L13 1" stroke="#111111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         ) : (
           // 에러 아이콘 (느낌표) - 빨간색
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-             <path d="M12 8V12" stroke="#FF4D4D" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-             <path d="M12 16H12.01" stroke="#FF4D4D" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12 8V12" stroke="#FF4D4D" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M12 16H12.01" stroke="#FF4D4D" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         )}
       </div>
-      
+
       {/* 텍스트 */}
-      <span className={`font-headline text-sm md:text-base ${isSuccess ? "text-grayscale-dark-gray" : "text-alert-error"}`}>
+      <span className={`text-sm md:text-base font-bold tracking-tight ${isSuccess ? "text-gray-800" : "text-alert-error"}`}>
         {message}
       </span>
-    </div>
+    </div>,
+    document.body
   );
 };
 

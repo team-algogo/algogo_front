@@ -1,133 +1,66 @@
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
-import { postCheckEmail, postCheckNickname, postSignUp } from "@api/auth/auth";
-
 import Button from "@components/button/Button";
 import TextLink from "@components/textLink/TextLink";
-
+import Toast from "@components/toast/Toast";
+import type { ToastType } from "@components/toast/Toast";
 import BasePage from "@pages/BasePage";
+import { postCheckEmail, postCheckNickname, postSignUp, postEmailVerificationRequest, postEmailVerification } from "@api/auth/auth";
+
+const validateEmail = (email: string) => {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email) ? "" : "잘못된 이메일 형식입니다.";
+};
 
 const JoinPage = () => {
   const navigate = useNavigate();
 
-  //#region state
+  // Toast State
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState<ToastType>("success");
 
   // input 상태
   const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [verificationCode, setVerificationCode] = useState(""); // [NEW]
 
   // 에러 상태
   const [nicknameError, setNicknameError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
+  const [verificationError, setVerificationError] = useState(""); // [NEW]
 
-  // 중복확인 완료 상태
+  // 중복확인/인증 완료 상태
   const [isNicknameChecked, setIsNicknameChecked] = useState(false);
-  const [isEmailChecked, setIsEmailChecked] = useState(false);
+  const [isEmailChecked, setIsEmailChecked] = useState(false); // Used as "Is Email Verified"
+  const [isVerificationSent, setIsVerificationSent] = useState(false); // [NEW]
 
-  //#endregion
+  // ... handlers ...
 
-  //#region useEffect
-
-  // 닉네임 유효성 검사
-  const validateNickname = (nickname: string): string => {
-    if (!nickname) return "";
-
-    const nicknameRegexp = /^[가-힣a-zA-Z0-9]{2,10}$/;
-
-    if (!nicknameRegexp.test(nickname)) {
-      return "한글, 영문, 숫자만 가능하며 2~10자여야 합니다.";
-    }
-
-    return "";
-  };
-
-  // 닉네임 변경 시 중복확인 초기화
-  useEffect(() => {
-    setIsNicknameChecked(false);
-    const validationError = validateNickname(nickname);
-    setNicknameError(validationError);
-  }, [nickname]);
-
-  const validateEmail = (email: string): string => {
-    if (!email) return "";
-
-    const emailRegexp = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$/;
-
-    if (!emailRegexp.test(email)) {
-      return "올바른 이메일 형식이 아닙니다.";
-    }
-
-    return "";
-  };
-
-  // 이메일 변경 시 중복확인 초기화
-  useEffect(() => {
-    setIsEmailChecked(false);
-    const emailError = validateEmail(email);
-    setEmailError(emailError);
-  }, [email]);
-
-  // 비밀번호 유효성 검사
-  const validatePassword = (pw: string): string => {
-    if (!pw) return "";
-
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,20}$/;
-
-    if (!passwordRegex.test(pw)) {
-      return "영자, 숫자, 특수문자를 포함하여 8자 이상 입력해 주세요.";
-    }
-
-    return "";
-  };
-
-  // 비밀번호 유효성 체크
-  useEffect(() => {
-    const validationError = validatePassword(password);
-    setPasswordError(validationError);
-  }, [password]);
-
-  // 비밀번호 확인 체크
-  useEffect(() => {
-    if (confirmPassword && password !== confirmPassword) {
-      setConfirmPasswordError("비밀번호가 일치하지 않습니다.");
-    } else {
-      setConfirmPasswordError("");
-    }
-  }, [password, confirmPassword]);
-
-  //#endregion
-
-  //#region onSubmit
-
-  const onSubmitCheckNickname = async (
-    e: React.MouseEvent<HTMLButtonElement>
-  ) => {
+  const onSubmitCheckNickname = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-
     if (!nickname.trim()) {
       setNicknameError("닉네임을 입력해주세요.");
       return;
     }
 
     try {
-      const response = await postCheckNickname(nickname);
-      console.log(response.data.isAvailable);
-      if (response.data.isAvailable) {
-        setIsNicknameChecked(true);
-        setNicknameError("");
-      } else {
+      const duplicateResponse = await postCheckNickname(nickname);
+      if (!duplicateResponse.data.isAvailable) {
+        setNicknameError(duplicateResponse.message || "이미 사용 중인 닉네임입니다.");
         setIsNicknameChecked(false);
-        setNicknameError(response.message);
+        return;
       }
+      setNicknameError("");
+      setIsNicknameChecked(true);
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        setNicknameError(err.response?.data.message);
+        setNicknameError(err.response?.data.message || "중복 확인 중 오류가 발생했습니다.");
         setIsNicknameChecked(false);
       }
     }
@@ -135,22 +68,49 @@ const JoinPage = () => {
 
   const onSubmitCheckEmail = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+    setVerificationError("");
 
     if (!email.trim()) {
       setEmailError("이메일을 입력해주세요.");
       return;
     }
 
-    try {
-      const response = await postCheckEmail(email);
-      console.log(response.data.isAvailable);
+    // 1. Check Format
+    const formatError = validateEmail(email);
+    if (formatError) {
+      setEmailError(formatError);
+      return;
+    }
 
-      if (response.data.isAvailable) {
-        setIsEmailChecked(true);
-        setEmailError("");
-      } else {
+    try {
+      // 2. Check Duplication
+      const duplicateResponse = await postCheckEmail(email);
+      if (!duplicateResponse.data.isAvailable) {
+        setEmailError(duplicateResponse.message || "이미 사용 중인 이메일입니다.");
         setIsEmailChecked(false);
-        setEmailError(response.message);
+        return;
+      }
+      setEmailError(""); // Clear error if available
+
+      // 3. Request Verification Code
+      // Optimistic UI: Show toast immediately before the slow email request finishes
+      // However, we wait for duplication check first (which is usually fast)
+
+      setToastMessage("인증번호가 전송되었습니다. 이메일을 확인해주세요.");
+      setToastType("success");
+      setShowToast(true);
+      setIsVerificationSent(true);
+
+      // Send email in background (or await but we already showed success)
+      try {
+        await postEmailVerificationRequest(email);
+      } catch (err) {
+        // If it actually fails, show error toast
+        if (axios.isAxiosError(err)) {
+          setToastMessage(err.response?.data.message || "인증번호 전송에 실패했습니다.");
+          setToastType("error");
+          setShowToast(true);
+        }
       }
     } catch (err) {
       if (axios.isAxiosError(err)) {
@@ -160,61 +120,81 @@ const JoinPage = () => {
     }
   };
 
-  // 회원가입 가능 여부 확인
-  const canSubmit = () => {
-    return (
-      isNicknameChecked &&
-      isEmailChecked &&
-      !nicknameError &&
-      !emailError &&
-      !passwordError &&
-      !confirmPasswordError &&
-      password &&
-      confirmPassword
-    );
+  const onSubmitVerifyCode = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (!verificationCode.trim()) {
+      setVerificationError("인증번호를 입력해주세요.");
+      return;
+    }
+
+    try {
+      await postEmailVerification(email, verificationCode);
+      setIsEmailChecked(true); // Verified!
+      setVerificationError("");
+
+      setToastMessage("이메일 인증에 성공했습니다.");
+      setToastType("success");
+      setShowToast(true);
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setVerificationError(err.response?.data.message || "인증번호가 올바르지 않습니다.");
+        setIsEmailChecked(false);
+      }
+    }
   };
 
-  const onSubmitSignUp = async (e: React.FormEvent) => {
+  const onSubmitSignup = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!canSubmit()) {
-      if (!isNicknameChecked) setNicknameError("닉네임 중복확인을 해주세요.");
-      if (!isEmailChecked) setEmailError("이메일 중복확인을 해주세요.");
-      if (!password) setPasswordError("비밀번호를 입력해주세요.");
-      if (!confirmPassword)
-        setConfirmPasswordError("비밀번호 확인을 입력해주세요.");
+    if (!isNicknameChecked) {
+      setNicknameError("닉네임 중복 확인을 해주세요.");
+      return;
+    }
+    if (!isEmailChecked) {
+      setEmailError("이메일 인증을 완료해주세요.");
+      return;
+    }
+    if (!password || password.length < 8) {
+      setPasswordError("비밀번호는 8자 이상이어야 합니다.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setConfirmPasswordError("비밀번호가 일치하지 않습니다.");
       return;
     }
 
     try {
       await postSignUp(email, password, nickname);
-      navigate("/login", {
-        replace: true,
-        state: { signupSuccess: true },
-      });
+      // alert("회원가입이 완료되었습니다."); 
+      // Instead of alert, navigate with state to show toast on login page
+      navigate("/login", { state: { signupSuccess: true } });
     } catch (err) {
-      console.log(err);
+      if (axios.isAxiosError(err)) {
+        setToastMessage(err.response?.data.message || "회원가입에 실패했습니다.");
+        setToastType("error");
+        setShowToast(true);
+      }
     }
   };
 
-  //#endregion
-
   return (
     <BasePage>
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
+        />
+      )}
       <div className="w-full min-h-[calc(100vh-200px)] flex justify-center items-center py-10">
-        <form
-          onSubmit={onSubmitSignUp}
-          className="flex flex-col gap-8 w-full max-w-[420px] px-8 py-10 bg-white shadow-card rounded-lg border border-gray-100"
-        >
-          {/** title */}
+        <div className="flex flex-col gap-8 w-full max-w-[480px] px-8 py-10 bg-white shadow-card rounded-lg border border-gray-100">
           <div className="text-center">
-            <h1 className="font-headline text-2xl text-gray-900 mb-2">회원가입</h1>
-            <p className="text-gray-500 text-sm">알고가자의 회원이 되어 함께 성장하세요!</p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">회원가입</h1>
+            <p className="text-gray-500 text-sm">서비스 이용을 위해 회원가입을 진행해주세요.</p>
           </div>
 
-          {/** join input */}
-          <div className="flex flex-col gap-5">
-            <div className="flex flex-col gap-4">
+          <form onSubmit={onSubmitSignup}>
+            <div className="flex flex-col gap-5">
 
               {/* Nickname */}
               <div className="flex flex-col gap-1.5">
@@ -224,12 +204,16 @@ const JoinPage = () => {
                     id="nickname"
                     type="text"
                     value={nickname}
-                    placeholder="2~10자"
-                    onChange={(e) => setNickname(e.target.value)}
+                    placeholder="닉네임 입력"
+                    onChange={(e) => {
+                      setNickname(e.target.value);
+                      setIsNicknameChecked(false);
+                      setNicknameError("");
+                    }}
                     className={`flex-1 h-10 px-3 rounded-md border border-gray-300 focus:ring-1 outline-none transition-all text-sm placeholder-gray-400 ${nicknameError
                       ? "border-status-error focus:border-status-error focus:ring-status-error"
                       : isNicknameChecked
-                        ? "border-status-success focus:border-status-success focus:ring-status-success"
+                        ? "border-status-success focus:border-status-success focus:ring-status-success bg-gray-50 text-gray-500"
                         : "focus:border-primary-500 focus:ring-primary-500"
                       }`}
                   />
@@ -238,6 +222,7 @@ const JoinPage = () => {
                     size="sm"
                     type="button"
                     onClick={onSubmitCheckNickname}
+                    disabled={isNicknameChecked}
                     className="shrink-0"
                   >
                     중복확인
@@ -264,11 +249,16 @@ const JoinPage = () => {
                     type="text"
                     value={email}
                     placeholder="ssafy@ssafy.com"
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setIsVerificationSent(false); // Reset on change
+                      setIsEmailChecked(false);
+                    }}
+                    disabled={isEmailChecked}
                     className={`flex-1 h-10 px-3 rounded-md border border-gray-300 focus:ring-1 outline-none transition-all text-sm placeholder-gray-400 ${emailError
                       ? "border-status-error focus:border-status-error focus:ring-status-error"
                       : isEmailChecked
-                        ? "border-status-success focus:border-status-success focus:ring-status-success"
+                        ? "border-status-success focus:border-status-success focus:ring-status-success bg-gray-50 text-gray-500"
                         : "focus:border-primary-500 focus:ring-primary-500"
                       }`}
                   />
@@ -277,9 +267,10 @@ const JoinPage = () => {
                     size="sm"
                     type="button"
                     onClick={onSubmitCheckEmail}
+                    disabled={isEmailChecked}
                     className="shrink-0"
                   >
-                    중복확인
+                    {isVerificationSent ? "재전송" : "인증요청"}
                   </Button>
                 </div>
                 {emailError && (
@@ -289,7 +280,35 @@ const JoinPage = () => {
                 )}
                 {isEmailChecked && !emailError && (
                   <span className="text-status-success text-xs animate-in fade-in slide-in-from-top-1">
-                    사용 가능한 이메일입니다.
+                    이메일 인증이 완료되었습니다.
+                  </span>
+                )}
+
+                {/* Verification Code Input */}
+                {isVerificationSent && !isEmailChecked && (
+                  <div className="flex gap-2 mt-1 animate-in fade-in slide-in-from-top-1">
+                    <input
+                      type="text"
+                      value={verificationCode}
+                      placeholder="인증번호 입력"
+                      onChange={(e) => setVerificationCode(e.target.value)}
+                      className={`flex-1 h-10 px-3 rounded-md border border-gray-300 focus:ring-1 outline-none transition-all text-sm placeholder-gray-400 ${verificationError ? "border-status-error focus:border-status-error focus:ring-status-error" : "focus:border-primary-500 focus:ring-primary-500"
+                        }`}
+                    />
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      type="button"
+                      onClick={onSubmitVerifyCode}
+                      className="shrink-0"
+                    >
+                      인증확인
+                    </Button>
+                  </div>
+                )}
+                {verificationError && !isEmailChecked && (
+                  <span className="text-status-error text-xs animate-in fade-in slide-in-from-top-1">
+                    {verificationError}
                   </span>
                 )}
               </div>
@@ -333,23 +352,23 @@ const JoinPage = () => {
                   </span>
                 )}
               </div>
-            </div>
 
-            <Button type="submit" className="w-full mt-4" size="lg">계정 만들기</Button>
-          </div>
+              <Button type="submit" className="w-full mt-4" size="lg">계정 만들기</Button>
+            </div >
 
-          {/** etc */}
-          <div className="flex flex-col gap-6">
-            <div className="flex justify-center gap-3 text-gray-500 text-sm">
-              <span>이미 계정이 있으신가요?</span>
-              <TextLink src="/login">
-                <span className="text-primary-600 font-medium hover:text-primary-700">로그인하기</span>
-              </TextLink>
-            </div>
-          </div>
-        </form>
-      </div>
-    </BasePage>
+            {/** etc */}
+            <div className="flex flex-col gap-6 mt-6">
+              <div className="flex justify-center gap-4 text-gray-500 text-sm">
+                <span>이미 계정이 있으신가요?</span>
+                <TextLink src="/login">
+                  <span className="text-primary-600 font-medium hover:text-primary-700">로그인하기</span>
+                </TextLink>
+              </div>
+            </div >
+          </form >
+        </div>
+      </div >
+    </BasePage >
   );
 };
 

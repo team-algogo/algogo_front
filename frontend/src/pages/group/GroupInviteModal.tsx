@@ -93,7 +93,7 @@ export default function GroupInviteModal({ programId, onClose }: GroupInviteModa
                         <input
                             type="text"
                             className="flex-1 border border-grayscale-warm-gray rounded-lg px-4 py-2 focus:outline-none focus:border-primary-main"
-                            placeholder="이메일 또는 닉네임으로 검색"
+                            placeholder="이메일을 입력해주세요."
                             value={keyword}
                             onChange={(e) => setKeyword(e.target.value)}
                         />

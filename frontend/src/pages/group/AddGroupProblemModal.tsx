@@ -264,8 +264,12 @@ const AddGroupProblemModal = ({ programId, onClose }: AddGroupProblemModalProps)
                                         <p>좌측에서 추가할 문제를 선택해주세요.</p>
                                     </div>
                                 ) : (
-                                    selectedProblems.map((problem) => (
-                                        <div key={problem.id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm animate-fadeIn">
+                                    selectedProblems.map((problem, index) => (
+                                        <div
+                                            key={problem.id}
+                                            className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm animate-fadeIn"
+                                            style={{ zIndex: selectedProblems.length - index, position: 'relative' }}
+                                        >
                                             <div className="flex justify-between items-start mb-3">
                                                 <div>
                                                     <div className="flex items-center gap-2 mb-1">

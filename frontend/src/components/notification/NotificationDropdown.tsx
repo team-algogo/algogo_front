@@ -63,11 +63,8 @@ export default function NotificationDropdown() {
     },
     onError: (error: any) => {
       console.error("Failed to respond to join request", error);
-      if (error.response?.status === 400) {
-        setToastConfig({ message: "이미 처리된 요청입니다.", type: "error" });
-      } else {
-        setToastConfig({ message: "요청 처리에 실패했습니다.", type: "error" });
-      }
+      const msg = error.response?.data?.message || "요청 처리에 실패했습니다.";
+      setToastConfig({ message: msg, type: "error" });
     },
   });
 
@@ -85,12 +82,12 @@ export default function NotificationDropdown() {
     },
     onError: (error: any) => {
       console.error("Failed to respond to invite", error);
-      if (error.response?.status === 400) {
-        setToastConfig({ message: "이미 처리된 요청입니다.", type: "error" });
-        // 이미 처리된 경우에도 목록 갱신 필요
+      const msg = error.response?.data?.message || "요청 처리에 실패했습니다.";
+      setToastConfig({ message: msg, type: "error" });
+
+      // 이미 처리된 경우(400 등)에도 목록 갱신 시도
+      if (error.response?.status === 400 || error.response?.status === 409) {
         queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      } else {
-        setToastConfig({ message: "요청 처리에 실패했습니다.", type: "error" });
       }
     },
   });

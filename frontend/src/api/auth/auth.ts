@@ -77,6 +77,23 @@ export const postCheckNickname = async (nickname: string) => {
   return response.data;
 };
 
+// 이메일 인증 요청
+export const postEmailVerificationRequest = async (email: string) => {
+  const response = await client.post("/api/v1/users/emails/verification/request", {
+    email: email,
+  });
+  return response.data;
+};
+
+// 이메일 인증 확인
+export const postEmailVerification = async (email: string, code: string) => {
+  const response = await client.post("/api/v1/users/emails/verification", {
+    email: email,
+    code: code,
+  });
+  return response.data;
+};
+
 export const getUserDetail = async () => {
   const response = await getResponse<UserDetailProps>("/api/v1/users/profiles");
   return response.data;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import ProblemSetCard from "@components/cards/mypage/ProblemSetCard";
@@ -11,10 +11,21 @@ import SortSelect from "@components/selectbox/SortSelect";
 type TabType = "문제집" | "캠페인" | "그룹방";
 type SortDirection = "asc" | "desc";
 
-const ParticipationStatus = () => {
+interface ParticipationStatusProps {
+    initialTab?: TabType;
+}
+
+const ParticipationStatus = ({ initialTab }: ParticipationStatusProps) => {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState<TabType>("문제집");
+    const [activeTab, setActiveTab] = useState<TabType>(initialTab || "문제집");
     const [page, setPage] = useState(1);
+
+    // initialTab 변경 시 activeTab 업데이트
+    useEffect(() => {
+        if (initialTab) {
+            setActiveTab(initialTab);
+        }
+    }, [initialTab]);
     const [sortBy] = useState("createdAt"); // Currently defaulting to createdAt
     const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
     const itemsPerPage = 6;

@@ -1,6 +1,7 @@
 import Header from "@components/header/Header";
 import Footer from "@components/footer/Footer";
 import ToastViewport from "@components/toast/ToastViewport";
+import TopToastViewport from "@components/toast/TopToastViewport";
 import useNotificationSSE from "@hooks/useNotificationSSE";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Outlet } from "react-router-dom";
@@ -24,8 +25,9 @@ function AppContent() {
         </main>
         <Footer />
       </div>
-      {/* Toast Viewport (Portal to document.body) */}
-      <ToastViewport />
+      {/* Toast Viewports (Portal to document.body) */}
+      <ToastViewport /> {/* 우하단 (남이 한 행동) */}
+      <TopToastViewport /> {/* 상단 가운데 (내가 한 행동) */}
     </>
   );
 }

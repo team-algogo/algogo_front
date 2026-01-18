@@ -19,23 +19,28 @@ const ToastViewport = () => {
     });
   }, [toasts]);
 
-  if (!mounted) return null;
+  // 우하단 위치 토스트만 필터링 (position이 bottom-right이거나 없는 경우)
+  const bottomToasts = toasts.filter(
+    (toast) => !toast.position || toast.position === "bottom-right"
+  );
+
+  if (!mounted || bottomToasts.length === 0) return null;
 
   const viewport = (
     <div
       className="fixed z-[1000] flex flex-col gap-3 pointer-events-none"
-      style={{ 
+      style={{
         bottom: "24px",
         right: "24px",
-        maxWidth: "420px" 
+        maxWidth: "420px",
       }}
     >
-      {toasts.map((toast, index) => (
+      {bottomToasts.map((toast, index) => (
         <div
           key={toast.id}
-          className="pointer-events-auto animate-slide-in-right"
+          className="pointer-events-auto"
           style={{
-            animationDelay: `${index * 0.1}s`,
+            animation: `slideInRight 0.3s ease-out ${index * 0.1}s both`,
           }}
         >
           <ToastItem toast={toast} onClose={() => removeToast(toast.id)} />

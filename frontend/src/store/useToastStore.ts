@@ -2,23 +2,57 @@ import { create } from "zustand";
 
 export type ToastType = "success" | "error" | "info" | "warning";
 
-interface ToastState {
+export interface ToastItem {
+  id: string;
   message: string;
+  description?: string;
   type: ToastType;
-  isVisible: boolean;
-  showToast: (message: string, type?: ToastType) => void;
-  hideToast: () => void;
+  cta?: {
+    label: string;
+    route: string;
+    params?: Record<string, any>;
+  };
+  createdAt: number;
 }
 
+interface ToastState {
+  toasts: ToastItem[];
+  addToast: (toast: Omit<ToastItem, "id" | "createdAt">) => void;
+  removeToast: (id: string) => void;
+  clearAll: () => void;
+}
+
+const MAX_TOASTS = 4;
+
 const useToastStore = create<ToastState>((set) => ({
-  message: "",
-  type: "success",
-  isVisible: false,
-  showToast: (message, type = "success") => {
-    set({ message, type, isVisible: true });
+  toasts: [],
+  addToast: (toast) => {
+    const id = `${Date.now()}-${Math.random()}`;
+    const newToast: ToastItem = {
+      ...toast,
+      id,
+      createdAt: Date.now(),
+    };
+
+    set((state) => {
+      const newToasts = [...state.toasts, newToast];
+      // 최대 개수 초과 시 가장 오래된 것 제거
+      if (newToasts.length > MAX_TOASTS) {
+        newToasts.shift();
+      }
+      console.log("[ToastStore] Added toast:", newToast);
+      console.log("[ToastStore] Current toasts:", newToasts);
+      return { toasts: newToasts };
+    });
   },
-  hideToast: () => {
-    set({ isVisible: false });
+  removeToast: (id: string) => {
+    console.log("[ToastStore] Removing toast:", id);
+    set((state) => ({
+      toasts: state.toasts.filter((toast) => toast.id !== id),
+    }));
+  },
+  clearAll: () => {
+    set({ toasts: [] });
   },
 }));
 

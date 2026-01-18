@@ -1,111 +1,53 @@
-import { useEffect, useState } from "react";
-import type { ToastType } from "../../store/useToastStore";
+import { useEffect, useRef } from "react";
+import useToastStore, { type ToastType } from "@store/useToastStore";
 
 interface ToastProps {
   message: string;
-  type?: ToastType; // type is optional (default: success)
+  type?: ToastType;
   onClose: () => void;
 }
 
+/**
+ * 기존 코드와의 호환성을 위한 Toast 래퍼 컴포넌트
+ * 내부적으로 useToastStore를 사용하여 전역 토스트 시스템에 토스트를 추가합니다.
+ * ToastViewport가 자동으로 토스트를 표시하고 5초 후 제거합니다.
+ */
 const Toast = ({ message, type = "success", onClose }: ToastProps) => {
-  const [isVisible, setIsVisible] = useState(false);
+  const { addToast } = useToastStore();
+  const prevMessageRef = useRef<string>("");
+  const prevTypeRef = useRef<ToastType>("success");
 
   useEffect(() => {
-    requestAnimationFrame(() => setIsVisible(true));
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-      setTimeout(onClose, 500);
-    }, 2500);
-    return () => clearTimeout(timer);
-  }, [onClose]);
+    // message나 type이 변경되었을 때만 토스트 추가
+    const messageChanged = prevMessageRef.current !== message;
+    const typeChanged = prevTypeRef.current !== type;
+    
+    if (messageChanged || typeChanged || (prevMessageRef.current === "" && message)) {
+      // 토스트 추가 (ToastViewport가 자동으로 표시하고 5초 후 제거)
+      addToast({
+        message,
+        type,
+      });
 
-  // Style configuration based on type
-  const getStyle = (type: ToastType) => {
-    switch (type) {
-      case "success":
-        return {
-          wrapperBorder: "border-grayscale-warm-gray",
-          iconBorder: "border-grayscale-dark-gray",
-          text: "text-grayscale-dark-gray",
-          stroke: "#111111",
-        };
-      case "error":
-        return {
-          wrapperBorder: "border-alert-error",
-          iconBorder: "border-alert-error",
-          text: "text-alert-error",
-          stroke: "#FF4D4D", // color-status-error / alert-error
-        };
-      case "warning":
-        return {
-          wrapperBorder: "border-[#f9a825]", // color-status-warning
-          iconBorder: "border-[#f9a825]",
-          text: "text-[#f9a825]",
-          stroke: "#f9a825",
-        };
-      case "info":
-        return {
-          wrapperBorder: "border-status-info", 
-          iconBorder: "border-status-info",
-          text: "text-status-info",
-          stroke: "#0d6efd", // color-status-info
-        };
-      default:
-        return {
-          wrapperBorder: "border-grayscale-warm-gray",
-          iconBorder: "border-grayscale-dark-gray",
-          text: "text-grayscale-dark-gray",
-          stroke: "#111111",
-        };
+      // 이전 값 업데이트
+      prevMessageRef.current = message;
+      prevTypeRef.current = type;
+
+      // onClose는 단순히 로컬 상태 초기화용 (실제 토스트는 ToastViewport가 제거)
+      const timer = setTimeout(() => {
+        onClose();
+      }, 5000);
+
+      return () => {
+        clearTimeout(timer);
+      };
     }
-  };
+  }, [message, type, addToast, onClose]);
 
-  const styles = getStyle(type);
-
-  return (
-    <div
-      className={`
-        fixed top-[10%] left-1/2 -translate-x-1/2 z-[100]
-        flex items-center gap-3 px-6 py-3 
-        bg-white border rounded-full shadow-[0_4px_10px_rgba(0,0,0,0.1)]
-        transition-opacity duration-500 ease-in-out
-        ${isVisible ? "opacity-100" : "opacity-0"}
-        ${styles.wrapperBorder} 
-      `}
-    >
-      {/* Icon Area */}
-      <div 
-        className={`
-          rounded-full border-2 p-0.5 flex items-center justify-center
-          ${styles.iconBorder}
-        `}
-      >
-        {type === "success" ? (
-          // Success Icon (Check)
-          <svg width="12" height="12" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1 5L4.5 8.5L13 1" stroke={styles.stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        ) : type === "error" || type === "warning" ? (
-          // Error/Warning Icon (Exclamation)
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-             <path d="M12 8V12" stroke={styles.stroke} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-             <path d="M12 16H12.01" stroke={styles.stroke} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        ) : (
-          // Info Icon (i) - Using exclamation upside down or detailed i
-           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-             <path d="M12 16V12" stroke={styles.stroke} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-             <path d="M12 8H12.01" stroke={styles.stroke} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        )}
-      </div>
-      
-      {/* Text */}
-      <span className={`font-headline text-sm md:text-base ${styles.text}`}>
-        {message}
-      </span>
-    </div>
-  );
+  // 이 컴포넌트는 렌더링하지 않습니다 (ToastViewport가 처리)
+  return null;
 };
 
 export default Toast;
+export type { ToastType };
+

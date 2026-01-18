@@ -1,12 +1,14 @@
 import { create } from "zustand";
 
 export type ToastType = "success" | "error" | "info" | "warning";
+export type ToastPosition = "top-center" | "bottom-right";
 
 export interface ToastItem {
   id: string;
   message: string;
   description?: string;
   type: ToastType;
+  position?: ToastPosition; // 위치 정보 (기본값: bottom-right)
   cta?: {
     label: string;
     route: string;

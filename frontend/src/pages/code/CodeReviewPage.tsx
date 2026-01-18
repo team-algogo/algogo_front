@@ -14,7 +14,6 @@ import {
   type SubmissionReviewProps,
 } from "@api/code/reviewSubmit";
 import HistoryBox from "@components/history/HistoryBox";
-import AiReviewCard from "@components/review/AiReviewCard";
 import CommentItem from "@components/review/CommentItem";
 import CommentInput from "@components/review/CommentInput";
 import AlgorithmTagList from "@components/review/AlgorithmTagList";
@@ -130,64 +129,6 @@ const CodeReviewPage = () => {
     return lang.toUpperCase();
   };
 
-  const getLanguageBadgeStyle = (lang: string) => {
-    const normalized = normalizeLanguage(lang);
-    const styles: Record<string, { bg: string; text: string; border: string }> =
-      {
-        JAVA: {
-          bg: "bg-red-50",
-          text: "text-red-700",
-          border: "border-red-200",
-        },
-        PYTHON: {
-          bg: "bg-blue-50",
-          text: "text-blue-700",
-          border: "border-blue-200",
-        },
-        "C++": {
-          bg: "bg-slate-50",
-          text: "text-slate-700",
-          border: "border-slate-200",
-        },
-        JAVASCRIPT: {
-          bg: "bg-yellow-50",
-          text: "text-yellow-700",
-          border: "border-yellow-200",
-        },
-        TYPESCRIPT: {
-          bg: "bg-indigo-50",
-          text: "text-indigo-700",
-          border: "border-indigo-200",
-        },
-        KOTLIN: {
-          bg: "bg-purple-50",
-          text: "text-purple-700",
-          border: "border-purple-200",
-        },
-        SWIFT: {
-          bg: "bg-orange-50",
-          text: "text-orange-700",
-          border: "border-orange-200",
-        },
-        GO: {
-          bg: "bg-cyan-50",
-          text: "text-cyan-700",
-          border: "border-cyan-200",
-        },
-        RUST: {
-          bg: "bg-orange-50",
-          text: "text-orange-700",
-          border: "border-orange-200",
-        },
-      };
-    return (
-      styles[normalized] || {
-        bg: "bg-gray-50",
-        text: "text-gray-700",
-        border: "border-gray-200",
-      }
-    );
-  };
 
   const handleAddComment = async (content: string) => {
     if (!submissionDetail?.submissionId) return;

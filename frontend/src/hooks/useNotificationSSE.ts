@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { EventSourcePolyfill } from "event-source-polyfill";
 import { useQueryClient } from "@tanstack/react-query";
 import useAuthStore from "@store/useAuthStore";
 import useToastStore, { type ToastItem } from "@store/useToastStore";
@@ -59,26 +58,30 @@ const useNotificationSSE = () => {
           toastType = "info";
       }
 
-      // 3. 메시지 매핑
+      // 3. 위치 결정 (특정 7개 알람만 우하단, 나머지는 상단 가운데)
+      const bottomRightTypes = [
+        "GROUP_JOIN_APPLY",
+        "GROUP_JOIN_UPDATE",
+        "GROUP_INVITE_APPLY",
+        "GROUP_INVITE_UPDATE",
+        "REQUIRED_REVIEW",
+        "REVIEW_CREATED",
+        "REPLY_REVIEW",
+      ];
+      const position: "top-center" | "bottom-right" = bottomRightTypes.includes(alarm.type)
+        ? "bottom-right"
+        : "top-center";
+
+      // 4. 메시지 매핑
       const toastMessage = mapAlarmToToastMessage(alarm);
       console.log("[useNotificationSSE] Mapped toast message:", toastMessage);
-
-      // 4. CTA 생성 (있을 경우)
-      const cta =
-        toastMessage.cta?.route
-          ? {
-              label: toastMessage.cta.label,
-              onClick: () => {
-                // navigate는 ToastItem에서 처리
-              },
-            }
-          : undefined;
 
       // 5. 토스트 추가
       const toast: Omit<ToastItem, "id" | "createdAt"> = {
         message: toastMessage.title,
         description: toastMessage.description,
         type: toastType,
+        position,
         cta: toastMessage.cta
           ? {
               label: toastMessage.cta.label,
@@ -97,8 +100,8 @@ const useNotificationSSE = () => {
       console.error("[useNotificationSSE] SSE error:", error);
     };
 
-    // SSE 연결
-    const eventSource = connectSSE(authorization, onInit, onNotification, onError);
+    // SSE 연결 (connectSSE가 내부적으로 eventSource를 관리하므로 반환값은 사용하지 않음)
+    connectSSE(authorization, onInit, onNotification, onError);
 
     return () => {
       console.log("[useNotificationSSE] Cleaning up SSE connection");

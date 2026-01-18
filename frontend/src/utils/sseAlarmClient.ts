@@ -17,7 +17,7 @@ let eventSource: EventSourcePolyfill | null = null;
 export const connectSSE = (
   token: string,
   onInit: () => void,
-  onNotification: (data: SSENotificationData) => void,
+  onNotification: (data: Alarm) => void,
   onError?: (error: Event) => void
 ) => {
   // 기존 연결이 있으면 닫기

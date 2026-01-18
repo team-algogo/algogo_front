@@ -84,7 +84,6 @@ const AlgorithmTagList = ({ algorithms }: AlgorithmTagListProps) => {
     };
   }, [algorithms]);
 
-  const visibleAlgorithms = algorithms.slice(0, visibleCount);
   const hiddenCount = algorithms.length - visibleCount;
   const hasHidden = hiddenCount > 0;
 

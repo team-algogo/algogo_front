@@ -6,7 +6,7 @@ const Footer = () => {
                 <div className="flex flex-col md:flex-row items-center gap-4">
                     <span className="font-logo text-lg text-gray-300 select-none">algogo</span>
                     <span className="hidden md:block w-px h-3 bg-gray-200"></span>
-                    <span>© 2024 Algogo Team. All rights reserved.</span>
+                    <span>© 2026 Algogo Team. All rights reserved.</span>
                 </div>
             </div>
         </footer>

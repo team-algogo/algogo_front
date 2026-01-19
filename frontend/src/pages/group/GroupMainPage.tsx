@@ -9,6 +9,7 @@ import { fetchGroupList, fetchMyGroupList } from "../../api/group/groupApi";
 import CreateGroupModal from "./CreateGroupModal";
 import useAuthStore from "@store/useAuthStore";
 import Pagination from "@components/pagination/Pagination";
+import Toast, { type ToastType } from "@components/toast/Toast";
 
 const GroupMainPage = () => {
   // --- 1. 상태 및 훅 ---
@@ -30,6 +31,7 @@ const GroupMainPage = () => {
   }, [page]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [toastConfig, setToastConfig] = useState<{ message: string; type: ToastType } | null>(null);
 
   // --- 2. Data Fetching ---
 
@@ -112,6 +114,13 @@ const GroupMainPage = () => {
           onCreateSuccess={() => setPage(0)}
         />
       )}
+      {toastConfig && (
+        <Toast
+          message={toastConfig.message}
+          type={toastConfig.type}
+          onClose={() => setToastConfig(null)}
+        />
+      )}
 
       {/* [Layout 변경] 
         로그인 시: 좌우 분할을 위해 max-width를 조금 더 넓게(1200px) 잡아줍니다.
@@ -133,19 +142,20 @@ const GroupMainPage = () => {
               </p>
             </div>
             <div className="w-full md:w-auto">
-              <Button
-                variant="primary"
-                onClick={handleOpenModal}
-                className="!h-12 !px-6 shadow-lg hover:shadow-primary-main/30 hover:shadow-xl transition-all"
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 5v14M5 12h14" />
-                  </svg>
-                  <span className="font-bold text-base">그룹 만들기</span>
-                </div>
-              </Button>
-
+              {isLoggedIn && (
+                <Button
+                  variant="primary"
+                  onClick={handleOpenModal}
+                  className="!h-12 !px-6 shadow-lg hover:shadow-primary-main/30 hover:shadow-xl transition-all"
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 5v14M5 12h14" />
+                    </svg>
+                    <span className="font-bold text-base">그룹 만들기</span>
+                  </div>
+                </Button>
+              )}
             </div>
           </div>
 
@@ -155,15 +165,25 @@ const GroupMainPage = () => {
               alt="search"
               className="size-5 cursor-pointer opacity-40 hover:opacity-60 transition-opacity"
               onClick={() => {
+                if (!isLoggedIn) {
+                  setToastConfig({ message: "로그인이 필요한 서비스입니다.", type: "error" });
+                  return;
+                }
                 setKeyword(searchInput);
                 setPage(0);
               }}
             />
             <input
               type="text"
+              readOnly={!isLoggedIn}
               className="w-full bg-transparent text-lg text-gray-800 placeholder:text-gray-400 outline-none"
               placeholder="관심 있는 그룹 이름이나 설명을 검색해보세요"
               value={searchInput}
+              onClick={() => {
+                if (!isLoggedIn) {
+                  setToastConfig({ message: "로그인이 필요한 서비스입니다.", type: "error" });
+                }
+              }}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={handleSearchKeyDown}
             />
@@ -251,9 +271,10 @@ const GroupMainPage = () => {
               </div>
               <div className="relative">
                 <select
-                  className="appearance-none bg-transparent pl-2 pr-8 py-1 text-sm font-semibold text-gray-600 cursor-pointer hover:text-gray-900 focus:outline-none transition-colors"
+                  className="appearance-none bg-transparent pl-2 pr-8 py-1 text-sm font-semibold text-gray-600 cursor-pointer hover:text-gray-900 focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   onChange={handleSortChange}
                   defaultValue="latest"
+                  disabled={!isLoggedIn}
                 >
                   <option value="latest">최신순</option>
                   <option value="title">가나다순</option>
@@ -277,56 +298,46 @@ const GroupMainPage = () => {
                 </div>
               ) : allGroupList.length > 0 ? (
                 <>
-                  {/* 실제 리스트 */}
-                  {visibleGroups.map((group: any, index: number) => (
-                    <div
-                      key={group.programId}
-                      className="animate-fade-in-up"
-                      style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'forwards', opacity: 0 }}
-                    >
-                      <Group
-                        id={group.programId} // programId를 id로 전달
-                        title={group.title}
-                        description={group.description}
-                        memberCount={group.memberCount}
-                        capacity={group.capacity}
-                        problemCount={group.programProblemCount}
-                        createdAt={formatDate(group.createdAt)}
-                        isMember={group.isMember}
-                        isLoggedIn={isLoggedIn}
-                      />
-                    </div>
-                  ))}
-
-                  {/* 비로그인 시 블러 오버레이 */}
-                  {!isLoggedIn && allGroupList.length > 3 && (
-                    <div className="relative mt-4">
-                      <div className="flex flex-col gap-4 opacity-30 blur-[2px] pointer-events-none select-none">
-                        {allGroupList.slice(3, 6).map((group: any) => (
-                          <Group
-                            key={group.programId}
-                            id={group.programId}
-                            title={group.title}
-                            description={group.description}
-                            memberCount={group.memberCount}
-                            capacity={group.capacity}
-                            problemCount={group.programProblemCount}
-                            createdAt={formatDate(group.createdAt)}
-                            isMember={group.isMember}
-                            isLoggedIn={isLoggedIn}
-                          />
-                        ))}
+                  {/* 실제 리스트 영역 */}
+                  <div className={`flex flex-col gap-4 relative ${!isLoggedIn ? 'blur-sm select-none pointer-events-none' : ''}`}>
+                    {(isLoggedIn ? visibleGroups : allGroupList.slice(0, 6)).map((group: any, index: number) => (
+                      <div
+                        key={group.programId}
+                        className="animate-fade-in-up"
+                        style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'forwards', opacity: 0 }}
+                      >
+                        <Group
+                          id={group.programId}
+                          title={group.title}
+                          description={group.description}
+                          memberCount={group.memberCount}
+                          capacity={group.capacity}
+                          problemCount={group.programProblemCount}
+                          createdAt={formatDate(group.createdAt)}
+                          isMember={group.isMember}
+                          isLoggedIn={isLoggedIn}
+                        />
                       </div>
-                      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/80 to-white z-10"></div>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center z-20 gap-4">
-                        <p className="text-gray-900 text-xl font-bold text-center">
-                          더 많은 그룹을 보려면 <br className="md:hidden" />
-                          로그인이 필요합니다 🥲
-                        </p>
+                    ))}
+                  </div>
+
+                  {/* 비로그인 시 전체 덮는 오버레이 */}
+                  {!isLoggedIn && (
+                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-6">
+                      <div className="bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-2xl border border-white/20 flex flex-col items-center gap-4 text-center transform hover:scale-105 transition-transform duration-300">
+                        <div className="p-3 bg-gray-100 rounded-full">
+                          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                          </svg>
+                        </div>
+                        <div className="space-y-1">
+                          <h3 className="text-xl font-bold text-gray-900">로그인이 필요한 서비스입니다</h3>
+                          <p className="text-gray-500 text-sm">그룹방 내용을 확인하려면 로그인을 해주세요</p>
+                        </div>
                         <Button
                           variant="primary"
                           onClick={() => window.location.href = "https://algogo.kr/intro"}
-                          className="!w-fit !px-8 !py-3 !h-auto text-base shadow-lg hover:shadow-xl transition-all hover:-translate-y-1"
+                          className="!w-full !py-3 font-bold shadow-lg hover:shadow-primary-main/30"
                         >
                           로그인 하러가기
                         </Button>

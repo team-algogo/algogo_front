@@ -220,7 +220,7 @@ export default function GroupDetailPage() {
                     initialData={{
                         title: groupDetail.title,
                         description: groupDetail.description,
-                        capacity: groupDetail.memberCount,
+                        capacity: groupDetail.capacity,
                     }}
                     onClose={() => setIsEditModalOpen(false)}
                 />

@@ -17,12 +17,15 @@ import MyPage from "@pages/mypage/MyPage";
 import SettingsPage from "@pages/mypage/SettingsPage";
 import ProblemStatisticsPage from "@pages/problemset/ProblemStatisticsPage";
 
+import IntroPage from "@pages/intro/IntroPage";
+
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
     children: [
       { index: true, element: <MainPage /> },
+      { path: "intro", element: <IntroPage /> },
       { path: "login", element: <LoginPage /> },
       { path: "join", element: <JoinPage /> },
       { path: "mypage", element: <MyPage /> },

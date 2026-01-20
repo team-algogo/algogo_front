@@ -1,37 +1,32 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Navigate } from "react-router-dom";
 
-import Banner from "@components/banner/Banner";
+// import Banner from "@components/banner/Banner";
+import { HeroSection } from "@components/main/landing/HeroSection";
 
 // import MainCampaignCard from "@components/cards/main/MainCampaignCard";
 import ReviewRequestCard from "@components/cards/main/ReviewRequestCard";
 import EmptyState from "@components/empty/EmptyState";
 import TextLink from "@components/textLink/TextLink";
-import MainProblemSetCard from "@components/cards/main/MainProblemSetCard";
-import AlertModal from "@components/modal/alarm/AlertModal";
 
-import img2 from "@assets/images/MainCard/MainCard2.jpg";
+import ProblemSearchResultCard from "@components/cards/search/ProblemSearchResultCard";
+import AlertModal from "@components/modal/alarm/AlertModal";
 
 import BasePage from "@pages/BasePage";
 
 import { useModalStore } from "@store/useModalStore";
 import useAuthStore from "@store/useAuthStore";
-import { getPopularSubmissionList } from "@api/main/getPopularProblem";
-import type { GroupItem } from "@type/group/group";
-import { fetchGroupList, type GroupListParams } from "@api/group/groupApi";
 import {
   getRequireReview,
   type RequiredCodeReviewList,
 } from "@api/review/manageReview";
 import type { ProblemSetListResponse } from "@type/problemset/problemSet";
 import { getProblemSetList } from "@api/problemset/getProblemSetList";
-import MainSubmissionCard from "@components/cards/main/MainSubmissionCard";
-import MainProblemCard from "@components/cards/main/MainProblemCard";
-import {
-  getSubmissionDetail,
-  type SubmissionDetailProps,
-} from "@api/code/reviewSubmit";
-import { getProblemInfo, type ProgramProblemProps } from "@api/code/codeSubmit";
+import type { GroupItem } from "@type/group/group";
+import { fetchGroupList, type GroupListParams } from "@api/group/groupApi";
+
+
+
 
 const MainPage = () => {
   const [reviewRequire, setReviewRequire] =
@@ -47,117 +42,7 @@ const MainPage = () => {
   const { openModal, closeModal } = useModalStore();
   const { userType } = useAuthStore();
 
-  /* Refactored states for dynamic cards & carousel */
-  const [hotList, setHotList] = useState<number[]>([]);
-  const [recentList, setRecentList] = useState<number[]>([]);
-  const [joinInList, setJoinInList] = useState<number[]>([]);
 
-  const [currentHotSubmission, setCurrentHotSubmission] =
-    useState<SubmissionDetailProps | null>(null);
-  const [currentRecentSubmission, setCurrentRecentSubmission] =
-    useState<SubmissionDetailProps | null>(null);
-  const [currentPopularProblem, setCurrentPopularProblem] =
-    useState<ProgramProblemProps | null>(null);
-
-  const [currentHotPlatform, setCurrentHotPlatform] = useState<string>("");
-  const [currentRecentPlatform, setCurrentRecentPlatform] =
-    useState<string>("");
-
-  // Helper to fetch details + platform
-  const fetchSubmissionData = async (submissionId: number) => {
-    try {
-      const detail = await getSubmissionDetail(submissionId.toString());
-      // Also fetch problem info to get platform
-      const problemInfo = await getProblemInfo(
-        detail.programProblemId.toString(),
-      );
-      return { detail, platform: problemInfo.platformType };
-    } catch (err) {
-      console.log(err);
-      return null;
-    }
-  };
-
-  const getPopularLists = async () => {
-    try {
-      // 1. Get Lists (IDs)
-      const hotResponse = await getPopularSubmissionList("hot");
-      const recentResponse = await getPopularSubmissionList("recent");
-      const joinInResponse = await getPopularSubmissionList("join-in");
-
-      let hotIds: number[] = [];
-      let recentIds: number[] = [];
-      let joinInIds: number[] = [];
-
-      if (hotResponse && "submissionIdList" in hotResponse) {
-        hotIds = hotResponse.submissionIdList;
-      }
-
-      if (recentResponse && "submissionIdList" in recentResponse) {
-        recentIds = recentResponse.submissionIdList;
-      }
-
-      if (joinInResponse && "programProblemIdList" in joinInResponse) {
-        joinInIds = joinInResponse.programProblemIdList;
-      }
-
-      setHotList(hotIds);
-      setRecentList(recentIds);
-      setJoinInList(joinInIds);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  // Effect: Fetch Detail when Hot List changes
-  useEffect(() => {
-    const fetchHot = async () => {
-      if (hotList.length > 0) {
-        // Fetch a random item
-        const randomIndex = Math.floor(Math.random() * hotList.length);
-        const id = hotList[randomIndex];
-        const result = await fetchSubmissionData(id);
-        if (result) {
-          setCurrentHotSubmission(result.detail);
-          setCurrentHotPlatform(result.platform);
-        }
-      }
-    };
-    fetchHot();
-  }, [hotList]);
-
-  // Effect: Fetch Detail when Recent List changes
-  useEffect(() => {
-    const fetchRecent = async () => {
-      if (recentList.length > 0) {
-        // Always fetch the first item
-        const id = recentList[0];
-        const result = await fetchSubmissionData(id);
-        if (result) {
-          setCurrentRecentSubmission(result.detail);
-          setCurrentRecentPlatform(result.platform);
-        }
-      }
-    };
-    fetchRecent();
-  }, [recentList]);
-
-  // Effect: Fetch Problem when Join List changes
-  useEffect(() => {
-    const fetchJoin = async () => {
-      if (joinInList.length > 0) {
-        // Always fetch the first item
-        const id = joinInList[0];
-        try {
-          const detail = await getProblemInfo(id.toString());
-          setCurrentPopularProblem(detail);
-        } catch (err) {
-          console.log(err);
-        }
-      }
-    };
-    fetchJoin();
-  }, [joinInList]);
 
   const getReviewList = async () => {
     try {
@@ -192,7 +77,6 @@ const MainPage = () => {
   const isLoggedIn = userType === "User";
 
   useEffect(() => {
-    getPopularLists();
     getProblemSet();
     getGroupList({ size: 5, sortBy: "createdAt", sortDirection: "desc" });
   }, []);
@@ -214,47 +98,36 @@ const MainPage = () => {
     }
   }, [state, openModal, navigate, pathname]);
 
+
+  // Landing Page for non-logged-in users
+  // Redirect to Intro Page for non-logged-in users
+  if (!isLoggedIn) {
+    return <Navigate to="/intro" replace />;
+  }
+
+  // Dashboard for logged-in users
   return (
     <BasePage>
       {/* Banner Section */}
       <section className="w-full">
-        <Banner />
+        <HeroSection />
       </section>
 
-      {/* Featured Reviews Section (로그인 여부에 따라 다른 컨텐츠 표시) */}
-      <section className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      {/* Featured Reviews Section */}
+      <section className="mx-auto w-full max-w-7xl px-4 pt-16 pb-6 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-end justify-between">
           <div className="relative">
             <h2 className="text-3xl font-bold tracking-tight text-gray-900">
-              {isLoggedIn ? "도착한 리뷰 요청" : "지금 뜨고 있는 "}
-              {!isLoggedIn && (
-                <span className="text-primary-600 relative inline-block">
-                  리뷰
-                  <svg
-                    className="text-primary-200 absolute bottom-1 left-0 -z-10 h-2 w-full"
-                    viewBox="0 0 100 10"
-                    preserveAspectRatio="none"
-                  >
-                    <path
-                      d="M0 5 Q 50 10 100 5"
-                      stroke="currentColor"
-                      strokeWidth="8"
-                      fill="none"
-                      opacity="0.6"
-                    />
-                  </svg>
-                </span>
-              )}
+              도착한 리뷰 요청
             </h2>
             <p className="mt-2 text-gray-500">
-              {isLoggedIn
-                ? "다른 사람의 코드를 리뷰하고 함께 성장해보세요!"
-                : "개발자들의 열띤 토론이 진행되고 있어요"}
+              다른 사람의 코드를 리뷰하고 함께 성장해보세요!
             </p>
           </div>
           <TextLink
-            src={isLoggedIn ? "/mypage" : "/reviews"}
+            src="/mypage"
             variant="secondary"
+            state={{ viewMode: "활동 내역" }}
             className="hover:text-primary-600 text-sm font-medium transition-colors"
           >
             전체보기 →
@@ -262,68 +135,27 @@ const MainPage = () => {
         </div>
 
         {/* Content Area */}
-        {isLoggedIn ? (
-          // 로그인 시: 리뷰 요청 카드 리스트
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {reviewRequire && reviewRequire.requiredCodeReviews.length > 0 ? (
-              reviewRequire.requiredCodeReviews
-                .slice(0, 3)
-                .map((review, index) => (
-                  <ReviewRequestCard key={index} {...review} />
-                ))
-            ) : (
-              <div className="col-span-full w-full">
-                <EmptyState
-                  icon="📭"
-                  title="아직 도착한 리뷰 요청이 없어요"
-                  description="다른 활동을 하며 기다려보세요!"
-                />
-              </div>
-            )}
-          </div>
-        ) : (
-          // 비로그인 시: Hot/Recent 카드 - Grid 레이아웃으로 정렬 통일 (컴팩트한 간격)
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 lg:justify-items-center">
-            {/* Hot Submission */}
-            {currentHotSubmission && (
-              <MainSubmissionCard
-                data={currentHotSubmission}
-                icon="🔥"
-                title="지금 가장 핫한 코드"
-                subtitle="댓글이 가장 많이 달렸어요"
-                platform={currentHotPlatform}
-                badges={[{ text: "HOT", variant: "orange" }]}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {reviewRequire && reviewRequire.requiredCodeReviews.length > 0 ? (
+            reviewRequire.requiredCodeReviews
+              .slice(0, 3)
+              .map((review, index) => (
+                <ReviewRequestCard key={index} {...review} />
+              ))
+          ) : (
+            <div className="col-span-full w-full">
+              <EmptyState
+                icon="📭"
+                title="아직 도착한 리뷰 요청이 없어요"
+                description="다른 활동을 하며 기다려보세요!"
               />
-            )}
-
-            {/* Popular Problem */}
-            {currentPopularProblem && (
-              <MainProblemCard
-                data={currentPopularProblem}
-                icon="😎"
-                title="인기 급상승 문제"
-                subtitle="많은 사람들이 도전 중!"
-                badges={[{ text: "HOT", variant: "orange" }]}
-              />
-            )}
-
-            {/* Recent Submission */}
-            {currentRecentSubmission && (
-              <MainSubmissionCard
-                data={currentRecentSubmission}
-                icon="🆕"
-                title="최근 올라온 코드"
-                subtitle="따끈따끈한 새 코드 리뷰"
-                platform={currentRecentPlatform}
-                badges={[{ text: "NEW", variant: "green" }]}
-              />
-            )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </section>
 
       {/* Recommended Problem Sets Section */}
-      <section className="relative w-full overflow-hidden py-20">
+      <section className="relative w-full overflow-hidden pt-6 pb-20">
         <div className="absolute inset-0 z-[-1] origin-top-left scale-110 -skew-y-2 transform bg-gray-100/50"></div>
 
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -347,12 +179,13 @@ const MainPage = () => {
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {recommendProblemSet?.problemSetList.slice(0, 4).map((item) => (
-              <MainProblemSetCard
+              <ProblemSearchResultCard
                 key={item.programId}
                 programId={item.programId}
-                img={img2}
                 title={item.title}
-                count={item.problemCount}
+                description={item.description}
+                problemCount={item.problemCount}
+                categories={item.categories}
               />
             ))}
             {!recommendProblemSet && (
@@ -431,7 +264,7 @@ const MainPage = () => {
                         src="/icons/groupIcon.svg"
                         className="size-4 opacity-60"
                       />
-                      <span>{group.capacity}명</span>
+                      <span>{group.memberCount}명</span>
                     </div>
                   </a>
                 ))
@@ -445,7 +278,7 @@ const MainPage = () => {
         </div>
       </section>
 
-      {/* 회원가입 성공 모달 */}
+      {/* 회원가입 성공 모달 - Also included here for logged in user scenario if applicable */}
       <AlertModal.Content autoCloseDelay={0}>
         <div className="mb-4 text-4xl">🥳</div>
         <AlertModal.Message className="text-lg font-semibold">

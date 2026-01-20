@@ -45,18 +45,6 @@ export default function ProblemSetCard({
     }
   };
 
-  // 카테고리별 뱃지 스타일 매핑
-  const getCategoryBadgeStyle = (category: string) => {
-    if (category.includes("알고리즘") || category === "알고리즘별") {
-      return "bg-slate-600/90 text-white"; // 블루 그레이
-    } else if (category.includes("기업") || category === "기업 대비") {
-      return "bg-indigo-600/90 text-white"; // 퍼플/인디고 톤
-    } else if (category.includes("자격증")) {
-      return "bg-emerald-600/90 text-white"; // 그린 톤
-    } else {
-      return "bg-gray-700/90 text-white"; // 기본
-    }
-  };
 
   return (
     <div
@@ -83,8 +71,8 @@ export default function ProblemSetCard({
           {displayCategory && (
             <div
               className={`rounded-full px-3 py-1.5 text-xs font-medium ${displayCategory.includes("알고리즘")
-                  ? "bg-teal-50 text-teal-700"
-                  : "bg-blue-50 text-blue-700"
+                ? "bg-teal-50 text-teal-700"
+                : "bg-blue-50 text-blue-700"
                 }`}
             >
               {displayCategory}

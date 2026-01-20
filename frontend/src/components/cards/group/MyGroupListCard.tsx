@@ -21,17 +21,18 @@ const MyGroupListCard = ({
 }: MyGroupListCardProps) => {
   const containerClasses =
     variant === "mypage"
-      ? `w-full bg-white hover:bg-primary-50 rounded-2xl p-5 flex flex-col justify-between gap-4 shadow-sm hover:shadow-md transition-all cursor-pointer relative ${role === "ADMIN" ? "border-2 border-primary-main" : "border border-transparent"
+      ? `group w-full bg-white hover:bg-primary-50 rounded-xl p-5 flex flex-col justify-between gap-4 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer relative overflow-hidden ${role === "ADMIN"
+        ? "border-2 border-primary-main"
+        : "border border-gray-100"
       }`
-      : "w-full bg-primary-50 border-2 border-primary-main rounded-2xl p-5 flex flex-col justify-between gap-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer relative";
+      : "group w-full bg-primary-50 border-2 border-primary-main rounded-xl p-5 flex flex-col justify-between gap-4 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer relative overflow-hidden";
 
   return (
     <div
       onClick={() => {
         if (onClick) onClick();
       }}
-
-      className="group w-full bg-white border border-gray-100 rounded-xl p-5 flex flex-col justify-between gap-4 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer relative overflow-hidden"
+      className={containerClasses}
     >
       <div className="absolute top-0 left-0 w-1 h-full bg-primary-main opacity-0 group-hover:opacity-100 transition-opacity"></div>
 

@@ -6,9 +6,7 @@ import Pagination from "@components/pagination/Pagination";
 import { getProblemSetSearchByTitle } from "@api/problemset/getProblemSetSearchByTitle";
 import { getProblemSetSearchByProblems } from "@api/problemset/getProblemSetSearchByProblems";
 import type { ApiProblemSet } from "@type/problemset/problemSet";
-import MainProblemSetCard from "@components/cards/main/MainProblemSetCard";
 import ProblemSearchResultCard from "@components/cards/search/ProblemSearchResultCard";
-import img2 from "@assets/images/MainCard/MainCard2.jpg";
 
 const ITEMS_PER_PAGE = 8; // Increased for grid view
 
@@ -57,7 +55,6 @@ export default function SearchPage() {
   // --- Queries ---
 
   // 1. "Problem" Search (Search by Problems)
-  // Used for "전체" (preview) and "문제" tab
   const problemSize = activeTab === "문제" ? ITEMS_PER_PAGE : 4;
   const { data: problemData, isLoading: isProblemLoading } = useQuery({
     queryKey: [
@@ -69,7 +66,7 @@ export default function SearchPage() {
     queryFn: () =>
       getProblemSetSearchByProblems(
         initialKeyword,
-        activeTab === "문제" ? problemPage - 1 : 0, // API is 0-indexed
+        activeTab === "문제" ? problemPage - 1 : 0,
         problemSize,
       ),
     enabled: isSearchEnabled,
@@ -77,7 +74,6 @@ export default function SearchPage() {
   });
 
   // 2. "Workbook" Search (Search by Title)
-  // Used for "전체" (preview) and "문제집" tab
   const workbookSize = activeTab === "문제집" ? ITEMS_PER_PAGE : 4;
   const { data: workbookData, isLoading: isWorkbookLoading } = useQuery({
     queryKey: [
@@ -89,7 +85,7 @@ export default function SearchPage() {
     queryFn: () =>
       getProblemSetSearchByTitle(
         initialKeyword,
-        activeTab === "문제집" ? workbookPage - 1 : 0, // API is 0-indexed
+        activeTab === "문제집" ? workbookPage - 1 : 0,
         workbookSize,
       ),
     enabled: isSearchEnabled,
@@ -100,8 +96,6 @@ export default function SearchPage() {
   const problemResults = problemData?.problemSetList || [];
   const workbookResults = workbookData?.problemSetList || [];
 
-  // Check if we have results for "All" tab (total elements > 0)
-  // The API responses have 'page' info with 'totalElements'
   const hasProblemResults = (problemData?.page?.totalElements || 0) > 0;
   const hasWorkbookResults = (workbookData?.page?.totalElements || 0) > 0;
   const hasAnyResults = hasProblemResults || hasWorkbookResults;
@@ -123,7 +117,7 @@ export default function SearchPage() {
             <h2 className="text-2xl font-bold tracking-tight text-gray-900">
               {title}
             </h2>
-            <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-sm font-medium text-gray-600">
+            <span className="bg-primary-50 text-primary-600 rounded-full px-2.5 py-0.5 text-sm font-medium">
               {pageInfo?.totalElements ?? data.length}
             </span>
           </div>
@@ -131,7 +125,7 @@ export default function SearchPage() {
           {!isFullView && (pageInfo?.totalElements || 0) > 4 && (
             <button
               onClick={() => setActiveTab(title === "문제" ? "문제" : "문제집")}
-              className="hover:text-primary-600 flex items-center gap-1 text-sm font-medium text-gray-500 transition-colors"
+              className="text-primary-600 hover:text-primary-700 hover:bg-primary-50 flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium transition-all"
             >
               더보기 <span className="text-xs">→</span>
             </button>
@@ -139,29 +133,18 @@ export default function SearchPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {data.map((problemSet) =>
-            title === "문제" ? (
-              <ProblemSearchResultCard
-                key={problemSet.programId}
-                programId={problemSet.programId}
-                thumbnail={problemSet.thumbnail || ""}
-                title={problemSet.title}
-                description={problemSet.description}
-                problemCount={problemSet.problemCount}
-                categories={problemSet.categories || []}
-                searchKeyword={initialKeyword}
-              />
-            ) : (
-              <MainProblemSetCard
-                key={problemSet.programId}
-                programId={problemSet.programId}
-                img={problemSet.thumbnail || img2}
-                title={problemSet.title}
-                description={problemSet.description}
-                count={problemSet.problemCount}
-              />
-            ),
-          )}
+          {data.map((problemSet) => (
+            <ProblemSearchResultCard
+              key={problemSet.programId}
+              programId={problemSet.programId}
+              title={problemSet.title}
+              description={problemSet.description}
+              problemCount={problemSet.problemCount}
+              categories={problemSet.categories || []}
+              searchKeyword={initialKeyword}
+              matchedProblems={problemSet.matchedProblems || []}
+            />
+          ))}
         </div>
 
         {/* Pagination for Full View */}
@@ -187,34 +170,36 @@ export default function SearchPage() {
 
   return (
     <BasePage>
-      {/* Hero Search Section */}
-      <div className="relative mb-12 w-full overflow-hidden bg-gray-900">
-        <div className="absolute inset-0 bg-[url('/patterns/grid.svg')] opacity-10"></div>
-        <div className="from-primary-900/50 absolute inset-0 bg-gradient-to-br via-gray-900 to-black/80"></div>
-
-        <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center px-4 py-20 text-center">
-          <h1 className="mb-8 text-4xl font-bold tracking-tight text-white md:text-5xl">
+      {/* Light Theme Header */}
+      <div className="relative mb-12 w-full border-b border-gray-100 bg-white">
+        <div className="mx-auto flex max-w-4xl flex-col items-center px-4 pt-20 pb-16 text-center">
+          <h1 className="mb-8 text-4xl font-bold tracking-tight text-gray-900 md:text-5xl">
             무엇을 찾고 계신가요?
           </h1>
-          <div className="relative w-full max-w-2xl transform transition-all hover:scale-[1.01]">
-            <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="focus:ring-primary-500/30 w-full rounded-full border-none bg-white/95 px-8 py-5 pr-16 text-lg text-gray-900 placeholder-gray-400 shadow-2xl backdrop-blur-sm focus:ring-4"
-              placeholder="문제, 문제집, 알고리즘 검색..."
-            />
-            <button
-              onClick={handleSearch}
-              className="bg-primary-600 hover:bg-primary-500 absolute top-1/2 right-3 -translate-y-1/2 rounded-full p-3 text-white shadow-md transition-colors"
-            >
-              <img
-                src="/icons/searchIconBlack.svg"
-                alt="search"
-                className="h-5 w-5 brightness-0 invert invert-[1] filter"
+          <div className="relative w-full max-w-2xl">
+            <div className="relative transform transition-all focus-within:scale-[1.01]">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-6">
+                <img
+                  src="/icons/searchIconBlack.svg"
+                  alt="search"
+                  className="h-5 w-5 opacity-40"
+                />
+              </div>
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="focus:ring-primary-100/50 focus:border-primary-500 h-16 w-full rounded-2xl border-2 border-gray-200 bg-white pl-14 pr-16 text-lg text-gray-900 placeholder-gray-400 shadow-sm transition-all outline-none focus:ring-4"
+                placeholder="관심있는 키워드를 검색해보세요"
               />
-            </button>
+              <button
+                onClick={handleSearch}
+                className="bg-primary-600 hover:bg-primary-700 absolute top-2 right-2 bottom-2 rounded-xl px-6 text-sm font-semibold text-white transition-colors"
+              >
+                검색
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -222,40 +207,44 @@ export default function SearchPage() {
       {/* Main Content */}
       <div className="mx-auto min-h-[500px] w-full max-w-7xl px-4 pb-24 sm:px-6 lg:px-8">
         {/* Tabs */}
-        <div className="mb-10 flex w-full border-b border-gray-200">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab as any)}
-              className={`relative px-8 py-4 text-sm font-medium transition-all ${
-                activeTab === tab
-                  ? "text-primary-600"
-                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-              }`}
-            >
-              {tab}
-              {activeTab === tab && (
-                <span className="bg-primary-600 absolute bottom-0 left-0 h-0.5 w-full rounded-t-full"></span>
-              )}
-            </button>
-          ))}
+        <div className="mb-10 flex w-full justify-center">
+          <div className="bg-gray-50 inline-flex rounded-xl p-1.5">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab as any)}
+                className={`flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-medium transition-all ${activeTab === tab
+                  ? "text-primary-700 bg-white shadow-sm"
+                  : "text-gray-500 hover:bg-gray-100/50 hover:text-gray-700"
+                  }`}
+              >
+                {tab}
+                {activeTab === tab && (
+                  <span className="bg-primary-500 h-1.5 w-1.5 rounded-full" />
+                )}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Results Area */}
         <div className="w-full">
           {!initialKeyword ? (
             <div className="flex flex-col items-center justify-center gap-4 py-20 text-gray-400">
-              <div className="text-6xl">🔍</div>
-              <div className="text-lg font-medium">
-                검색어를 입력하여 원하는 문제를 찾아보세요.
+              <div className="bg-gray-50 flex h-20 w-20 items-center justify-center rounded-3xl">
+                <img
+                  src="/icons/searchIconBlack.svg"
+                  className="h-8 w-8 opacity-20"
+                  alt="search"
+                />
+              </div>
+              <div className="text-lg font-medium text-gray-500">
+                검색어를 입력하여 원하는 문제를 찾아보세요
               </div>
             </div>
           ) : isLoading ? (
             <div className="flex flex-col items-center justify-center gap-4 py-32">
-              <div className="border-t-primary-500 h-12 w-12 animate-spin rounded-full border-4 border-gray-200"></div>
-              <span className="animate-pulse font-medium text-gray-500">
-                검색 중입니다...
-              </span>
+              <div className="border-t-primary-500 h-10 w-10 animate-spin rounded-full border-3 border-gray-100"></div>
             </div>
           ) : (
             <div className="flex flex-col gap-16">
@@ -266,7 +255,7 @@ export default function SearchPage() {
                     problemResults,
                     false,
                     1,
-                    () => {},
+                    () => { },
                     problemData?.page,
                   )}
                   {renderSection(
@@ -274,16 +263,18 @@ export default function SearchPage() {
                     workbookResults,
                     false,
                     1,
-                    () => {},
+                    () => { },
                     workbookData?.page,
                   )}
 
                   {!hasAnyResults && (
                     <div className="flex flex-col items-center justify-center gap-2 py-20 text-gray-400">
-                      <div className="text-4xl text-gray-300">🤔</div>
-                      <div className="text-lg">검색 결과가 없습니다.</div>
+                      <div className="text-4xl">🤔</div>
+                      <div className="text-lg font-medium text-gray-600">
+                        검색 결과가 없습니다
+                      </div>
                       <div className="text-sm text-gray-400">
-                        다른 키워드로 검색해 보세요.
+                        다른 키워드로 검색해 보세요
                       </div>
                     </div>
                   )}
@@ -301,7 +292,7 @@ export default function SearchPage() {
                   )
                 ) : (
                   <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-                    <div className="text-lg">검색 결과가 없습니다.</div>
+                    <div className="text-lg">검색 결과가 없습니다</div>
                   </div>
                 ))}
               {activeTab === "문제집" &&
@@ -316,7 +307,7 @@ export default function SearchPage() {
                   )
                 ) : (
                   <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-                    <div className="text-lg">검색 결과가 없습니다.</div>
+                    <div className="text-lg">검색 결과가 없습니다</div>
                   </div>
                 ))}
             </div>

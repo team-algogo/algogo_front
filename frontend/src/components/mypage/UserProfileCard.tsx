@@ -1,9 +1,9 @@
 import type { Dispatch, SetStateAction } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getUserProfile } from "@api/user/userApi";
-import { getReceivedReviews, getWrittenReviews } from "@api/mypage";
+import { getReceivedReviews, getWrittenReviews, getRequiredReviews } from "@api/mypage";
 
-type ViewMode = "참여 현황" | "활동 내역" | "작성 리뷰";
+type ViewMode = "참여 현황" | "리뷰 요청" | "받은 리뷰" | "작성 리뷰" | "초대/신청 현황";
 
 interface UserProfileCardProps {
     setViewMode: Dispatch<SetStateAction<ViewMode>>;
@@ -28,9 +28,14 @@ const UserProfileCard = ({ setViewMode }: UserProfileCardProps) => {
         queryFn: () => getWrittenReviews(0, 1),
     });
 
+    const { data: requiredReviewsData } = useQuery({
+        queryKey: ["requiredReviewsStats"],
+        queryFn: getRequiredReviews,
+    });
+
     // Calculate stats safely
     const stats = {
-        submittedCodes: 0, // Mock or fetch if available in userProfile?
+        reviewRequests: requiredReviewsData?.requiredCodeReviews?.length || 0,
         writtenReviews: writtenReviewsData?.pageInfo?.totalElements || 0,
         receivedReviews: receivedReviewsData?.pageInfo?.totalElements || 0,
     };
@@ -81,23 +86,26 @@ const UserProfileCard = ({ setViewMode }: UserProfileCardProps) => {
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-2 w-full pt-4 border-t border-gray-100">
-                <div className="flex flex-col items-center gap-1">
-                    <span className="text-lg font-bold text-gray-900">{stats.submittedCodes}</span>
-                    <span className="text-xs text-gray-500">제출 코드</span>
+                <div
+                    className="flex flex-col items-center gap-1 cursor-pointer hover:bg-gray-50 rounded transition-colors"
+                    onClick={() => setViewMode("리뷰 요청")}
+                >
+                    <span className="text-lg font-bold text-gray-900">{stats.reviewRequests}</span>
+                    <span className="text-xs text-gray-500">리뷰 요청</span>
                 </div>
                 <div
                     className="flex flex-col items-center gap-1 border-x border-gray-100 cursor-pointer hover:bg-gray-50 rounded transition-colors"
+                    onClick={() => setViewMode("받은 리뷰")}
+                >
+                    <span className="text-lg font-bold text-gray-900">{stats.receivedReviews}</span>
+                    <span className="text-xs text-gray-500">받은 리뷰</span>
+                </div>
+                <div
+                    className="flex flex-col items-center gap-1 cursor-pointer hover:bg-gray-50 rounded transition-colors"
                     onClick={() => setViewMode("작성 리뷰")}
                 >
                     <span className="text-lg font-bold text-gray-900">{stats.writtenReviews}</span>
                     <span className="text-xs text-gray-500">작성 리뷰</span>
-                </div>
-                <div
-                    className="flex flex-col items-center gap-1 cursor-pointer hover:bg-gray-50 rounded transition-colors"
-                    onClick={() => setViewMode("활동 내역")}
-                >
-                    <span className="text-lg font-bold text-gray-900">{stats.receivedReviews}</span>
-                    <span className="text-xs text-gray-500">받은 리뷰</span>
                 </div>
             </div>
         </div>

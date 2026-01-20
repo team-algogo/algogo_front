@@ -9,8 +9,10 @@ const MyPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const authorization = useAuthStore((state) => state.authorization);
+
+  // Initialize viewMode from location state if available, otherwise default to "참여 현황"
   const [viewMode, setViewMode] = useState<
-    "참여 현황" | "활동 내역" | "작성 리뷰"
+    "참여 현황" | "리뷰 요청" | "받은 리뷰" | "작성 리뷰" | "초대/신청 현황"
   >("참여 현황");
 
   const [initialSubTab, setInitialSubTab] = useState<"문제집" | "캠페인" | "그룹방" | undefined>(undefined);
@@ -39,7 +41,6 @@ const MyPage = () => {
         <Sidebar setViewMode={setViewMode} />
         <ContentArea
           viewMode={viewMode}
-          setViewMode={setViewMode}
           initialSubTab={initialSubTab}
         />
       </div>

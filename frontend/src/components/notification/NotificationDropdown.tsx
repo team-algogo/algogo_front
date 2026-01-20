@@ -3,8 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import NotificationItem from "./NotificationItem";
 import { getNotificationList } from "@api/notification/getNotificationList";
 import { deleteNotification } from "@api/notification/deleteNotification";
-import { respondToJoinRequest } from "@api/notification/respondToJoinRequest";
-import { respondToInvite } from "@api/notification/respondToInvite";
 import useToast from "@hooks/useToast";
 import type { Alarm } from "@type/notification/notification.d.ts";
 import { useNavigate } from "react-router-dom";
@@ -54,51 +52,6 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
     },
   });
 
-  const respondToJoinMutation = useMutation({
-    mutationFn: respondToJoinRequest,
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      // setSelectedNotification(null); // Fix: undefined variable
-      showToast(
-        variables.isAccepted === "ACCEPTED"
-          ? "참여 신청을 수락했습니다."
-          : "참여 신청을 거절했습니다.",
-        "success"
-      );
-    },
-    onError: (error: any) => {
-      console.error("Failed to respond to join request", error);
-      if (error.response?.status === 400) {
-        showToast("이미 처리된 요청입니다.", "error");
-      } else {
-        showToast("요청 처리에 실패했습니다.", "error");
-      }
-    },
-  });
-
-  const respondToInviteMutation = useMutation({
-    mutationFn: respondToInvite,
-    onSuccess: (data: any, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      // setSelectedNotification(null);
-      showToast(
-        data?.message || (variables.isAccepted === "ACCEPTED"
-          ? "초대를 수락했습니다."
-          : "초대를 거절했습니다."),
-        "success"
-      );
-    },
-    onError: (error: any) => {
-      console.error("Failed to respond to invite", error);
-      if (error.response?.status === 400) {
-        showToast("이미 처리된 요청입니다.", "error");
-        // 이미 처리된 경우에도 목록 갱신 필요
-        queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      } else {
-        showToast("요청 처리에 실패했습니다.", "error");
-      }
-    },
-  });
 
   const toggleSelect = (id: number) => {
     setSelectedIds((prev) =>

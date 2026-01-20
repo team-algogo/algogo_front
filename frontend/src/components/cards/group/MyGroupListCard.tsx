@@ -5,6 +5,8 @@ interface MyGroupListCardProps {
   problemCount: number; // API에는 없지만 디자인에 있어서 props로 둠 (없으면 0 처리)
   role: "ADMIN" | "USER"; // 그룹장 여부 구분
   onClick?: () => void;
+  onCancel?: () => void;
+  variant?: "default" | "mypage";
 }
 
 const MyGroupListCard = ({
@@ -14,13 +16,23 @@ const MyGroupListCard = ({
   problemCount = 0,
   role,
   onClick,
+  onCancel,
+  variant = "default",
 }: MyGroupListCardProps) => {
+  const containerClasses =
+    variant === "mypage"
+      ? `group w-full bg-white hover:bg-primary-50 rounded-xl p-5 flex flex-col justify-between gap-4 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer relative overflow-hidden ${role === "ADMIN"
+        ? "border-2 border-primary-main"
+        : "border border-gray-100"
+      }`
+      : "group w-full bg-primary-50 border-2 border-primary-main rounded-xl p-5 flex flex-col justify-between gap-4 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer relative overflow-hidden";
+
   return (
     <div
       onClick={() => {
         if (onClick) onClick();
       }}
-      className="group w-full bg-white border border-gray-100 rounded-xl p-5 flex flex-col justify-between gap-4 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer relative overflow-hidden"
+      className={containerClasses}
     >
       <div className="absolute top-0 left-0 w-1 h-full bg-primary-main opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
@@ -40,10 +52,12 @@ const MyGroupListCard = ({
         )}
       </div>
 
+
       {/* Description */}
       <p className="text-sm text-gray-500 line-clamp-2 h-[40px] leading-relaxed">
         {description}
       </p>
+
 
       {/* Footer: Stats */}
       <div className="flex items-center gap-4 text-xs font-medium text-gray-400">
@@ -59,6 +73,18 @@ const MyGroupListCard = ({
           </svg>
           <span className="group-hover:text-gray-600 transition-colors">{problemCount} 문제</span>
         </div>
+        {onCancel && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onCancel();
+            }}
+            className="px-3 py-1.5 text-xs font-medium text-white bg-gray-400 hover:bg-gray-500 rounded-md transition-colors"
+            style={{ fontFamily: 'Pretendard-Medium' }}
+          >
+            신청취소
+          </button>
+        )}
       </div>
     </div>
   );

@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import ProblemSetCard from "@components/cards/mypage/ProblemSetCard";
-import MyGroupCard from "@components/cards/mypage/MyGroupCard";
+import MyGroupListCard from "@components/cards/group/MyGroupListCard";
 import Pagination from "@components/pagination/Pagination";
 import { getProblemSetMe } from "@api/problemset/getProblemSetMe";
 import { getGroupMe } from "@api/group/getGroupMe";
 import SortSelect from "@components/selectbox/SortSelect";
 
-type TabType = "문제집" | "캠페인" | "그룹방";
+export type TabType = "문제집" | "캠페인" | "그룹방";
 type SortDirection = "asc" | "desc";
 
 interface ParticipationStatusProps {
@@ -150,13 +150,14 @@ const ParticipationStatus = ({ initialTab }: ParticipationStatusProps) => {
             return (
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-[12px] self-stretch">
                     {contentList.map((group: any) => (
-                        <MyGroupCard
+                        <MyGroupListCard
                             key={group.programId}
                             title={group.title}
                             description={group.description}
                             memberCount={group.memberCount}
-                            capacity={group.capacity}
-                            programProblemCount={group.programProblemCount}
+                            problemCount={group.programProblemCount}
+                            role={group.role || "USER"}
+                            variant="mypage"
                             onClick={() => navigate(`/group/${group.programId}`)}
                         />
                     ))}
@@ -169,6 +170,16 @@ const ParticipationStatus = ({ initialTab }: ParticipationStatusProps) => {
 
     return (
         <>
+            {/* Main Header */}
+            <div className="flex w-full items-center gap-2 mb-5">
+                <span
+                    className="text-xl leading-[130%] font-bold tracking-[-0.2px] text-[#050505]"
+                    style={{ fontFamily: "IBM Plex Sans KR" }}
+                >
+                    내 참여 현황
+                </span>
+            </div>
+
             <div className="flex flex-col gap-8 w-full">
                 {/* Tabs */}
                 <div className="flex items-center border-b border-gray-200 w-full">
@@ -191,16 +202,24 @@ const ParticipationStatus = ({ initialTab }: ParticipationStatusProps) => {
 
                 {/* Content */}
                 <div className="flex flex-col gap-6 w-full">
-                    {/* Header */}
-                    <div className="flex items-center justify-between">
-                        <span className="text-base text-gray-900 font-medium">
-                            {activeTab === "캠페인"
-                                ? "캠페인 목록"
-                                : `내가 참여한 ${activeTab} 목록을 확인해 보세요`}
-                        </span>
+                    {/* Header with Sort */}
+                    {activeTab !== "캠페인" && (
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <span className="text-lg text-[#050505]">
+                                    {`내가 참여한 ${activeTab}`}
+                                </span>
+                                {/* Count Badge */}
+                                <div
+                                    className={`flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-xs ${pageInfo.totalElements > 0
+                                        ? "bg-[#FF3B30] text-white"
+                                        : "bg-[#EBEBEB] text-[#727479]"
+                                        }`}
+                                >
+                                    {pageInfo.totalElements}
+                                </div>
+                            </div>
 
-                        {/* Sorting Button - Only show for lists */}
-                        {activeTab !== "캠페인" && (
                             <div className="w-32">
                                 <SortSelect
                                     value={sortDirection}
@@ -211,11 +230,11 @@ const ParticipationStatus = ({ initialTab }: ParticipationStatusProps) => {
                                     ]}
                                 />
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
                     {/* Cards */}
-                    <div className="w-full">
+                    <div className="w-full min-h-[600px] flex flex-col justify-between">
                         {renderContent()}
                     </div>
                 </div>

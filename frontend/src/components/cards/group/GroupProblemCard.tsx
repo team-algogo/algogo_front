@@ -40,7 +40,6 @@ const GroupProblemCard = ({
   solvedCount,
   showDates = true,
   canMoreSubmission = true,
-  programId,
 }: GroupProblemCardProps) => {
   const navigate = useNavigate();
   const [showAlertBanner, setShowAlertBanner] = useState(false);
@@ -288,12 +287,12 @@ const GroupProblemCard = ({
                       />
                     </svg>
                   </div>
-                  
+
                   {/* 메시지 */}
                   <p className="flex-1 text-sm font-medium text-amber-800">
                     문제집의 요구된 리뷰를 작성 후 다른 문제를 제출해주세요!
                   </p>
-                  
+
                   {/* 닫기 버튼 */}
                   <button
                     onClick={() => setShowAlertBanner(false)}

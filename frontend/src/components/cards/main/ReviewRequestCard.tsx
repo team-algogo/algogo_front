@@ -1,66 +1,23 @@
-import { useEffect, useState } from "react";
+// import { useEffect, useState } from "react";
 import type { RequiredCodeReview } from "@api/review/manageReview";
 import { Link } from "react-router-dom";
 
-// Helper Component for Timer
-const CountdownTimer = ({ createAt }: { createAt?: string }) => {
-  const [timeLeft, setTimeLeft] = useState("");
+// Helper to format relative time
+const formatTimeAgo = (dateString?: string) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
 
-  useEffect(() => {
-    if (!createAt) return;
+  const minutes = Math.floor(diff / (1000 * 60));
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-    const calculateTimeLeft = () => {
-      const createdDate = new Date(createAt);
-      const deadline = new Date(createdDate.getTime() + 48 * 60 * 60 * 1000); // +2 days
-      const now = new Date();
-      const difference = deadline.getTime() - now.getTime();
-
-      if (difference > 0) {
-        // Calculate time components
-        const totalHours = Math.floor(difference / (1000 * 60 * 60));
-        const minutes = Math.floor((difference / 1000 / 60) % 60);
-        const seconds = Math.floor((difference / 1000) % 60);
-
-        const formatted = `${String(totalHours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-        setTimeLeft(formatted);
-      } else {
-        setTimeLeft("00:00:00");
-      }
-    };
-
-    calculateTimeLeft();
-    const timer = setInterval(calculateTimeLeft, 1000);
-
-    return () => clearInterval(timer);
-  }, [createAt]);
-
-  if (!timeLeft) return null;
-
-  return (
-    <div className="flex items-center gap-1">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="0 0 16 16"
-        fill="none"
-      >
-        <circle cx="8" cy="8" r="6" stroke="#FF3B30" strokeWidth="1.5" />
-        <path
-          d="M8 4V8L10.5 10.5"
-          stroke="#FF3B30"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <span
-        className="text-sm leading-[130%] font-normal text-[#FF3B30]"
-        style={{ fontFamily: "IBM Plex Sans KR" }}
-      >
-        {timeLeft} 남음
-      </span>
-    </div>
-  );
+  if (minutes < 1) return "방금 전";
+  if (minutes < 60) return `${minutes}분 전`;
+  if (hours < 24) return `${hours}시간 전`;
+  if (days < 7) return `${days}일 전`;
+  return `${date.getMonth() + 1}월 ${date.getDate()}일`;
 };
 
 const ReviewRequestCard = ({
@@ -73,34 +30,36 @@ const ReviewRequestCard = ({
   const getProgramTypeLabel = (type: string) => {
     switch (type) {
       case "GROUP":
-        return "Group";
+        return "스터디";
       case "CAMPAIGN":
-        return "Campaign";
+        return "캠페인";
       case "PROBLEMSET":
-        return "Problemset";
+        return "문제집";
       case "PERSONAL":
-        return "Personal";
+        return "개인";
       default:
-        return "Other";
+        return "기타";
     }
   };
 
   const typeColor =
-    getProgramTypeLabel(programType) === "Group"
+    getProgramTypeLabel(programType) === "스터디"
       ? { bg: "bg-[#FFF3E0]", text: "text-[#EF6C00]" } // Group: Orange
-      : getProgramTypeLabel(programType) === "Campaign"
+      : getProgramTypeLabel(programType) === "캠페인"
         ? { bg: "bg-[#E3F2FD]", text: "text-[#1976D2]" } // Campaign: Blue
         : { bg: "bg-[#F5F5F5]", text: "text-[#757575]" }; // Problemset/Personal: Gray
+
+  const timeAgo = formatTimeAgo(submission?.createAt);
 
   return (
     <Link
       to={`review/${submission.targetSubmissionId}`}
-      className="flex w-full flex-col items-start gap-3 rounded-2xl border border-[#EBEBEB] bg-white p-5 shadow-[0px_2px_12px_0px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0px_4px_16px_0px_rgba(0,0,0,0.08)]"
+      className="flex w-full flex-col items-start gap-3 rounded-2xl border border-[#EBEBEB] bg-white p-5 shadow-[0px_2px_12px_0px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0px_4px_16px_0px_rgba(0,0,0,0.08)] h-full"
     >
       {/* Header Badges */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 w-full">
         <div
-          className={`flex items-center justify-center rounded-md px-2 py-1 ${typeColor.bg}`}
+          className={`flex items-center justify-center rounded-md px-2 py-1 ${typeColor.bg} flex-shrink-0`}
         >
           <span
             className={`${typeColor.text} text-xs leading-[130%] font-medium`}
@@ -110,7 +69,7 @@ const ReviewRequestCard = ({
           </span>
         </div>
         <span
-          className="text-xs leading-[130%] font-normal text-[#727479]"
+          className="text-xs leading-[130%] font-normal text-[#727479] truncate"
           style={{ fontFamily: "IBM Plex Sans KR" }}
         >
           {programTitle}
@@ -120,19 +79,22 @@ const ReviewRequestCard = ({
       {/* Title */}
       <div className="flex w-full flex-col items-start gap-1">
         <span
-          className="text-base leading-[130%] font-semibold tracking-[-0.16px] text-[#333]"
+          className="text-base leading-[130%] font-semibold tracking-[-0.16px] text-[#333] line-clamp-1 w-full"
           style={{ fontFamily: "IBM Plex Sans KR" }}
+          title={`[${submission?.language ?? "Unknown"}] ${problemTitle} 리뷰`}
         >
           [{submission?.language ?? "Unknown"}] {problemTitle} 리뷰
         </span>
         {/* Tags */}
-        <div className="flex items-start gap-1">
-          <span
-            className="text-xs leading-[130%] font-normal text-[#727479]"
-            style={{ fontFamily: "IBM Plex Sans KR" }}
-          >
-            #{problemPlatform}
-          </span>
+        <div className="flex flex-wrap items-start gap-1 w-full h-[36px] overflow-hidden">
+          {problemPlatform && (
+            <span
+              className="text-xs leading-[130%] font-normal text-[#727479]"
+              style={{ fontFamily: "IBM Plex Sans KR" }}
+            >
+              #{problemPlatform}
+            </span>
+          )}
           {submission?.algorithmList?.map((algo) => (
             <span
               key={algo.id}
@@ -146,53 +108,61 @@ const ReviewRequestCard = ({
       </div>
 
       {/* Info Row */}
-      <div className="mt-1 flex w-full items-center gap-4 border-t border-[#F2F2F2] pt-3">
-        {/* Review Count */}
-        <div className="flex items-center gap-1">
-          <div
-            className="h-[16px] w-[16px] bg-[#727479]"
-            style={{
-              maskImage: 'url("/icons/reviewComentIcon.svg")',
-              maskRepeat: "no-repeat",
-              maskSize: "contain",
-              maskPosition: "center",
-              WebkitMaskImage: 'url("/icons/reviewComentIcon.svg")',
-              WebkitMaskRepeat: "no-repeat",
-              WebkitMaskSize: "contain",
-            }}
-          />
-          <span
-            className="text-sm leading-[130%] font-normal text-[#727479]"
-            style={{ fontFamily: "IBM Plex Sans KR" }}
-          >
-            {submission?.reviewCount ?? 0}
-          </span>
+      <div className="mt-auto flex w-full items-center justify-between border-t border-[#F2F2F2] pt-3">
+        <div className="flex items-center gap-4">
+          {/* Review Count */}
+          <div className="flex items-center gap-1">
+            <div
+              className="h-[16px] w-[16px] bg-[#727479]"
+              style={{
+                maskImage: 'url("/icons/reviewComentIcon.svg")',
+                maskRepeat: "no-repeat",
+                maskSize: "contain",
+                maskPosition: "center",
+                WebkitMaskImage: 'url("/icons/reviewComentIcon.svg")',
+                WebkitMaskRepeat: "no-repeat",
+                WebkitMaskSize: "contain",
+              }}
+            />
+            <span
+              className="text-sm leading-[130%] font-normal text-[#727479]"
+              style={{ fontFamily: "IBM Plex Sans KR" }}
+            >
+              {submission?.reviewCount ?? 0}
+            </span>
+          </div>
+
+          {/* View Count */}
+          <div className="flex items-center gap-1">
+            <div
+              className="h-[18px] w-[18px] bg-[#727479]"
+              style={{
+                maskImage: 'url("/icons/viewOkIcon.svg")',
+                maskRepeat: "no-repeat",
+                maskSize: "contain",
+                maskPosition: "center",
+                WebkitMaskImage: 'url("/icons/viewOkIcon.svg")',
+                WebkitMaskRepeat: "no-repeat",
+                WebkitMaskSize: "contain",
+              }}
+            />
+            <span
+              className="text-sm leading-[130%] font-normal text-[#727479]"
+              style={{ fontFamily: "IBM Plex Sans KR" }}
+            >
+              {submission?.viewCount ?? 0}
+            </span>
+          </div>
         </div>
 
-        {/* View Count */}
-        <div className="flex items-center gap-1">
-          <div
-            className="h-[18px] w-[18px] bg-[#727479]"
-            style={{
-              maskImage: 'url("/icons/viewOkIcon.svg")',
-              maskRepeat: "no-repeat",
-              maskSize: "contain",
-              maskPosition: "center",
-              WebkitMaskImage: 'url("/icons/viewOkIcon.svg")',
-              WebkitMaskRepeat: "no-repeat",
-              WebkitMaskSize: "contain",
-            }}
-          />
-          <span
-            className="text-sm leading-[130%] font-normal text-[#727479]"
-            style={{ fontFamily: "IBM Plex Sans KR" }}
-          >
-            {submission?.viewCount ?? 0}
-          </span>
-        </div>
 
-        {/* Timer */}
-        <CountdownTimer createAt={submission?.createAt} />
+        {/* Time Ago */}
+        <span
+          className="text-xs font-normal text-[#727479]"
+          style={{ fontFamily: "IBM Plex Sans KR" }}
+        >
+          {timeAgo}
+        </span>
       </div>
     </Link>
   );

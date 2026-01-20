@@ -8,6 +8,8 @@ interface ProblemListTableProps {
   isLogined?: boolean;
   isAdmin?: boolean; // ADMIN 여부
   onDelete?: (programProblemIds: number[]) => void; // 삭제 핸들러
+  canMoreSubmission?: boolean; // 추가 제출 가능 여부
+  programId?: number; // 문제집 ID
 }
 
 export default function ProblemListTable({
@@ -15,6 +17,8 @@ export default function ProblemListTable({
   isLogined = true,
   isAdmin = false,
   onDelete,
+  canMoreSubmission = true,
+  programId,
 }: ProblemListTableProps) {
   const navigate = useNavigate();
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -105,6 +109,8 @@ export default function ProblemListTable({
                     submissionCount={item.submissionCount}
                     solvedCount={item.solvedCount}
                     showDates={false}
+                    canMoreSubmission={canMoreSubmission}
+                    programId={programId}
                   />
                 </div>
               </div>

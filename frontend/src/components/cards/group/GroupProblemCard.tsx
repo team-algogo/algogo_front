@@ -1,4 +1,6 @@
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Button from "../../button/Button";
 
 interface GroupProblemCardProps {
@@ -19,6 +21,8 @@ interface GroupProblemCardProps {
   submissionCount: number;
   solvedCount: number;
   showDates?: boolean;
+  canMoreSubmission?: boolean; // 추가 제출 가능 여부
+  programId?: number; // 문제집 ID
 }
 
 const GroupProblemCard = ({
@@ -35,8 +39,16 @@ const GroupProblemCard = ({
   submissionCount,
   solvedCount,
   showDates = true,
+  canMoreSubmission = true,
+  programId,
 }: GroupProblemCardProps) => {
   const navigate = useNavigate();
+  const [showAlertBanner, setShowAlertBanner] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // 날짜 포맷팅 함수
   const formatDate = (dateString: string) => {
@@ -102,16 +114,22 @@ const GroupProblemCard = ({
     }
   };
 
+  const handleCardClick = () => {
+    // canMoreSubmission이 false이면 카드 클릭으로 제출 페이지 이동 방지
+    if (!canMoreSubmission) {
+      return;
+    }
+    if (programProblemId) {
+      navigate(`/code/${programProblemId}`);
+    } else {
+      window.open(problemLink, "_blank");
+    }
+  };
+
   return (
     <div
-      className="group w-full bg-white border border-gray-200 rounded-lg p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer"
-      onClick={() => {
-        if (programProblemId) {
-          navigate(`/code/${programProblemId}`);
-        } else {
-          window.open(problemLink, "_blank");
-        }
-      }}
+      className={`group w-full bg-white border border-gray-200 rounded-lg p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ${canMoreSubmission ? 'cursor-pointer' : 'cursor-default'}`}
+      onClick={handleCardClick}
     >
       {/* Left: Info */}
       <div className="flex flex-col gap-2 flex-1 min-w-0">
@@ -221,20 +239,85 @@ const GroupProblemCard = ({
         </button>
 
         {status !== 'ENDED' && (
-          <Button
-            variant="secondary"
-            className="!h-8 !px-3 !text-xs"
-            onClick={(e) => {
-              e.stopPropagation();
-              if (programProblemId) {
-                navigate(`/code/${programProblemId}`);
-              } else {
-                window.open(problemLink, "_blank");
-              }
-            }}
-          >
-            문제풀기
-          </Button>
+          <>
+            <Button
+              variant="secondary"
+              className={`!h-8 !px-3 !text-xs ${!canMoreSubmission ? 'opacity-60 cursor-pointer' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!canMoreSubmission) {
+                  // 비활성화된 버튼 클릭 시 안내 배너 표시
+                  setShowAlertBanner(true);
+                  // 5초 후 자동으로 닫힘
+                  setTimeout(() => {
+                    setShowAlertBanner(false);
+                  }, 5000);
+                  return;
+                }
+                if (programProblemId) {
+                  navigate(`/code/${programProblemId}`);
+                } else {
+                  window.open(problemLink, "_blank");
+                }
+              }}
+            >
+              문제풀기
+            </Button>
+            {/* 안내 배너 - 화면 상단에 고정 */}
+            {mounted && showAlertBanner && createPortal(
+              <div
+                className="fixed top-0 left-0 right-0 z-[1001] flex items-center justify-center p-4"
+                style={{
+                  animation: "slideDown 0.3s ease-out",
+                }}
+              >
+                <div className="w-full max-w-2xl bg-amber-50 border-l-4 border-amber-400 rounded-lg shadow-lg p-4 flex items-center gap-3">
+                  {/* 아이콘 */}
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
+                    <svg
+                      className="w-5 h-5 text-amber-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
+                    </svg>
+                  </div>
+                  
+                  {/* 메시지 */}
+                  <p className="flex-1 text-sm font-medium text-amber-800">
+                    문제집의 요구된 리뷰를 작성 후 다른 문제를 제출해주세요!
+                  </p>
+                  
+                  {/* 닫기 버튼 */}
+                  <button
+                    onClick={() => setShowAlertBanner(false)}
+                    className="flex-shrink-0 w-6 h-6 rounded-full hover:bg-amber-100 flex items-center justify-center text-amber-600 hover:text-amber-800 transition-colors"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>,
+              document.body
+            )}
+          </>
         )}
 
         {onDelete && (

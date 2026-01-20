@@ -9,6 +9,7 @@ import { getProblemSetProblems } from "@api/problemset/getProblemSetProblems";
 import { getCheckUser } from "@api/auth/auth";
 import { addProblems } from "@api/problemset/addProblems";
 import { removeProblems } from "@api/problemset/removeProblems";
+import { getCanMoreSubmission } from "@api/submissions/getCanMoreSubmission";
 import ProblemSetDetailHeader from "@components/problemset/detail/ProblemSetDetailHeader";
 import ProblemListTable from "@components/problemset/detail/ProblemListTable";
 import ProblemSearchModal from "@components/problemset/detail/ProblemSearchModal";
@@ -50,6 +51,15 @@ export default function ProblemSetDetailPage() {
   const totalPages = pageInfo?.totalPages || 1;
   const { userType } = useAuthStore();
   const isLogined = !!userType;
+
+  // 추가 제출 가능 여부 조회
+  const { data: canMoreSubmissionData } = useQuery({
+    queryKey: ["canMoreSubmission", id],
+    queryFn: () => getCanMoreSubmission(id),
+    enabled: !isNaN(id) && isLogined,
+  });
+
+  const canMoreSubmission = canMoreSubmissionData?.canMoreSubmission ?? true;
 
   // 사용자 정보 조회 (ADMIN 확인용)
   const { data: meData } = useQuery({
@@ -215,6 +225,8 @@ export default function ProblemSetDetailPage() {
             isLogined={isLogined}
             isAdmin={isAdmin}
             onDelete={handleDeleteProblems}
+            canMoreSubmission={canMoreSubmission}
+            programId={id}
           />
 
           {/* Pagination */}

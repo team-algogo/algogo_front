@@ -1,103 +1,129 @@
 import { useNavigate } from "react-router-dom";
-import img2 from "@assets/images/MainCard/MainCard2.jpg";
 
 interface ProblemSearchResultCardProps {
   programId: number;
-  thumbnail: string;
   title: string;
   description: string;
   problemCount: number;
   categories: string[];
-  searchKeyword: string;
+  searchKeyword?: string;
+  matchedProblems?: string[];
 }
 
 const ProblemSearchResultCard = ({
   programId,
-  thumbnail,
   title,
   description,
   problemCount,
-  searchKeyword,
+  categories,
+  searchKeyword = "",
+  matchedProblems = [],
 }: ProblemSearchResultCardProps) => {
   const navigate = useNavigate();
+
+  // Highlight search keyword in text
+  const highlightText = (text: string, keyword: string) => {
+    if (!keyword) return text;
+    const parts = text.split(new RegExp(`(${keyword})`, "gi"));
+    return parts.map((part, i) =>
+      part.toLowerCase() === keyword.toLowerCase() ? (
+        <span key={i} className="bg-primary-100 text-primary-700 font-bold px-0.5 rounded">
+          {part}
+        </span>
+      ) : (
+        part
+      )
+    );
+  };
 
   return (
     <div
       onClick={() => navigate(`/problemset/${programId}`)}
-      className="group relative flex h-[220px] w-full transform flex-col justify-end overflow-hidden rounded-xl bg-gray-900 shadow-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-xl"
+      className="group relative flex h-auto min-h-[220px] w-full transform flex-col justify-between overflow-hidden rounded-2xl bg-white border-2 border-gray-100 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary-100"
     >
-      <div
-        className="absolute inset-0 bg-cover bg-center opacity-90 transition-transform duration-700 group-hover:scale-110 group-hover:opacity-100"
-        style={{
-          backgroundImage: `url(${thumbnail || img2})`,
-        }}
-      />
+      {/* Decorative gradient blob */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary-50 to-transparent rounded-bl-full opacity-50 group-hover:scale-110 transition-transform"></div>
 
-      {/* Glassmorphism Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
-
-      <div className="relative z-10 flex flex-col gap-y-2 p-5 text-white">
-        <div className="transform transition-transform duration-300 group-hover:translate-x-1">
-          <div className="font-headline group-hover:text-primary-200 text-lg leading-tight font-bold transition-colors">
-            {title}
+      {/* Content */}
+      <div className="relative z-10 p-6 flex flex-col h-full">
+        {/* Header: Title & Description */}
+        <div className="mb-4">
+          <div className="flex items-start justify-between">
+            <h3 className="text-lg font-bold text-gray-900 transition-colors group-hover:text-primary-600 line-clamp-1">
+              {highlightText(title, searchKeyword)}
+            </h3>
+            <span className="text-xs font-semibold text-primary-600 bg-primary-50 px-2.5 py-1 rounded-lg shrink-0 ml-2">
+              문제집
+            </span>
           </div>
-          <p className="mt-1 line-clamp-1 text-xs font-light text-gray-300">
-            {description}
+          <p className="mt-3 text-sm text-gray-500 line-clamp-2 min-h-[2.5em] leading-relaxed">
+            {highlightText(description, searchKeyword)}
           </p>
         </div>
 
-        {/* Search Match Indicator */}
-        <div className="mt-2 flex items-center gap-2 rounded-lg bg-blue-500/20 backdrop-blur-sm px-2.5 py-1.5 text-xs text-white">
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 16 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="flex-shrink-0"
-          >
-            <path
-              d="M7.33333 12.6667C10.2789 12.6667 12.6667 10.2789 12.6667 7.33333C12.6667 4.38781 10.2789 2 7.33333 2C4.38781 2 2 4.38781 2 7.33333C2 10.2789 4.38781 12.6667 7.33333 12.6667Z"
-              stroke="currentColor"
-              strokeWidth="1.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M14 14L11.1 11.1"
-              stroke="currentColor"
-              strokeWidth="1.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          <span className="font-medium line-clamp-1">
-            &quot;{searchKeyword}&quot; 포함 문제 발견
-          </span>
+        {/* Content: Matched Problems OR Categories */}
+        <div className="flex-1">
+          {matchedProblems && matchedProblems.length > 0 ? (
+            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+              <div className="text-xs font-semibold text-gray-400 mb-2.5 flex items-center gap-1.5 uppercase tracking-wider">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary-500">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                검색된 문제
+              </div>
+              <ul className="space-y-2">
+                {matchedProblems.slice(0, 3).map((problem, index) => (
+                  <li key={index} className="text-sm text-gray-600 flex items-start gap-2.5 line-clamp-1 font-medium">
+                    <span className="text-primary-400 mt-[0.4rem] w-1.5 h-1.5 rounded-full bg-current shrink-0"></span>
+                    <span className="flex-1 truncate hover:text-gray-900 transition-colors">
+                      {highlightText(problem, searchKeyword)}
+                    </span>
+                  </li>
+                ))}
+                {matchedProblems.length > 3 && (
+                  <li className="text-xs text-gray-400 pl-4 font-medium">
+                    + {matchedProblems.length - 3}개 더보기
+                  </li>
+                )}
+              </ul>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {categories && categories.length > 0 ? (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {categories.slice(0, 5).map((cat, i) => (
+                    <span key={i} className="text-xs font-medium text-gray-500 bg-gray-100 px-2.5 py-1 rounded-md transition-colors group-hover:bg-primary-50 group-hover:text-primary-600">
+                      #{cat}
+                    </span>
+                  ))}
+                  {categories.length > 5 && <span className="text-xs text-gray-400 px-1 pt-1">...</span>}
+                </div>
+              ) : (
+                <div className="text-xs text-gray-400 italic mt-2">
+                  태그 없음
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        <div className="mt-2 flex items-center justify-between border-t border-white/10 pt-3 opacity-80 transition-opacity group-hover:opacity-100">
-          <div className="flex items-center gap-2 text-xs text-gray-300">
-            <img
-              src="/icons/bookIcon.svg"
-              className="size-3.5 opacity-70 invert filter"
-              alt="problems"
-            />
-            <span>{problemCount || 0} problems</span>
+        {/* Footer: Stats */}
+        <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs font-medium text-gray-400 group-hover:text-gray-600 transition-colors">
+            <div className="bg-gray-100 p-1.5 rounded-full group-hover:bg-primary-100 group-hover:text-primary-600 transition-colors">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+            </div>
+            <span>총 {problemCount}문제</span>
           </div>
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white/10 transition-colors group-hover:bg-white group-hover:text-black">
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M5 12h14"></path>
-              <path d="M12 5l7 7-7 7"></path>
+          {/* Enter Arrow Icon */}
+          <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 group-hover:bg-primary-600 group-hover:text-white transition-all transform group-hover:-rotate-45 duration-300 shadow-sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
             </svg>
           </div>
         </div>

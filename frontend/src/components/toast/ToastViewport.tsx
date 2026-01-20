@@ -4,18 +4,19 @@ import useToastStore from "@store/useToastStore";
 import ToastItem from "./ToastItem";
 
 const ToastViewport = () => {
-  const { toasts, removeToast } = useToastStore();
+  const toasts = useToastStore((state) => state.toasts);
+  const removeToast = useToastStore((state) => state.removeToast);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    console.log("[ToastViewport] Mounted, current toasts:", toasts.length);
+    console.log("[ToastViewport] Mounted. Initial toasts:", toasts);
   }, []);
 
   useEffect(() => {
-    console.log("[ToastViewport] Toasts updated:", toasts.length);
+    console.log("[ToastViewport] Toasts updated:", toasts);
     toasts.forEach((toast) => {
-      console.log("[ToastViewport] Toast:", toast.id, toast.message);
+      console.log(`[ToastViewport] Item: ${toast.id} (${toast.position || 'default'}) - ${toast.message}`);
     });
   }, [toasts]);
 
@@ -24,11 +25,16 @@ const ToastViewport = () => {
     (toast) => !toast.position || toast.position === "bottom-right"
   );
 
-  if (!mounted || bottomToasts.length === 0) return null;
+  if (!mounted) return null;
+
+  if (bottomToasts.length === 0) {
+    // console.log("[ToastViewport] No bottom toasts to render");
+    return null;
+  }
 
   const viewport = (
     <div
-      className="fixed z-[1000] flex flex-col gap-3 pointer-events-none"
+      className="fixed z-[9999] flex flex-col gap-3 pointer-events-none"
       style={{
         bottom: "24px",
         right: "24px",
@@ -51,9 +57,6 @@ const ToastViewport = () => {
 
   return createPortal(viewport, document.body);
 };
-
-// CSS 애니메이션을 인라인으로 추가하거나, index.css에 추가할 수 있습니다.
-// 여기서는 Tailwind의 transition 클래스를 사용합니다.
 
 export default ToastViewport;
 

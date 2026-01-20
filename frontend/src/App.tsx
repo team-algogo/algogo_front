@@ -20,7 +20,7 @@ function AppContent() {
       </div>
       <div className="flex flex-col min-h-screen">
         <Header />
-        <main className="flex-1 w-full text-lg mt-16">
+        <main className="flex-1 w-full text-lg mt-16 flex flex-col">
           <Outlet />
         </main>
         <Footer />

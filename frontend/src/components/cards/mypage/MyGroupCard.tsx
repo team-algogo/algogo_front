@@ -5,7 +5,7 @@ interface MyGroupCardProps {
     memberCount: number;
     capacity: number;
     programProblemCount: number;
-    thumbnailUrl?: string;
+
     onClick?: () => void;
 }
 
@@ -15,18 +15,13 @@ const MyGroupCard = ({
     memberCount,
     capacity,
     programProblemCount,
-    thumbnailUrl,
+
     onClick,
 }: MyGroupCardProps) => {
     return (
         <div className="flex w-full flex-col items-start rounded-lg border border-[#EBEDF1] overflow-hidden hover:shadow-[0_1px_5px_0_rgba(0,0,0,0.10)] transition-shadow">
             {/* Thumbnail */}
-            <div
-                className="flex h-[180px] px-4 py-4 flex-col items-start gap-2 self-stretch bg-cover bg-center bg-no-repeat bg-[#F0F2F5]"
-                style={thumbnailUrl ? { backgroundImage: `url(${thumbnailUrl})` } : {}}
-            >
-                {/* Placeholder Badge or Overlay if needed */}
-            </div>
+
 
             {/* Content */}
             <div className="flex flex-col items-start gap-3 self-stretch p-4">

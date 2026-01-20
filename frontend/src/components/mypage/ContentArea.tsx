@@ -1,5 +1,5 @@
 
-import ParticipationStatus from "./ParticipationStatus";
+import ParticipationStatus, { type TabType } from "./ParticipationStatus";
 import WrittenReviews from "./WrittenReviews";
 import ReviewRequestsContainer from "./ReviewRequestsContainer";
 import ReceivedReviewsContainer from "./ReceivedReviewsContainer";
@@ -10,9 +10,11 @@ type ViewMode = "참여 현황" | "리뷰 요청" | "받은 리뷰" | "작성 �
 
 interface ContentAreaProps {
     viewMode: ViewMode;
+    initialSubTab?: TabType;
 }
 
-const ContentArea = ({ viewMode }: Omit<ContentAreaProps, 'setViewMode'>) => {
+const ContentArea = ({ viewMode, initialSubTab }: ContentAreaProps) => {
+
     return (
         <div className="flex flex-col gap-8 flex-1 w-full max-w-4xl">
             {/* View Mode Switcher */}
@@ -20,7 +22,7 @@ const ContentArea = ({ viewMode }: Omit<ContentAreaProps, 'setViewMode'>) => {
 
             {/* Dynamic Content */}
             <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-300">
-                {viewMode === '참여 현황' && <ParticipationStatus />}
+                {viewMode === '참여 현황' && <ParticipationStatus initialTab={initialSubTab} />}
                 {viewMode === '리뷰 요청' && <ReviewRequestsContainer />}
                 {viewMode === '받은 리뷰' && <ReceivedReviewsContainer />}
                 {viewMode === '작성 리뷰' && <WrittenReviews />}

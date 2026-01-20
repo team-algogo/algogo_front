@@ -7,16 +7,11 @@ interface ProblemSetCardProps {
   thumbnail: string;
   categories: string[];
   totalParticipants: number;
-  // Computed or extra props if needed
-  problemCount?: number; // API doesn't seem to have "count" in the User JSON? "10개" in CSS.
-  // User JSON: "programId", "title", "description", "thumbnail", "createAt", "modifiedAt", "programType", "categories", "totalParticipants".
-  // The CSS shows "10개" (problems count?) and "100명" (participants).
-  // API response MISSES problem count. I will default to 0 or hidden if missing.
-  // Wait, the User JSON doesn't have problem count.
-  // I will use a default or optional prop.
-  isAdmin?: boolean; // ADMIN 여부
-  onEdit?: (programId: number) => void; // 수정 핸들러
-  onDelete?: (programId: number) => void; // 삭제 핸들러
+  problemCount?: number;
+  isAdmin?: boolean;
+  isLoggedIn?: boolean;
+  onEdit?: (programId: number) => void;
+  onDelete?: (programId: number) => void;
 }
 
 export default function ProblemSetCard({
@@ -28,6 +23,7 @@ export default function ProblemSetCard({
   totalParticipants,
   problemCount = 0,
   isAdmin = false,
+  isLoggedIn = false,
   onEdit,
   onDelete,
 }: ProblemSetCardProps) {
@@ -64,7 +60,7 @@ export default function ProblemSetCard({
 
   return (
     <div
-      onClick={() => navigate(`/problemset/${programId}`)}
+      onClick={() => isLoggedIn ? navigate(`/problemset/${programId}`) : window.location.href = "https://algogo.kr/intro"}
       className="group relative flex w-full cursor-pointer flex-col overflow-hidden rounded-lg border border-gray-200 bg-white transition-all hover:border-gray-300 hover:shadow-md"
     >
       {/* Thumbnail Section */}
@@ -78,72 +74,70 @@ export default function ProblemSetCard({
           backgroundPosition: "center",
         }}
       >
-        {/* Dark overlay for better UI consistency (사진 퀄리티가 낮아도 UI 유지) */}
-        <div className="absolute inset-0 bg-black/10" />
-
-        {/* 상단 오버레이 바 - 뱃지와 ADMIN 버튼이 들어갈 영역 */}
-        <div className="absolute top-0 right-0 left-0 z-10 h-9 bg-gradient-to-b from-black/60 via-black/50 to-transparent backdrop-blur-[2px]">
-          <div className="flex h-full items-center justify-between px-4">
-            {/* Category Badge - Left side */}
-            {displayCategory && (
-              <div
-                className={`flex h-[22px] items-center rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-[-0.01em] ${getCategoryBadgeStyle(
-                  displayCategory,
-                )}`}
-              >
-                {displayCategory}
-              </div>
-            )}
-
-            {/* ADMIN 버튼 - Right side */}
-            {isAdmin && (
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={handleEdit}
-                  className="flex h-7 w-7 items-center justify-center rounded-md bg-white/10 text-white backdrop-blur-sm transition-all hover:scale-105 hover:bg-white/20"
-                  title="수정"
-                >
-                  <svg
-                    width="13"
-                    height="13"
-                    viewBox="0 0 14 14"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M8.16667 2.33333L11.6667 5.83333M9.91667 1.16667L10.85 0.233333C11.05 0.0333333 11.3167 0 11.5833 0C11.85 0 12.1167 0.0333333 12.3167 0.233333L13.7667 1.68333C13.9667 1.88333 14 2.15 14 2.41667C14 2.68333 13.9667 2.95 13.7667 3.15L12.8333 4.08333M9.91667 1.16667L2.33333 8.75V11.6667H5.25L12.8333 4.08333M9.91667 1.16667L12.8333 4.08333"
-                      stroke="currentColor"
-                      strokeWidth="1.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className="flex h-7 w-7 items-center justify-center rounded-md bg-white/10 text-white backdrop-blur-sm transition-all hover:scale-105 hover:bg-white/20"
-                  title="삭제"
-                >
-                  <svg
-                    width="13"
-                    height="13"
-                    viewBox="0 0 14 14"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M2.33333 3.5H11.6667M5.83333 6.41667V10.5M8.16667 6.41667V10.5M9.33333 3.5V12.25C9.33333 12.7083 8.95833 13.0833 8.5 13.0833H5.5C5.04167 13.0833 4.66667 12.7083 4.66667 12.25V3.5M6.125 3.5V2.33333C6.125 1.875 6.5 1.5 6.95833 1.5H7.04167C7.5 1.5 7.875 1.875 7.875 2.33333V3.5"
-                      stroke="currentColor"
-                      strokeWidth="1.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-              </div>
-            )}
-          </div>
+        {/* Gradient Overlay for better text readability */}
+        {thumbnail && (
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+        )}
+        {/* Category Badge - Top Left */}
+        <div className="absolute top-4 left-4 z-10">
+          {displayCategory && (
+            <div
+              className={`rounded-full px-3 py-1.5 text-xs font-medium ${displayCategory.includes("알고리즘")
+                  ? "bg-teal-50 text-teal-700"
+                  : "bg-blue-50 text-blue-700"
+                }`}
+            >
+              {displayCategory}
+            </div>
+          )}
         </div>
+        {/* ADMIN 버튼 - Top Right */}
+        {isAdmin && (
+          <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+            <button
+              onClick={handleEdit}
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/95 text-gray-700 backdrop-blur-sm transition-colors hover:bg-white hover:text-[#0D6EFD]"
+              title="수정"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M8.16667 2.33333L11.6667 5.83333M9.91667 1.16667L10.85 0.233333C11.05 0.0333333 11.3167 0 11.5833 0C11.85 0 12.1167 0.0333333 12.3167 0.233333L13.7667 1.68333C13.9667 1.88333 14 2.15 14 2.41667C14 2.68333 13.9667 2.95 13.7667 3.15L12.8333 4.08333M9.91667 1.16667L2.33333 8.75V11.6667H5.25L12.8333 4.08333M9.91667 1.16667L12.8333 4.08333"
+                  stroke="currentColor"
+                  strokeWidth="1.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+            <button
+              onClick={handleDelete}
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/95 text-gray-700 backdrop-blur-sm transition-colors hover:bg-white hover:text-red-600"
+              title="삭제"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M2.33333 3.5H11.6667M5.83333 6.41667V10.5M8.16667 6.41667V10.5M9.33333 3.5V12.25C9.33333 12.7083 8.95833 13.0833 8.5 13.0833H5.5C5.04167 13.0833 4.66667 12.7083 4.66667 12.25V3.5M6.125 3.5V2.33333C6.125 1.875 6.5 1.5 6.95833 1.5H7.04167C7.5 1.5 7.875 1.875 7.875 2.33333V3.5"
+                  stroke="currentColor"
+                  strokeWidth="1.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Content Section */}

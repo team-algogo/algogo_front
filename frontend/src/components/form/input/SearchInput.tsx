@@ -102,7 +102,7 @@ const SearchInput = ({
             onChange={(e) => setValue(e.target.value)}
             onFocus={() => setIsFocused(true)}
             placeholder="알고리즘 선택"
-            className={`h-9 w-full rounded-lg border px-3 py-2 pr-10 text-sm transition-all focus:outline-none ${clicked ? "border-primary-500 ring-primary-500 ring-1" : "border-gray-300 focus:border-[#0D6EFD] focus:ring-1 focus:ring-[#0D6EFD]"}`}
+            className={`h-9 w-full rounded-lg border px-3 py-2 pr-10 text-sm text-gray-900 placeholder:text-gray-400 transition-all focus:outline-none ${clicked ? "border-primary-500 ring-primary-500 ring-1" : "border-gray-300 focus:border-[#0D6EFD] focus:ring-1 focus:ring-[#0D6EFD]"}`}
           />
 
           {value && (

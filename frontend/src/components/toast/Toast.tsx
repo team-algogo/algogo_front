@@ -49,7 +49,7 @@ const Toast = ({ message, type = "success", onClose }: ToastProps) => {
     // message나 type이 변경되었을 때만 토스트 추가
     const messageChanged = prevMessageRef.current !== message;
     const typeChanged = prevTypeRef.current !== type;
-    
+
     if (messageChanged || typeChanged || (prevMessageRef.current === "" && message)) {
       // 토스트 추가 (내가 한 행동은 상단, 남이 한 행동은 우하단)
       addToast({
@@ -79,4 +79,3 @@ const Toast = ({ message, type = "success", onClose }: ToastProps) => {
 
 export default Toast;
 export type { ToastType };
-

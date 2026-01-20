@@ -8,9 +8,10 @@ type ViewMode = "참여 현황" | "활동 내역" | "작성 리뷰";
 interface ContentAreaProps {
     viewMode: ViewMode;
     setViewMode: Dispatch<SetStateAction<ViewMode>>;
+    initialSubTab?: "문제집" | "캠페인" | "그룹방";
 }
 
-const ContentArea = ({ viewMode, setViewMode }: ContentAreaProps) => {
+const ContentArea = ({ viewMode, setViewMode, initialSubTab }: ContentAreaProps) => {
     return (
         <div className="flex flex-col gap-8 flex-1 w-full max-w-4xl">
             {/* View Mode Switcher */}
@@ -46,7 +47,7 @@ const ContentArea = ({ viewMode, setViewMode }: ContentAreaProps) => {
 
             {/* Dynamic Content */}
             <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-300">
-                {viewMode === '참여 현황' && <ParticipationStatus />}
+                {viewMode === '참여 현황' && <ParticipationStatus initialTab={initialSubTab} />}
                 {viewMode === '활동 내역' && <ActivityHistory />}
                 {viewMode === '작성 리뷰' && <WrittenReviews />}
             </div>

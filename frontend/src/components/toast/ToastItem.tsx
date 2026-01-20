@@ -146,10 +146,36 @@ const ToastItem = ({ toast, onClose }: ToastItemProps) => {
             {toast.cta && (
               <button
                 onClick={handleCTAClick}
-                className={`text-xs font-semibold ${styles.iconColor} hover:underline transition-colors`}
+                className={`text-xs font-semibold ${styles.iconColor} hover:underline transition-colors block`}
               >
                 {toast.cta.label} →
               </button>
+            )}
+            {/* Actions */}
+            {toast.actions && toast.actions.length > 0 && (
+              <div className="flex gap-2 mt-2">
+                {toast.actions.map((action, index) => (
+                  <button
+                    key={index}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      action.onClick();
+                      onClose();
+                    }}
+                    className={`
+                      px-3 py-1.5 rounded-md text-xs font-bold transition-all shadow-sm
+                      ${action.variant === 'danger'
+                        ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-100'
+                        : action.variant === 'secondary'
+                          ? 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200'
+                          : 'bg-primary-50 text-primary-600 hover:bg-primary-100 border border-primary-100'
+                      }
+                    `}
+                  >
+                    {action.label}
+                  </button>
+                ))}
+              </div>
             )}
           </div>
 

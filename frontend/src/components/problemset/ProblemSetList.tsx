@@ -11,6 +11,7 @@ interface ProblemSetListProps {
   page: number; // Page prop still passed from parent state
   onPageChange: (page: number) => void;
   isAdmin?: boolean; // ADMIN 여부
+  isLoggedIn?: boolean;
   onEdit?: (programId: number) => void; // 수정 핸들러
   onDelete?: (programId: number) => void; // 삭제 핸들러
 }
@@ -23,6 +24,7 @@ export default function ProblemSetList({
   page,
   onPageChange,
   isAdmin = false,
+  isLoggedIn = false,
   onEdit,
   onDelete,
 }: ProblemSetListProps) {
@@ -70,6 +72,7 @@ export default function ProblemSetList({
               key={problemSet.programId}
               {...problemSet}
               isAdmin={isAdmin}
+              isLoggedIn={isLoggedIn}
               onEdit={onEdit}
               onDelete={onDelete}
             />

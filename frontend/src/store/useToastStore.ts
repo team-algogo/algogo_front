@@ -14,6 +14,11 @@ export interface ToastItem {
     route: string;
     params?: Record<string, any>;
   };
+  actions?: {
+    label: string;
+    onClick: () => void;
+    variant?: "primary" | "secondary" | "danger";
+  }[];
   createdAt: number;
 }
 

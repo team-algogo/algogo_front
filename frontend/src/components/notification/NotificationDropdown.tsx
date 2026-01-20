@@ -3,7 +3,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import NotificationItem from "./NotificationItem";
 import { getNotificationList } from "@api/notification/getNotificationList";
 import { deleteNotification } from "@api/notification/deleteNotification";
-import Toast, { type ToastType } from "@components/toast/Toast";
+import { respondToJoinRequest } from "@api/notification/respondToJoinRequest";
+import { respondToInvite } from "@api/notification/respondToInvite";
+import useToast from "@hooks/useToast";
 import type { Alarm } from "@type/notification/notification.d.ts";
 import { useNavigate } from "react-router-dom";
 
@@ -17,13 +19,13 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
   const [activeTab, setActiveTab] = useState<TabType>("NOTIFICATION");
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  const [toastConfig, setToastConfig] = useState<{ message: string; type: ToastType } | null>(null);
   // 각 섹션별 펼침 상태 관리
   const [isExpandedRequiredReview, setIsExpandedRequiredReview] = useState(false);
   const [isExpandedNewComment, setIsExpandedNewComment] = useState(false);
   const [isExpandedInvite, setIsExpandedInvite] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   // Fetch notifications
   const {
@@ -48,10 +50,55 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
       setSelectedIds([]);
       setIsDeleteMode(false);
-      setToastConfig({ message: "알림이 삭제되었습니다.", type: "success" });
+      showToast("알림이 삭제되었습니다.", "success");
     },
   });
 
+  const respondToJoinMutation = useMutation({
+    mutationFn: respondToJoinRequest,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      // setSelectedNotification(null); // Fix: undefined variable
+      showToast(
+        variables.isAccepted === "ACCEPTED"
+          ? "참여 신청을 수락했습니다."
+          : "참여 신청을 거절했습니다.",
+        "success"
+      );
+    },
+    onError: (error: any) => {
+      console.error("Failed to respond to join request", error);
+      if (error.response?.status === 400) {
+        showToast("이미 처리된 요청입니다.", "error");
+      } else {
+        showToast("요청 처리에 실패했습니다.", "error");
+      }
+    },
+  });
+
+  const respondToInviteMutation = useMutation({
+    mutationFn: respondToInvite,
+    onSuccess: (data: any, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      // setSelectedNotification(null);
+      showToast(
+        data?.message || (variables.isAccepted === "ACCEPTED"
+          ? "초대를 수락했습니다."
+          : "초대를 거절했습니다."),
+        "success"
+      );
+    },
+    onError: (error: any) => {
+      console.error("Failed to respond to invite", error);
+      if (error.response?.status === 400) {
+        showToast("이미 처리된 요청입니다.", "error");
+        // 이미 처리된 경우에도 목록 갱신 필요
+        queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      } else {
+        showToast("요청 처리에 실패했습니다.", "error");
+      }
+    },
+  });
 
   const toggleSelect = (id: number) => {
     setSelectedIds((prev) =>
@@ -143,23 +190,15 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
 
   return (
     <>
-      {toastConfig && (
-        <Toast
-          message={toastConfig.message}
-          type={toastConfig.type}
-          onClose={() => setToastConfig(null)}
-        />
-      )}
       <div className="absolute top-[60px] right-0 z-50 flex w-[420px] flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl backdrop-blur-sm">
         {/* Header / Tabs */}
         <div className="relative flex h-[52px] w-full flex-row border-b border-gray-100 bg-gradient-to-b from-gray-50/50 to-white">
           <button
             onClick={() => setActiveTab("NOTIFICATION")}
-            className={`relative flex flex-1 items-center justify-center text-[15px] font-semibold transition-all duration-200 ${
-              activeTab === "NOTIFICATION"
-                ? "text-gray-900"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
+            className={`relative flex flex-1 items-center justify-center text-[15px] font-semibold transition-all duration-200 ${activeTab === "NOTIFICATION"
+              ? "text-gray-900"
+              : "text-gray-500 hover:text-gray-700"
+              }`}
           >
             알림
             {activeTab === "NOTIFICATION" && (
@@ -169,11 +208,10 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
           <div className="h-6 w-px bg-gray-200 my-auto"></div>
           <button
             onClick={() => setActiveTab("INVITE")}
-            className={`relative flex flex-1 items-center justify-center text-[15px] font-semibold transition-all duration-200 ${
-              activeTab === "INVITE"
-                ? "text-gray-900"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
+            className={`relative flex flex-1 items-center justify-center text-[15px] font-semibold transition-all duration-200 ${activeTab === "INVITE"
+              ? "text-gray-900"
+              : "text-gray-500 hover:text-gray-700"
+              }`}
           >
             초대
             {activeTab === "INVITE" && (
@@ -209,8 +247,8 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
                     <>
                       {(() => {
                         const MAX_DISPLAY = 10;
-                        const displayCount = isExpandedInvite 
-                          ? filteredNotifications.length 
+                        const displayCount = isExpandedInvite
+                          ? filteredNotifications.length
                           : Math.min(filteredNotifications.length, MAX_DISPLAY);
                         const displayItems = filteredNotifications.slice(0, displayCount);
                         const hasMore = filteredNotifications.length > MAX_DISPLAY;
@@ -277,8 +315,8 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
                       (n) => n.type === "REQUIRED_REVIEW",
                     );
                     const MAX_DISPLAY = 10;
-                    const displayCount = isExpandedRequiredReview 
-                      ? requiredReviews.length 
+                    const displayCount = isExpandedRequiredReview
+                      ? requiredReviews.length
                       : Math.min(requiredReviews.length, MAX_DISPLAY);
                     const displayItems = requiredReviews.slice(0, displayCount);
                     const hasMore = requiredReviews.length > MAX_DISPLAY;
@@ -352,8 +390,8 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
                       (n) => n.type !== "REQUIRED_REVIEW",
                     );
                     const MAX_DISPLAY = 10;
-                    const displayCount = isExpandedNewComment 
-                      ? otherNotifications.length 
+                    const displayCount = isExpandedNewComment
+                      ? otherNotifications.length
                       : Math.min(otherNotifications.length, MAX_DISPLAY);
                     const displayItems = otherNotifications.slice(0, displayCount);
                     const hasMore = otherNotifications.length > MAX_DISPLAY;
@@ -480,11 +518,10 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
               <button
                 onClick={handleBatchDelete}
                 disabled={selectedIds.length === 0}
-                className={`flex-1 rounded-lg py-2.5 text-sm font-semibold transition-all ${
-                  selectedIds.length > 0
-                    ? "bg-red-500 text-white hover:bg-red-600 hover:shadow-md"
-                    : "cursor-not-allowed bg-gray-200 text-gray-400"
-                }`}
+                className={`flex-1 rounded-lg py-2.5 text-sm font-semibold transition-all ${selectedIds.length > 0
+                  ? "bg-red-500 text-white hover:bg-red-600 hover:shadow-md"
+                  : "cursor-not-allowed bg-gray-200 text-gray-400"
+                  }`}
               >
                 삭제 {selectedIds.length > 0 && `(${selectedIds.length})`}
               </button>

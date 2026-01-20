@@ -212,9 +212,7 @@ export default function ProblemSetDetailPage() {
           {/* Table */}
           <ProblemListTable
             problems={problems}
-            page={page}
             isLogined={isLogined}
-            programId={id}
             isAdmin={isAdmin}
             onDelete={handleDeleteProblems}
           />

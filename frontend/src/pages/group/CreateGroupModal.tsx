@@ -6,9 +6,10 @@ import { createGroup, checkGroupNameDuplicate } from "../../api/group/groupApi";
 
 interface CreateGroupModalProps {
   onClose: () => void;
+  onCreateSuccess?: () => void; // Pagination reset callback
 }
 
-const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
+const CreateGroupModal = ({ onClose, onCreateSuccess }: CreateGroupModalProps) => {
   // --- 1. 상태 관리 ---
   const [title, setTitle] = useState("");
 
@@ -59,7 +60,9 @@ const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
     mutationFn: createGroup,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["groups"] }); // 리스트 새로고침
+      queryClient.invalidateQueries({ queryKey: ["myGroups"] }); // 내 그룹 리스트 새로고침
       setToastConfig({ message: "그룹이 성공적으로 생성되었습니다!", type: "success" });
+      if (onCreateSuccess) onCreateSuccess();
       setTimeout(() => onClose(), 500); // 0.5초 뒤 모달 닫기
     },
     onError: () => {
@@ -93,8 +96,12 @@ const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
     }
 
     // C. 정원수 체크
-    if (maxCount === "") {
+    if (maxCount === "" || Number(maxCount) <= 0) {
       setToastConfig({ message: "정원수를 입력해주세요", type: "error" });
+      return;
+    }
+    if (Number(maxCount) > 100) {
+      setToastConfig({ message: "최대 정원수는 100명입니다.", type: "error" });
       return;
     }
 
@@ -171,8 +178,16 @@ const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
                 value={maxCount}
                 onChange={(e) => {
                   const val = e.target.value;
-                  if (val === "") setMaxCount("");
-                  else setMaxCount(Number(val));
+                  if (val === "") {
+                    setMaxCount("");
+                  } else {
+                    const numVal = Number(val);
+                    if (numVal > 100) {
+                      setMaxCount(100); // 100을 넘으면 100으로 고정
+                    } else {
+                      setMaxCount(numVal);
+                    }
+                  }
                 }}
               />
               <p className="text-xs text-grayscale-warm-gray">

@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import Button from "../button/Button";
 
 interface ConfirmModalProps {
@@ -21,7 +22,7 @@ export default function ConfirmModal({
 }: ConfirmModalProps) {
     if (!isOpen) return null;
 
-    return (
+    return createPortal(
         <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
             <div className="bg-white w-[400px] rounded-xl shadow-2xl p-6 flex flex-col gap-6 animate-fadeIn">
                 <div className="flex flex-col gap-2 text-center">
@@ -46,6 +47,7 @@ export default function ConfirmModal({
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

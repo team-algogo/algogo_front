@@ -5,6 +5,8 @@ interface MyGroupListCardProps {
   problemCount: number; // API에는 없지만 디자인에 있어서 props로 둠 (없으면 0 처리)
   role: "ADMIN" | "USER"; // 그룹장 여부 구분
   onClick?: () => void;
+  onCancel?: () => void;
+  variant?: "default" | "mypage";
 }
 
 const MyGroupListCard = ({
@@ -14,14 +16,22 @@ const MyGroupListCard = ({
   problemCount = 0,
   role,
   onClick,
+  onCancel,
+  variant = "default",
 }: MyGroupListCardProps) => {
+  const containerClasses =
+    variant === "mypage"
+      ? `w-full bg-white hover:bg-primary-50 rounded-2xl p-5 flex flex-col justify-between gap-4 shadow-sm hover:shadow-md transition-all cursor-pointer relative ${role === "ADMIN" ? "border-2 border-primary-main" : "border border-transparent"
+      }`
+      : "w-full bg-primary-50 border-2 border-primary-main rounded-2xl p-5 flex flex-col justify-between gap-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer relative";
+
   return (
     <div
       onClick={() => {
         console.log("MyGroupListCard clicked");
         if (onClick) onClick();
       }}
-      className="w-full bg-primary-50 border-2 border-primary-main rounded-2xl p-5 flex flex-col justify-between gap-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+      className={containerClasses}
     >
 
       {/* Header: Title & Badge */}
@@ -40,27 +50,42 @@ const MyGroupListCard = ({
         )}
       </div>
 
+
       {/* Description */}
       <p className="font-body text-sm text-grayscale-dark-gray line-clamp-2 h-[40px]">
         {description}
       </p>
 
-      {/* Stats (Member & Problem) */}
-      <div className="flex items-center gap-3 text-sm text-grayscale-dark-gray">
-        <div className="flex items-center gap-1">
-          {/* 사람 아이콘 SVG */}
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8 8C10.21 8 12 6.21 12 4C12 1.79 10.21 0 8 0C5.79 0 4 1.79 4 4C4 6.21 5.79 8 8 8ZM8 10C5.33 10 0 11.34 0 14V16H16V14C16 11.34 10.67 10 8 10Z" fill="#5F6368" />
-          </svg>
-          <span>{memberCount}명</span>
+      {/* Stats (Member & Problem) & Cancel Button */}
+      <div className="flex items-center justify-between gap-3 text-sm text-grayscale-dark-gray mt-auto">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
+            {/* 사람 아이콘 SVG */}
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 8C10.21 8 12 6.21 12 4C12 1.79 10.21 0 8 0C5.79 0 4 1.79 4 4C4 6.21 5.79 8 8 8ZM8 10C5.33 10 0 11.34 0 14V16H16V14C16 11.34 10.67 10 8 10Z" fill="#5F6368" />
+            </svg>
+            <span>{memberCount}명</span>
+          </div>
+          <div className="flex items-center gap-1">
+            {/* 책/문제 아이콘 SVG */}
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M14 2H12V14.5C12 14.78 11.78 15 11.5 15H2.5C2.22 15 2 14.78 2 14.5V2H0V14.5C0 15.88 1.12 17 2.5 17H11.5C12.88 17 14 15.88 14 14.5V2ZM14 0H4C2.9 0 2 0.9 2 2V12H14V0Z" fill="#5F6368" />
+            </svg>
+            <span>{problemCount}문제</span>
+          </div>
         </div>
-        <div className="flex items-center gap-1">
-          {/* 책/문제 아이콘 SVG */}
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M14 2H12V14.5C12 14.78 11.78 15 11.5 15H2.5C2.22 15 2 14.78 2 14.5V2H0V14.5C0 15.88 1.12 17 2.5 17H11.5C12.88 17 14 15.88 14 14.5V2ZM14 0H4C2.9 0 2 0.9 2 2V12H14V0Z" fill="#5F6368" />
-          </svg>
-          <span>{problemCount}문제</span>
-        </div>
+        {onCancel && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onCancel();
+            }}
+            className="px-3 py-1.5 text-xs font-medium text-white bg-gray-400 hover:bg-gray-500 rounded-md transition-colors"
+            style={{ fontFamily: 'Pretendard-Medium' }}
+          >
+            신청취소
+          </button>
+        )}
       </div>
 
     </div>

@@ -4,14 +4,28 @@ import { useNavigate } from 'react-router-dom';
 import BasePage from '../BasePage';
 import { getUserProfile } from '@api/user/userApi';
 import { postCheckNickname } from '@api/auth/auth';
-import { updateProfile, updatePassword, withdrawUser } from '@api/user/settingsApi';
-import useAuthStore from '@store/useAuthStore';
+import { updateProfile, updatePassword } from '@api/user/settingsApi';
+
+
+import useAuthStore from "@store/useAuthStore";
+
 
 const SettingsPage = () => {
     const navigate = useNavigate();
+    const authorization = useAuthStore((state) => state.authorization); // Check auth
+
+    useEffect(() => {
+        if (!authorization) {
+            alert("로그인이 필요한 서비스입니다.");
+            navigate("/login", { replace: true });
+        }
+    }, [authorization, navigate]);
+
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const setAuthorization = useAuthStore((state) => state.setAuthorization);
-    const setUserType = useAuthStore((state) => state.setUserType);
+
+    // Early return if not authorized (to prevent flash of content or queries)
+    if (!authorization) return null;
+
 
     // Profile State
     const [nickname, setNickname] = useState('');
@@ -134,20 +148,7 @@ const SettingsPage = () => {
         }
     };
 
-    const handleWithdraw = async () => {
-        if (confirm('정말로 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-            try {
-                await withdrawUser();
-                setAuthorization("");
-                setUserType(null);
-                alert('회원 탈퇴가 완료되었습니다.');
-                navigate('/');
-            } catch (error) {
-                console.error('Withdraw failed', error);
-                alert('회원 탈퇴에 실패했습니다.');
-            }
-        }
-    };
+
 
     if (isLoading) return <div className="flex justify-center py-20">Loading...</div>;
 
@@ -287,32 +288,7 @@ const SettingsPage = () => {
                         </div>
                     </div>
 
-                    <div className="h-[1px] bg-[#EBEDF1] self-stretch"></div>
 
-                    {/* SNS Section */}
-                    <div className="flex flex-col gap-6 self-stretch">
-                        <h2 className="text-lg font-bold text-[#050505]">SNS 가입여부</h2>
-
-                        <div className="flex flex-col gap-3">
-                            {['구글', '네이버', '카카오'].map((provider) => (
-                                <div key={provider} className="flex justify-between items-center px-4 py-3 border border-[#EBEDF1] rounded-lg">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center ${provider === '구글' ? 'bg-white border border-gray-200' :
-                                            provider === '네이버' ? 'bg-[#03C75A]' : 'bg-[#FEE500]'
-                                            }`}>
-                                            {/* Mock Icons */}
-                                            <span className="text-[10px] font-bold">{provider[0]}</span>
-                                        </div>
-                                        <span className="text-sm font-medium">{provider}</span>
-                                    </div>
-                                    <span className="text-xs px-3 py-1 bg-gray-100 rounded text-gray-500">
-                                        {provider === '카카오' ? '가입' : '미가입'}
-                                        {/* Mocked status as requested */}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
 
                     <div className="h-[1px] bg-[#EBEDF1] self-stretch"></div>
 
@@ -325,13 +301,8 @@ const SettingsPage = () => {
                             </div>
                         </div>
 
-                        <div className="flex justify-between items-center mt-4">
-                            <button
-                                onClick={handleWithdraw}
-                                className="text-sm text-[#777A80] underline hover:text-red-500"
-                            >
-                                회원탈퇴
-                            </button>
+                        <div className="flex justify-end items-center mt-4">
+
                             <button
                                 onClick={() => {
                                     handleUpdateProfile();

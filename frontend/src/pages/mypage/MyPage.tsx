@@ -9,7 +9,7 @@ const MyPage = () => {
   const navigate = useNavigate();
   const authorization = useAuthStore((state) => state.authorization);
   const [viewMode, setViewMode] = useState<
-    "참여 현황" | "활동 내역" | "작성 리뷰"
+    "참여 현황" | "리뷰 요청" | "받은 리뷰" | "작성 리뷰" | "초대/신청 현황"
   >("참여 현황");
 
   useEffect(() => {
@@ -25,7 +25,7 @@ const MyPage = () => {
     <BasePage>
       <div className="grid grid-cols-[280px_1fr] items-start gap-10">
         <Sidebar setViewMode={setViewMode} />
-        <ContentArea viewMode={viewMode} setViewMode={setViewMode} />
+        <ContentArea viewMode={viewMode} />
       </div>
     </BasePage>
   );

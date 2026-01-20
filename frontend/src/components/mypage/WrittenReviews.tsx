@@ -49,12 +49,23 @@ const WrittenReviews = () => {
 
   return (
     <div className="flex w-full flex-col items-start gap-4">
-      <span
-        className="text-lg leading-[130%] font-normal tracking-[-0.18px] text-[#050505]"
-        style={{ fontFamily: "IBM Plex Sans KR" }}
-      >
-        내가 작성한 리뷰
-      </span>
+      <div className="flex w-full items-center gap-2  mb-5">
+        <span
+          className="text-xl leading-[130%] font-bold tracking-[-0.2px] text-[#050505]"
+          style={{ fontFamily: "IBM Plex Sans KR" }}
+        >
+          내가 작성한 리뷰
+        </span>
+        <div
+          className={`flex h-6 min-w-[24px] items-center justify-center rounded-full px-1.5 text-xs font-bold ${totalElements > 0
+            ? "bg-[#FF3B30] text-white"
+            : "bg-[#EBEBEB] text-[#727479]"
+            }`}
+          style={{ fontFamily: "IBM Plex Sans KR" }}
+        >
+          {totalElements}
+        </div>
+      </div>
 
       <div className="flex w-full flex-col items-start gap-3">
         {/* Empty State */}

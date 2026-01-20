@@ -1,67 +1,8 @@
-import { useEffect, useState } from "react";
 import type { RequiredCodeReview } from "@api/review/manageReview";
 import { Link } from "react-router-dom";
 
 // Helper Component for Timer
-const CountdownTimer = ({ createAt }: { createAt?: string }) => {
-  const [timeLeft, setTimeLeft] = useState("");
-
-  useEffect(() => {
-    if (!createAt) return;
-
-    const calculateTimeLeft = () => {
-      const createdDate = new Date(createAt);
-      const deadline = new Date(createdDate.getTime() + 48 * 60 * 60 * 1000); // +2 days
-      const now = new Date();
-      const difference = deadline.getTime() - now.getTime();
-
-      if (difference > 0) {
-        // Calculate time components
-        const totalHours = Math.floor(difference / (1000 * 60 * 60));
-        const minutes = Math.floor((difference / 1000 / 60) % 60);
-        const seconds = Math.floor((difference / 1000) % 60);
-
-        const formatted = `${String(totalHours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-        setTimeLeft(formatted);
-      } else {
-        setTimeLeft("00:00:00");
-      }
-    };
-
-    calculateTimeLeft();
-    const timer = setInterval(calculateTimeLeft, 1000);
-
-    return () => clearInterval(timer);
-  }, [createAt]);
-
-  if (!timeLeft) return null;
-
-  return (
-    <div className="flex items-center gap-1">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="0 0 16 16"
-        fill="none"
-      >
-        <circle cx="8" cy="8" r="6" stroke="#FF3B30" strokeWidth="1.5" />
-        <path
-          d="M8 4V8L10.5 10.5"
-          stroke="#FF3B30"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <span
-        className="text-sm leading-[130%] font-normal text-[#FF3B30]"
-        style={{ fontFamily: "IBM Plex Sans KR" }}
-      >
-        {timeLeft} 남음
-      </span>
-    </div>
-  );
-};
+import TimeDisplay from "../../common/TimeDisplay";
 
 const ReviewRequestCard = ({
   problemTitle,
@@ -192,7 +133,7 @@ const ReviewRequestCard = ({
         </div>
 
         {/* Timer */}
-        <CountdownTimer createAt={submission?.createAt} />
+        <TimeDisplay createAt={submission?.createAt} />
       </div>
     </Link>
   );

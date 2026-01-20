@@ -3,6 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { searchUsersForGroup, inviteUserToGroup } from "../../api/group/groupApi";
 import ConfirmModal from "@components/modal/ConfirmModal";
 import Toast, { type ToastType } from "@components/toast/Toast";
+import Button from "@components/button/Button";
 
 interface GroupInviteModalProps {
     programId: number;
@@ -67,7 +68,7 @@ export default function GroupInviteModal({ programId, onClose }: GroupInviteModa
     };
 
     return (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
             {toastConfig && (
                 <Toast
                     message={toastConfig.message}
@@ -75,82 +76,97 @@ export default function GroupInviteModal({ programId, onClose }: GroupInviteModa
                     onClose={() => setToastConfig(null)}
                 />
             )}
-            <div className="bg-white w-[600px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl overflow-hidden relative">
+            <div className="bg-white w-[600px] max-h-[85vh] rounded-3xl flex flex-col shadow-2xl overflow-hidden relative border border-gray-100">
 
                 {/* 헤더 */}
-                <div className="p-6 border-b border-grayscale-warm-gray flex justify-between items-center bg-gray-50">
-                    <h2 className="font-headline text-2xl text-grayscale-dark-gray flex items-center gap-2">
+                <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-20">
+                    <h2 className="font-headline text-2xl font-bold text-gray-900 flex items-center gap-2">
                         멤버 초대
                     </h2>
-                    <button onClick={onClose} className="text-grayscale-warm-gray hover:text-grayscale-dark-gray">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    <button
+                        onClick={onClose}
+                        className="w-9 h-9 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
 
                 {/* 검색 바 */}
-                <div className="p-6 border-b border-grayscale-warm-gray">
-                    <form onSubmit={handleSearch} className="flex gap-2">
-                        <input
-                            type="text"
-                            className="flex-1 border border-grayscale-warm-gray rounded-lg px-4 py-2 focus:outline-none focus:border-primary-main"
-                            placeholder="이메일을 입력해주세요."
-                            value={keyword}
-                            onChange={(e) => setKeyword(e.target.value)}
-                        />
-                        <button
+                <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+                    <form onSubmit={handleSearch} className="flex gap-2 relative">
+                        <div className="relative flex-1">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                            </div>
+                            <input
+                                type="text"
+                                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-primary-main focus:ring-2 focus:ring-primary-100 transition-all bg-white"
+                                placeholder="초대할 유저의 이메일을 입력해주세요."
+                                value={keyword}
+                                onChange={(e) => setKeyword(e.target.value)}
+                            />
+                        </div>
+                        <Button
                             type="submit"
-                            className="bg-primary-main text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition-colors font-bold"
+                            variant="primary"
+                            className="!rounded-xl font-bold shadow-md shadow-primary-main/20 hover:shadow-lg transition-all"
                         >
                             검색
-                        </button>
+                        </Button>
                     </form>
                 </div>
 
                 {/* 리스트 영역 */}
-                <div className="flex-1 overflow-auto p-0 min-h-[300px]">
+                <div className="flex-1 overflow-auto p-0 min-h-[300px] scrollbar-hide">
                     {isSearching ? (
-                        <div className="flex justify-center items-center h-full text-grayscale-warm-gray">
+                        <div className="flex justify-center items-center h-full text-gray-400 font-medium">
                             검색 중...
                         </div>
                     ) : searchQuery && userList.length === 0 ? (
-                        <div className="flex justify-center items-center h-full text-grayscale-warm-gray">
-                            검색 결과가 없습니다.
+                        <div className="flex flex-col justify-center items-center h-full text-gray-400 gap-2">
+                            <span className="text-3xl">🤔</span>
+                            <span>검색 결과가 없습니다.</span>
                         </div>
                     ) : !searchQuery ? (
-                        <div className="flex justify-center items-center h-full text-grayscale-warm-gray">
-                            유저를 검색하여 멤버를 초대해보세요.
+                        <div className="flex flex-col justify-center items-center h-full text-gray-400 gap-2">
+                            <span className="text-3xl">🔍</span>
+                            <span>유저를 검색하여 멤버를 초대해보세요.</span>
                         </div>
                     ) : (
-                        <div className="divide-y divide-grayscale-warm-gray/30">
+                        <div className="divide-y divide-gray-50">
                             {userList.map((user: any) => (
-                                <div key={user.userId} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <img
-                                            src={user.profileImage || "/icons/userIcon.svg"}
-                                            onError={(e) => { (e.target as HTMLImageElement).src = "/icons/userIcon.svg"; }}
-                                            alt="profile"
-                                            className={`w-12 h-12 rounded-full object-cover border border-gray-200 ${!user.profileImage || (user.profileImage as string).includes("userIcon") ? "p-2 bg-gray-100 object-contain" : ""}`}
-                                        />
+                                <div key={user.userId} className="flex items-center justify-between p-4 px-6 hover:bg-gray-50 transition-colors group">
+                                    <div className="flex items-center gap-4">
+                                        <div className="relative">
+                                            <img
+                                                src={user.profileImage || "/icons/userIcon.svg"}
+                                                onError={(e) => { (e.target as HTMLImageElement).src = "/icons/userIcon.svg"; }}
+                                                alt="profile"
+                                                className={`w-12 h-12 rounded-full object-cover border border-gray-100 shadow-sm ${!user.profileImage || (user.profileImage as string).includes("userIcon") ? "p-2 bg-gray-50 object-contain" : ""}`}
+                                            />
+                                        </div>
                                         <div>
-                                            <div className="font-bold text-grayscale-dark-gray text-sm">
+                                            <div className="font-bold text-gray-900 text-base">
                                                 {user.nickname}
                                             </div>
-                                            <div className="text-xs text-grayscale-warm-gray">
+                                            <div className="text-xs text-gray-500 font-mono mt-0.5">
                                                 {user.email}
                                             </div>
                                             {user.description && (
-                                                <div className="text-xs text-gray-500 mt-1 line-clamp-1">
+                                                <div className="text-xs text-gray-400 mt-1 line-clamp-1">
                                                     {user.description}
                                                 </div>
                                             )}
                                         </div>
                                     </div>
-                                    <button
+                                    <Button
                                         onClick={() => handleInvite(user.userId, user.nickname)}
-                                        className="text-sm bg-gray-100 hover:bg-primary-light hover:text-primary-dark text-gray-600 px-3 py-1.5 rounded-full transition-colors whitespace-nowrap"
+                                        variant="secondary"
+                                        size="sm"
+                                        className="!rounded-lg font-bold shadow-sm hover:shadow-md transition-all whitespace-nowrap"
                                     >
                                         초대
-                                    </button>
+                                    </Button>
                                 </div>
                             ))}
                         </div>

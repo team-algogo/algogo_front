@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchGroupJoinRequests, respondToJoinRequest, cancelGroupInvitation, fetchGroupInviteList } from "../../api/group/groupApi";
 import Toast, { type ToastType } from "@components/toast/Toast";
 import ConfirmModal from "@components/modal/ConfirmModal";
+import Button from "@components/button/Button";
 
 interface GroupJoinRequestsModalProps {
     programId: number;
@@ -61,13 +62,6 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
         }
     });
 
-    // 가입 신청 취소/삭제 (만약 필요하다면) -> 기존 코드에 있었으나 API가 cancelGroupInvitation(inviteId) 였음.
-    // 가입 신청에 대한 '취소'는 보통 유저가 하거나, 어드민은 '거절'을 함.
-    // 기존 코드의 handleCancel이 cancelGroupInvitation을 쓰고 있었는데, 이건 초대 취소 API임.
-    // JoinRequest에 대해 cancelGroupInvitation을 쓰는건 잘못된 매핑일 수 있음 (ID체계가 다르다면).
-    // 하지만 기존 기능을 유지하라는 요청은 없었지만, "가입 신청 목록" 기능은 유지해야함.
-    // 일단 기존 handleCancel은 '거절'과 유사하거나, 버그일 수 있음. 여기서는 '초대 취소'를 위한 Mutation을 새로 정의함.
-
     const cancelInviteMutation = useMutation({
         mutationFn: (inviteId: number) => cancelGroupInvitation(programId, inviteId),
         onSuccess: () => {
@@ -107,7 +101,7 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
     const isLoading = activeTab === "JOIN_REQUEST" ? isRequestLoading : isInviteLoading;
 
     return (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
             {toastConfig && (
                 <Toast
                     message={toastConfig.message}
@@ -115,93 +109,110 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
                     onClose={() => setToastConfig(null)}
                 />
             )}
-            <div className="bg-white w-[800px] max-h-[80vh] rounded-2xl flex flex-col shadow-2xl overflow-hidden relative">
+            <div className="bg-white w-[800px] max-h-[85vh] rounded-3xl flex flex-col shadow-2xl overflow-hidden relative border border-gray-100">
 
                 {/* 헤더 */}
-                <div className="p-6 border-b border-grayscale-warm-gray flex justify-between items-center bg-gray-50">
+                <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-20">
                     <div className="flex items-center gap-4">
-                        <h2 className="font-headline text-2xl text-grayscale-dark-gray">그룹 관리</h2>
+                        <h2 className="font-headline text-2xl font-bold text-gray-900">그룹 관리</h2>
                     </div>
-                    <button onClick={onClose} className="text-grayscale-warm-gray hover:text-grayscale-dark-gray">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    <button
+                        onClick={onClose}
+                        className="w-9 h-9 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
 
                 {/* 탭 버튼 */}
-                <div className="flex border-b border-grayscale-warm-gray">
+                <div className="flex border-b border-gray-100 px-8 bg-white pt-2">
                     <button
                         onClick={() => setActiveTab("JOIN_REQUEST")}
-                        className={`flex-1 py-3 text-sm font-bold transition-colors ${activeTab === "JOIN_REQUEST" ? "border-b-2 border-primary-main text-primary-main" : "text-grayscale-warm-gray hover:text-grayscale-dark-gray"}`}
+                        className={`pb-4 px-4 text-sm font-bold transition-all border-b-2 ${activeTab === "JOIN_REQUEST"
+                            ? "border-primary-main text-primary-main"
+                            : "border-transparent text-gray-400 hover:text-gray-600"
+                            }`}
                     >
-                        가입 신청 ({pendingRequests.length})
+                        가입 신청
+                        <span className={`ml-2 px-1.5 py-0.5 rounded-full text-xs ${activeTab === "JOIN_REQUEST" ? "bg-primary-50 text-primary-main" : "bg-gray-100 text-gray-500"}`}>
+                            {pendingRequests.length}
+                        </span>
                     </button>
                     <button
                         onClick={() => setActiveTab("INVITE_LIST")}
-                        className={`flex-1 py-3 text-sm font-bold transition-colors ${activeTab === "INVITE_LIST" ? "border-b-2 border-primary-main text-primary-main" : "text-grayscale-warm-gray hover:text-grayscale-dark-gray"}`}
+                        className={`pb-4 px-4 text-sm font-bold transition-all border-b-2 ${activeTab === "INVITE_LIST"
+                            ? "border-primary-main text-primary-main"
+                            : "border-transparent text-gray-400 hover:text-gray-600"
+                            }`}
                     >
                         보낸 초대 목록
                     </button>
                 </div>
 
                 {/* 리스트 영역 */}
-                <div className="flex-1 overflow-auto p-0">
+                <div className="flex-1 overflow-auto p-0 scrollbar-hide">
                     {isLoading ? (
-                        <div className="flex justify-center items-center h-40 text-grayscale-warm-gray">
+                        <div className="flex justify-center items-center h-60 text-gray-400 font-medium">
                             로딩 중...
                         </div>
                     ) : (
                         <table className="w-full text-left border-collapse">
-                            <thead className="sticky top-0 bg-white z-10 shadow-sm">
-                                <tr className="border-b border-grayscale-warm-gray text-xs text-grayscale-warm-gray uppercase">
-                                    <th className="px-6 py-4 font-bold bg-gray-50/50">유저</th>
-                                    <th className="px-6 py-4 font-bold bg-gray-50/50">이메일</th>
-                                    <th className="px-6 py-4 font-bold text-center bg-gray-50/50">{activeTab === "JOIN_REQUEST" ? "승인 / 거절" : "상태 / 취소"}</th>
+                            <thead className="sticky top-0 bg-gray-50/95 backdrop-blur-sm z-10 box-border border-b border-gray-100">
+                                <tr className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    <th className="px-8 py-4 w-[40%]">유저</th>
+                                    <th className="px-6 py-4 w-[35%]">이메일</th>
+                                    <th className="px-6 py-4 w-[25%] text-center">{activeTab === "JOIN_REQUEST" ? "승인 / 거절" : "상태 / 취소"}</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-grayscale-warm-gray/30">
+                            <tbody className="divide-y divide-gray-50">
                                 {activeTab === "JOIN_REQUEST" ? (
                                     // 가입 신청 목록
                                     pendingRequests.length > 0 ? (
                                         pendingRequests.map((req: any) => (
-                                            <tr key={req.joinId} className="hover:bg-gray-50/50 transition-colors">
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-3">
+                                            <tr key={req.joinId} className="group hover:bg-gray-50/50 transition-colors">
+                                                <td className="px-8 py-4">
+                                                    <div className="flex items-center gap-4">
                                                         <img
                                                             src={req.profileImage || "/icons/userIcon.svg"}
                                                             onError={(e) => { (e.target as HTMLImageElement).src = "/icons/userIcon.svg"; }}
                                                             alt="profile"
-                                                            className={`w-10 h-10 rounded-full object-cover border border-gray-200 ${!req.profileImage || (req.profileImage as string).includes("userIcon") ? "p-2 bg-gray-100 object-contain" : ""}`}
+                                                            className={`w-11 h-11 rounded-full object-cover border border-gray-100 shadow-sm ${!req.profileImage || (req.profileImage as string).includes("userIcon") ? "p-2 bg-gray-50 object-contain" : ""}`}
                                                         />
-                                                        <span className="font-bold text-grayscale-dark-gray text-sm">
+                                                        <span className="font-bold text-gray-900 text-base">
                                                             {req.nickname}
                                                         </span>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-sm text-grayscale-dark-gray">
-                                                    {req.email}
+                                                <td className="px-6 py-4">
+                                                    <span className="text-sm text-gray-500 font-medium font-mono">{req.email}</span>
                                                 </td>
                                                 <td className="px-6 py-4 text-center">
                                                     <div className="flex justify-center items-center gap-2">
-                                                        <button
+                                                        <Button
                                                             onClick={() => handleAction(req.joinId, "ACCEPTED")}
-                                                            className="w-16 py-1.5 bg-primary-main text-white text-xs font-bold rounded hover:bg-primary-dark transition-colors"
+                                                            variant="primary"
+                                                            className="!py-1.5 !px-3 !h-auto text-xs font-bold"
                                                         >
                                                             승인
-                                                        </button>
-                                                        <button
+                                                        </Button>
+                                                        <Button
                                                             onClick={() => handleAction(req.joinId, "DENIED")}
-                                                            className="w-16 py-1.5 bg-gray-100 text-gray-600 text-xs font-medium rounded hover:bg-gray-200 transition-colors"
+                                                            variant="text"
+                                                            className="!py-1.5 !px-3 !h-auto text-xs font-medium text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 border-none"
                                                         >
                                                             거절
-                                                        </button>
+                                                        </Button>
                                                     </div>
                                                 </td>
                                             </tr>
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan={3} className="px-6 py-10 text-center text-grayscale-warm-gray">
-                                                대기 중인 가입 신청이 없습니다.
+                                            <td colSpan={3} className="px-6 py-20 text-center text-gray-400 gap-2 flex-col">
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <span className="text-3xl">📭</span>
+                                                    <span>대기 중인 가입 신청이 없습니다.</span>
+                                                </div>
                                             </td>
                                         </tr>
                                     )
@@ -209,37 +220,37 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
                                     // 초대 목록
                                     invites.length > 0 ? (
                                         invites.map((invite: any) => (
-                                            <tr key={invite.inviteId} className="hover:bg-gray-50/50 transition-colors">
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-3">
+                                            <tr key={invite.inviteId} className="group hover:bg-gray-50/50 transition-colors">
+                                                <td className="px-8 py-4">
+                                                    <div className="flex items-center gap-4">
                                                         <img
                                                             src={invite.profileImage || "/icons/userIcon.svg"}
                                                             onError={(e) => { (e.target as HTMLImageElement).src = "/icons/userIcon.svg"; }}
                                                             alt="profile"
-                                                            className={`w-10 h-10 rounded-full object-cover border border-gray-200 ${!invite.profileImage || (invite.profileImage as string).includes("userIcon") ? "p-2 bg-gray-100 object-contain" : ""}`}
+                                                            className={`w-11 h-11 rounded-full object-cover border border-gray-100 shadow-sm ${!invite.profileImage || (invite.profileImage as string).includes("userIcon") ? "p-2 bg-gray-50 object-contain" : ""}`}
                                                         />
-                                                        <span className="font-bold text-grayscale-dark-gray text-sm">
+                                                        <span className="font-bold text-gray-900 text-base">
                                                             {invite.nickname}
                                                         </span>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-sm text-grayscale-dark-gray">
-                                                    {invite.email}
+                                                <td className="px-6 py-4">
+                                                    <span className="text-sm text-gray-500 font-medium font-mono">{invite.email}</span>
                                                 </td>
                                                 <td className="px-6 py-4 text-center">
                                                     <div className="flex justify-center items-center gap-3">
                                                         <span className={`
-                                                            text-xs px-2 py-1 rounded-full font-medium
-                                                            ${invite.status === 'ACCEPTED' ? 'bg-green-100 text-green-700' :
-                                                                invite.status === 'DENIED' ? 'bg-red-100 text-red-700' :
-                                                                    'bg-yellow-100 text-yellow-700'}
+                                                            text-xs px-2.5 py-1 rounded-full font-bold
+                                                            ${invite.status === 'ACCEPTED' ? 'bg-green-50 text-green-600' :
+                                                                invite.status === 'DENIED' ? 'bg-red-50 text-red-600' :
+                                                                    'bg-yellow-50 text-yellow-600'}
                                                         `}>
                                                             {invite.status}
                                                         </span>
                                                         {invite.status === 'PENDING' && (
                                                             <button
                                                                 onClick={() => handleCancelInvite(invite.inviteId)}
-                                                                className="text-red-400 hover:text-red-500 p-1"
+                                                                className="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-alert-error hover:bg-red-50 rounded-lg transition-all"
                                                                 title="초대 취소"
                                                             >
                                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -251,8 +262,11 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan={3} className="px-6 py-10 text-center text-grayscale-warm-gray">
-                                                보낸 초대 내역이 없습니다.
+                                            <td colSpan={3} className="px-6 py-20 text-center text-gray-400 gap-2 flex-col">
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <span className="text-3xl">📨</span>
+                                                    <span>보낸 초대 내역이 없습니다.</span>
+                                                </div>
                                             </td>
                                         </tr>
                                     )

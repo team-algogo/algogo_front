@@ -4,7 +4,8 @@ import useToastStore from "@store/useToastStore";
 import ToastItem from "./ToastItem";
 
 const TopToastViewport = () => {
-  const { toasts, removeToast } = useToastStore();
+  const toasts = useToastStore((state) => state.toasts);
+  const removeToast = useToastStore((state) => state.removeToast);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -18,7 +19,7 @@ const TopToastViewport = () => {
 
   const viewport = (
     <div
-      className="fixed z-[1000] flex flex-col gap-3 pointer-events-none"
+      className="fixed z-[9999] flex flex-col gap-3 pointer-events-none"
       style={{
         top: "24px",
         left: "50%",

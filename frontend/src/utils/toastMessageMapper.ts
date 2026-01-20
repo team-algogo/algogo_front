@@ -25,10 +25,10 @@ const getToastMessageByType = (type: string, payload: any, message?: string): To
         description: `${userNickname}님의 참여 신청을 확인해주세요`,
         cta: programId
           ? {
-              label: "확인하기",
-              route: `/group/${programId}`,
-              params: { openJoinRequestModal: true },
-            }
+            label: "확인하기",
+            route: `/group/${programId}`,
+            params: { openJoinRequestModal: true },
+          }
           : undefined,
       };
 
@@ -42,9 +42,9 @@ const getToastMessageByType = (type: string, payload: any, message?: string): To
         cta:
           isAccepted && programId
             ? {
-                label: "그룹 보기",
-                route: `/group/${programId}`,
-              }
+              label: "그룹 보기",
+              route: `/group/${programId}`,
+            }
             : undefined,
       };
     }
@@ -73,9 +73,9 @@ const getToastMessageByType = (type: string, payload: any, message?: string): To
         description: `대상: ${userNickname}님의 코드를 리뷰해주세요`,
         cta: submissionId
           ? {
-              label: "리뷰하러 가기",
-              route: `/review/${submissionId}`,
-            }
+            label: "리뷰하러 가기",
+            route: `/review/${submissionId}`,
+          }
           : undefined,
       };
 
@@ -85,9 +85,9 @@ const getToastMessageByType = (type: string, payload: any, message?: string): To
         description: "새로운 리뷰를 확인해보세요",
         cta: submissionId
           ? {
-              label: "리뷰 보기",
-              route: `/review/${submissionId}`,
-            }
+            label: "리뷰 보기",
+            route: `/review/${submissionId}`,
+          }
           : undefined,
       };
 
@@ -97,15 +97,20 @@ const getToastMessageByType = (type: string, payload: any, message?: string): To
         description: "답글을 확인해보세요",
         cta: submissionId
           ? {
-              label: "대댓글 보기",
-              route: `/review/${submissionId}`,
-            }
+            label: "대댓글 보기",
+            route: `/review/${submissionId}`,
+          }
           : undefined,
       };
 
     default:
+      if (message) {
+        return { title: message };
+      }
+      // If no message, try to construct one from type
       return {
-        title: message || "새로운 알림이 도착했습니다",
+        title: `새로운 알림 (${type})`,
+        description: "알림 내용을 확인해주세요.",
       };
   }
 };

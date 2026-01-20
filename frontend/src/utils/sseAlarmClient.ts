@@ -51,34 +51,47 @@ export const connectSSE = (
   });
 
   // NOTIFICATION 이벤트
-  eventSource.addEventListener("NOTIFICATION", (event: any) => {
-    console.log("[SSE] NOTIFICATION event received");
+  const handleEvent = (event: any) => {
+    console.log(`[SSE] ${event.type} event received`);
     console.log("[SSE] Raw event.data:", event.data);
 
     try {
       const rawData = event.data;
-      const dto = JSON.parse(rawData) as SSENotificationData;
-      
+      let dto: SSENotificationData;
+
+      try {
+        dto = JSON.parse(rawData) as SSENotificationData;
+      } catch (parseError) {
+        console.error("[SSE] JSON parse failed, utilizing raw text as message:", parseError);
+        // Fallback for non-JSON messages (unlikely but possible)
+        onNotification({
+          id: Date.now(),
+          type: "INFO" as any,
+          payload: {},
+          message: rawData,
+          isRead: false,
+          createdAt: new Date().toISOString(),
+        });
+        return;
+      }
+
       console.log("[SSE] Parsed DTO:", dto);
 
       // 타입 표준화 (요구사항: alarmTypeName ?? type ?? alarmType?.name)
-      const type = dto.alarmTypeName ?? dto.type ?? dto.alarmType?.name ?? (typeof dto.alarmType === 'string' ? dto.alarmType : undefined);
-      
-      console.log("[SSE] Extracted type:", type);
-      console.log("[SSE] Type source - alarmTypeName:", dto.alarmTypeName, "type:", dto.type, "alarmType:", dto.alarmType);
-      
-      if (!type) {
-        console.warn("[SSE] Type field not found in DTO:", dto);
-        console.warn("[SSE] Available fields:", Object.keys(dto));
-        return;
+      // If type is missing, fallback to 'INFO' instead of returning
+      const rawType = dto.alarmTypeName ?? dto.type ?? dto.alarmType?.name ?? (typeof dto.alarmType === 'string' ? dto.alarmType : undefined);
+      const type = rawType || "INFO";
+
+      if (!rawType) {
+        console.warn("[SSE] Type field not found in DTO, defaulting to INFO:", dto);
       }
 
       // 표준화된 타입으로 변환
       const normalizedData: Alarm = {
-        id: dto.id,
+        id: dto.id || Date.now(),
         type: type as any,
         payload: dto.payload || {},
-        message: dto.message || "",
+        message: dto.message || "알림이 도착했습니다.",
         isRead: dto.isRead || false,
         createdAt: dto.createdAt || new Date().toISOString(),
       };
@@ -86,13 +99,25 @@ export const connectSSE = (
       console.log("[SSE] Normalized alarm:", normalizedData);
       onNotification(normalizedData);
     } catch (error) {
-      console.error("[SSE] Failed to parse notification data:", error);
-      console.error("[SSE] Raw data:", event.data);
+      console.error("[SSE] Critical error in handleEvent:", error);
+      // Last resort fallback
+      onNotification({
+        id: Date.now(),
+        type: "INFO" as any,
+        payload: {},
+        message: "알림 처리 중 오류가 발생했습니다.",
+        isRead: false,
+        createdAt: new Date().toISOString(),
+      });
     }
-  });
+  };
+
+  eventSource.addEventListener("NOTIFICATION", handleEvent);
+  // Default 'message' event fallback
+  eventSource.addEventListener("message", handleEvent);
 
   eventSource.onerror = (error: Event) => {
-    console.error("[SSE] Error occurred:", error);
+    // console.error("[SSE] Error occurred:", error); // Reduce noise if needed
     if (onError) {
       onError(error);
     }

@@ -16,6 +16,7 @@ export interface ApiProblemSet {
   categories: string[];
   totalParticipants: number;
   problemCount: number;
+  matchedProblems?: string[];
 }
 
 export interface ProblemSetListResponse {

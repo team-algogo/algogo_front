@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import type { ReactNode } from "react";
 
 type TextLinkVariant = "default" | "secondary";
@@ -7,6 +8,7 @@ interface TextLinkProps {
   src: string;
   className?: string;
   children: ReactNode;
+  state?: any; // Add state prop
   onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
@@ -24,17 +26,19 @@ const TextLink = ({
   src,
   className = "",
   children,
+  state,
   onClick,
 }: TextLinkProps) => {
   const textLinkStyle = getVariantStyle(variant);
   return (
-    <a
-      href={src}
+    <Link
+      to={src}
+      state={state}
       className={`flex justify-center items-center gap-2 transition-colors ${textLinkStyle} ${className}`}
       onClick={onClick}
     >
       {children}
-    </a>
+    </Link>
   );
 };
 

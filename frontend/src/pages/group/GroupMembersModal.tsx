@@ -5,6 +5,7 @@ import { getUserDetail } from "@api/auth/auth";
 import GroupInviteModal from "./GroupInviteModal";
 import ConfirmModal from "@components/modal/ConfirmModal";
 import Button from "@components/button/Button";
+import useToast from "@hooks/useToast";
 
 interface GroupMembersModalProps {
     programId: number;
@@ -14,6 +15,7 @@ interface GroupMembersModalProps {
 export default function GroupMembersModal({ programId, onClose }: GroupMembersModalProps) {
     const queryClient = useQueryClient();
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+    const { showToast } = useToast();
 
     // 내 정보 조회 (ID 확인용)
     const { data: myData } = useQuery({
@@ -73,11 +75,13 @@ export default function GroupMembersModal({ programId, onClose }: GroupMembersMo
         mutationFn: ({ userId, role }: { userId: number; role: "ADMIN" | "MANAGER" | "USER" }) =>
             updateGroupMemberRole(programId, userId, role),
         onSuccess: () => {
-            // alert("권한이 수정되었습니다."); // User requests no alerts, maybe Toast? But leaving for now or removing alert if silent update is OK. I'll rely on cache invalidation for UI update.
+            showToast("권한이 수정되었습니다.", "success");
             queryClient.invalidateQueries({ queryKey: ["groupMembers", programId] });
         },
-        onError: (err) => {
+        onError: (err: any) => {
             console.error(err);
+            const msg = err.response?.data?.message || "권한 수정 실패";
+            showToast(msg, "error");
         },
     });
 
@@ -85,10 +89,13 @@ export default function GroupMembersModal({ programId, onClose }: GroupMembersMo
     const deleteMemberMutation = useMutation({
         mutationFn: (userId: number) => deleteGroupMember(programId, userId),
         onSuccess: () => {
+            showToast("멤버가 삭제되었습니다.", "success");
             queryClient.invalidateQueries({ queryKey: ["groupMembers", programId] });
         },
-        onError: (err) => {
+        onError: (err: any) => {
             console.error(err);
+            const msg = err.response?.data?.message || "멤버 삭제 실패";
+            showToast(msg, "error");
         },
     });
 

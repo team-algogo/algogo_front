@@ -14,9 +14,10 @@ import {
   type SubmissionReviewProps,
 } from "@api/code/reviewSubmit";
 import HistoryBox from "@components/history/HistoryBox";
-import AiReviewCard from "@components/review/AiReviewCard";
 import CommentItem from "@components/review/CommentItem";
 import CommentInput from "@components/review/CommentInput";
+import AiReviewCard from "@components/review/AiReviewCard";
+import ConfirmModal from "@components/modal/ConfirmModal";
 import {
   getUserDetail,
   getUserDetailById,
@@ -29,32 +30,13 @@ import {
   updateReview,
 } from "@api/code/reviewSubmit";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-
 import useAuthStore from "@store/useAuthStore";
-import ConfirmModal from "@components/modal/ConfirmModal";
 
 const CodeReviewPage = () => {
   const param = useParams();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-
-  const { userType } = useAuthStore();
-  const isLoggedIn = !!userType;
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-
-  useEffect(() => {
-    if (!isLoggedIn) {
-      setIsLoginModalOpen(true);
-    }
-  }, [isLoggedIn]);
-
-  const handleLogin = () => {
-    navigate("/login");
-  };
-
-  const handleMain = () => {
-    window.location.href = "https://algogo.kr/intro";
-  };
+  const { userType, authorization } = useAuthStore();
 
   const [problemInfo, setProblemInfo] = useState<ProgramProblemProps | null>(
     null,
@@ -68,6 +50,11 @@ const CodeReviewPage = () => {
   const [code, setCode] = useState("");
   const [selectedLine, setSelectedLine] = useState<number | null>(null);
   const [isCopied, setIsCopied] = useState(false);
+  const [editorHeight, setEditorHeight] = useState(400);
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    reviewId: number | null;
+  }>({ isOpen: false, reviewId: null });
   const shouldScrollRef = useRef(false);
 
   const [submissionHistory, setSubmissionHistory] = useState<
@@ -99,12 +86,7 @@ const CodeReviewPage = () => {
 
     // Handle line click to scroll to comment input
     editor.onMouseDown((e) => {
-      const type = e.target.type;
-      if (
-        type === monaco.editor.MouseTargetType.CONTENT_TEXT ||
-        type === monaco.editor.MouseTargetType.CONTENT_EMPTY ||
-        type === monaco.editor.MouseTargetType.GUTTER_LINE_NUMBERS
-      ) {
+      if (e.target.type === monaco.editor.MouseTargetType.CONTENT_TEXT) {
         const lineNumber = e.target.position?.lineNumber;
         if (lineNumber) {
           shouldScrollRef.current = true;
@@ -242,17 +224,27 @@ const CodeReviewPage = () => {
     }
   };
 
-  const handleDeleteReview = async (reviewId: number) => {
+  const handleDeleteReview = (reviewId: number) => {
     if (!submissionDetail?.submissionId) return;
-    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+    setDeleteConfirm({ isOpen: true, reviewId });
+  };
+
+  const confirmDeleteReview = async () => {
+    if (!submissionDetail?.submissionId || !deleteConfirm.reviewId) return;
     try {
-      await deleteReview(reviewId);
+      await deleteReview(deleteConfirm.reviewId);
       await queryClient.invalidateQueries({
         queryKey: ["review", submissionDetail.submissionId],
       });
+      setDeleteConfirm({ isOpen: false, reviewId: null });
     } catch (err) {
       console.log(err);
+      setDeleteConfirm({ isOpen: false, reviewId: null });
     }
+  };
+
+  const cancelDeleteReview = () => {
+    setDeleteConfirm({ isOpen: false, reviewId: null });
   };
 
   const handleUpdateReview = async (reviewId: number, content: string) => {
@@ -353,6 +345,25 @@ const CodeReviewPage = () => {
     }
   };
 
+  // 비로그인 유저 체크 및 리다이렉트 (로그인한 사용자는 제외)
+  useEffect(() => {
+    // 로그인한 사용자는 리다이렉트하지 않음
+    if (userType === "User" && authorization) {
+      return;
+    }
+
+    // 비로그인 사용자만 리다이렉트
+    if (!authorization && !userType) {
+      navigate("/login", {
+        state: {
+          requireLogin: true,
+          redirectTo: `/review/${param.submissionId}`,
+        },
+        replace: true,
+      });
+    }
+  }, [authorization, userType, navigate, param.submissionId]);
+
   useEffect(() => {
     getCurrentUser();
     if (!param.submissionId) return;
@@ -376,6 +387,28 @@ const CodeReviewPage = () => {
     }
   }, [submissionDetail]);
 
+  // 코드 줄 수에 따라 에디터 높이 조정
+  useEffect(() => {
+    if (!code) {
+      setEditorHeight(400);
+      return;
+    }
+
+    const lines = code.split("\n").length;
+    const lineHeight = 19; // Monaco Editor 기본 라인 높이 (fontSize 14 기준)
+    const padding = 24; // 상하 패딩 (12px * 2)
+    const minHeight = 100; // 최소 높이
+    const maxHeight = 400; // 최대 높이
+
+    const calculatedHeight = lines * lineHeight + padding;
+    const finalHeight = Math.max(
+      minHeight,
+      Math.min(maxHeight, calculatedHeight),
+    );
+
+    setEditorHeight(finalHeight);
+  }, [code]);
+
   // Scroll to comment input when a line is selected by user
   useEffect(() => {
     if (
@@ -396,278 +429,277 @@ const CodeReviewPage = () => {
 
   return (
     <BasePage>
-      <ConfirmModal
-        isOpen={isLoginModalOpen}
-        title="로그인 필요"
-        message="리뷰 페이지에 접근하려면 로그인이 필요합니다."
-        onConfirm={handleLogin}
-        onCancel={handleMain}
-        confirmLabel="로그인"
-        cancelLabel="메인으로"
-      />
-      {!isLoginModalOpen && (
-        <div className="mx-auto flex h-full w-full max-w-[1200px] flex-col items-start gap-8 bg-white p-[40px_0px_80px]">
-          {/* Header Section - 통계 페이지와 동일한 레이아웃 */}
-          <div className="flex w-full flex-row items-end justify-between border-b border-gray-200 pb-6">
-            <div className="flex flex-col gap-2">
-              <div className="mb-1 flex items-center gap-3 text-gray-500">
-                <button
-                  onClick={() => {
-                    if (submissionDetail?.programProblemId) {
-                      // localStorage에 저장된 programId가 있으면 유지 (이미 ProblemListTable에서 저장됨)
-                      // 새로 저장하지 않고 기존 값을 유지하여 통계 페이지에서 "문제집으로 돌아가기"가 작동하도록 함
-                      navigate(
-                        `/statistics/${submissionDetail.programProblemId}`,
-                      );
-                    }
-                  }}
-                  className="flex items-center gap-1 text-sm transition-colors hover:text-[#333333]"
+      <div className="mx-auto flex h-full w-full max-w-[1200px] flex-col items-start gap-8 bg-white p-[40px_0px_80px]">
+        {/* Header Section - 통계 페이지와 동일한 레이아웃 */}
+        <div className="flex w-full flex-row items-end justify-between border-b border-gray-200 pb-6">
+          <div className="flex flex-col gap-2">
+            <div className="mb-1 flex items-center gap-3 text-gray-500">
+              <button
+                onClick={() => {
+                  if (submissionDetail?.programProblemId) {
+                    // localStorage에 저장된 programId가 있으면 유지 (이미 ProblemListTable에서 저장됨)
+                    // 새로 저장하지 않고 기존 값을 유지하여 통계 페이지에서 "문제집으로 돌아가기"가 작동하도록 함
+                    navigate(
+                      `/statistics/${submissionDetail.programProblemId}`,
+                    );
+                  }
+                }}
+                className="flex items-center gap-1 text-sm transition-colors hover:text-[#333333]"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M10 12L6 8L10 4"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  통계로 돌아가기
-                </button>
-              </div>
-              <div className="flex flex-col gap-2">
-                <h1 className="flex items-center gap-3 text-[28px] font-bold text-[#333333]">
-                  {problemInfo?.problemNo}. {problemInfo?.title}
-                </h1>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="font-semibold text-gray-700">
-                    {submissionUserDetail?.nickname}
-                  </span>
-                  <span className="text-gray-500">님의 코드</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Top Section: Approach & History */}
-          <div className="flex w-full gap-6">
-            {/* Left: Approach */}
-            <div className="flex flex-1 flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900">
-                  문제 접근 방식
-                </h2>
-                <div className="flex flex-wrap gap-2">
-                  {submissionDetail?.algorithmList?.map((algo) => (
-                    <span
-                      key={algo.id}
-                      className="inline-flex items-center rounded-lg border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100/50 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:shadow-md"
-                    >
-                      {algo.name}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div className="flex h-[380px] flex-1 flex-col overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-lg">
-                <div className="flex-1 overflow-y-auto p-6">
-                  <p className="text-sm leading-7 whitespace-pre-wrap text-gray-700">
-                    {submissionDetail?.strategy || (
-                      <span className="text-gray-400 italic">
-                        문제를 어떻게 접근했는지 작성해주세요!
-                      </span>
-                    )}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Right: History */}
-            <div className="flex shrink-0">
-              {!!submissionHistory?.length &&
-                submissionUserDetail?.userId === submissionHistory[0].userId && (
-                  <HistoryBox
-                    history={submissionHistory}
-                    submissionId={submissionDetail!.submissionId}
+                  <path
+                    d="M10 12L6 8L10 4"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   />
-                )}
+                </svg>
+                통계로 돌아가기
+              </button>
             </div>
-          </div>
-
-          {/* Code Editor Section */}
-          <div className="w-full overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-lg">
-            <div className="border-b border-gray-200/60 bg-gradient-to-r from-gray-50 to-gray-50/50 px-5 py-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 18 18"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="text-gray-700"
-                  >
-                    <path
-                      d="M4.5 2.25H13.5C13.9142 2.25 14.25 2.58579 14.25 3V15C14.25 15.4142 13.9142 15.75 13.5 15.75H4.5C4.08579 15.75 3.75 15.4142 3.75 15V3C3.75 2.58579 4.08579 2.25 4.5 2.25Z"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M6.75 5.25H11.25M6.75 7.5H11.25M6.75 9.75H9.75"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <span className="text-sm font-bold text-gray-800">
-                    제출 코드
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {/* Success/Failure Badge */}
-                  {submissionDetail && (
-                    <span
-                      className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold ${submissionDetail.isSuccess
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "bg-red-50 text-red-700"
-                        }`}
-                    >
-                      {submissionDetail.isSuccess ? "성공" : "실패"}
-                    </span>
-                  )}
-                  {/* Language Badge */}
-                  {submissionDetail?.language &&
-                    (() => {
-                      const lang = normalizeLanguage(submissionDetail.language);
-                      const style = getLanguageBadgeStyle(
-                        submissionDetail.language,
-                      );
-                      return (
-                        <span
-                          className={`inline-flex items-center rounded-md border ${style.border} ${style.bg} px-2.5 py-1 text-xs font-semibold ${style.text}`}
-                        >
-                          {lang}
-                        </span>
-                      );
-                    })()}
-                  {/* Copy Button */}
-                  <button
-                    onClick={handleCopyCode}
-                    className="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white p-1.5 text-gray-500 transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700"
-                    title="코드 복사"
-                  >
-                    {isCopied ? (
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M13.3333 4L6 11.3333L2.66667 8"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    ) : (
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M5.33333 2.66667H11.3333C11.7015 2.66667 12 2.96514 12 3.33333V12.6667C12 13.0349 11.7015 13.3333 11.3333 13.3333H5.33333C4.96514 13.3333 4.66667 13.0349 4.66667 12.6667V3.33333C4.66667 2.96514 4.96514 2.66667 5.33333 2.66667Z"
-                          stroke="currentColor"
-                          strokeWidth="1.2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M10.6667 2.66667V1.33333C10.6667 0.965143 10.3682 0.666667 10 0.666667H2.66667C2.29848 0.666667 2 0.965143 2 1.33333V10C2 10.3682 2.29848 10.6667 2.66667 10.6667H4"
-                          stroke="currentColor"
-                          strokeWidth="1.2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    )}
-                  </button>
-                </div>
+            <div className="flex flex-col gap-2">
+              <h1 className="flex items-center gap-3 text-[28px] font-bold text-[#333333]">
+                {problemInfo?.problemNo}. {problemInfo?.title}
+              </h1>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-semibold text-gray-700">
+                  {submissionUserDetail?.nickname}
+                </span>
+                <span className="text-gray-500">님의 코드</span>
               </div>
-            </div>
-            <Editor
-              height={300}
-              language={submissionDetail?.language.toLowerCase() || "java"}
-              value={code || "// Code Loading..."}
-              theme="light"
-              onMount={handleEditorDidMount}
-              options={{
-                automaticLayout: true,
-                fontFamily: "Menlo, Monaco, 'Courier New', monospace",
-                fontSize: 16,
-                minimap: { enabled: false },
-                scrollBeyondLastLine: false,
-                readOnly: true,
-                lineNumbers: "on",
-                padding: { top: 16 },
-              }}
-            />
-          </div>
-
-          {/* AI Evaluation Section */}
-          {submissionDetail?.aiScoreReason && (
-            <AiReviewCard
-              score={submissionDetail.aiScore}
-              reason={submissionDetail.aiScoreReason || ""}
-            />
-          )}
-
-          {/* Comment Section */}
-          <div className="flex w-full flex-col gap-6">
-            {/* Existing Comments */}
-            <div className="flex w-full flex-col overflow-hidden rounded-xl border border-gray-200/80 bg-white p-6 shadow-lg">
-              <div className="flex flex-col gap-4">
-                {Array.isArray(comments) &&
-                  comments.map((comment, index) => (
-                    <CommentItem
-                      key={comment.reviewId}
-                      {...comment}
-                      onReply={handleReply}
-                      currentUserId={currentUser?.userId}
-                      onDelete={handleDeleteReview}
-                      onUpdate={handleUpdateReview}
-                      onLike={handleAddLike}
-                      onUnlike={handleDeleteLike}
-                      hasNextSibling={index < comments.length - 1}
-                    />
-                  ))}
-              </div>
-            </div>
-
-            {/* Write Comment */}
-            <div ref={commentInputRef}>
-              <CommentInput
-                initSelectedLine={initSelectedLine}
-                onSubmit={handleAddComment}
-                selectedLine={selectedLine}
-              />
             </div>
           </div>
         </div>
-      )}
+
+        {/* Top Section: Approach & History */}
+        <div className="flex w-full gap-6">
+          {/* Left: Approach */}
+          <div className="flex flex-1 flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">
+                문제 접근 방식
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {submissionDetail?.algorithmList?.map((algo) => (
+                  <span
+                    key={algo.id}
+                    className="inline-flex items-center rounded-lg border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100/50 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:shadow-md"
+                  >
+                    {algo.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="flex h-[380px] flex-1 flex-col overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-lg">
+              <div className="flex-1 overflow-y-auto p-6">
+                <p className="text-sm leading-7 whitespace-pre-wrap text-gray-700">
+                  {submissionDetail?.strategy || (
+                    <span className="text-gray-400 italic">
+                      문제를 어떻게 접근했는지 작성해주세요!
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: History */}
+          <div className="flex shrink-0">
+            {!!submissionHistory?.length &&
+              submissionUserDetail?.userId === submissionHistory[0].userId && (
+                <HistoryBox
+                  history={submissionHistory}
+                  submissionId={submissionDetail!.submissionId}
+                />
+              )}
+          </div>
+        </div>
+
+        {/* Code Editor Section */}
+        <div className="w-full overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-lg">
+          <div className="border-b border-gray-200/60 bg-gradient-to-r from-gray-50 to-gray-50/50 px-5 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 18 18"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="text-gray-700"
+                >
+                  <path
+                    d="M4.5 2.25H13.5C13.9142 2.25 14.25 2.58579 14.25 3V15C14.25 15.4142 13.9142 15.75 13.5 15.75H4.5C4.08579 15.75 3.75 15.4142 3.75 15V3C3.75 2.58579 4.08579 2.25 4.5 2.25Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M6.75 5.25H11.25M6.75 7.5H11.25M6.75 9.75H9.75"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span className="text-sm font-bold text-gray-800">
+                  제출 코드
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                {/* Success/Failure Badge */}
+                {submissionDetail && (
+                  <span
+                    className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold ${submissionDetail.isSuccess
+                      ? "bg-emerald-50 text-emerald-700"
+                      : "bg-red-50 text-red-700"
+                      }`}
+                  >
+                    {submissionDetail.isSuccess ? "성공" : "실패"}
+                  </span>
+                )}
+                {/* Language Badge */}
+                {submissionDetail?.language &&
+                  (() => {
+                    const lang = normalizeLanguage(submissionDetail.language);
+                    const style = getLanguageBadgeStyle(
+                      submissionDetail.language,
+                    );
+                    return (
+                      <span
+                        className={`inline-flex items-center rounded-md border ${style.border} ${style.bg} px-2.5 py-1 text-xs font-semibold ${style.text}`}
+                      >
+                        {lang}
+                      </span>
+                    );
+                  })()}
+                {/* Copy Button */}
+                <button
+                  onClick={handleCopyCode}
+                  className="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white p-1.5 text-gray-500 transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700"
+                  title="코드 복사"
+                >
+                  {isCopied ? (
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M13.3333 4L6 11.3333L2.66667 8"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M5.33333 2.66667H11.3333C11.7015 2.66667 12 2.96514 12 3.33333V12.6667C12 13.0349 11.7015 13.3333 11.3333 13.3333H5.33333C4.96514 13.3333 4.66667 13.0349 4.66667 12.6667V3.33333C4.66667 2.96514 4.96514 2.66667 5.33333 2.66667Z"
+                        stroke="currentColor"
+                        strokeWidth="1.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M10.6667 2.66667V1.33333C10.6667 0.965143 10.3682 0.666667 10 0.666667H2.66667C2.29848 0.666667 2 0.965143 2 1.33333V10C2 10.3682 2.29848 10.6667 2.66667 10.6667H4"
+                        stroke="currentColor"
+                        strokeWidth="1.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+          <Editor
+            height={editorHeight}
+            language={submissionDetail?.language.toLowerCase() || "java"}
+            value={code || "// Code Loading..."}
+            theme="light"
+            onMount={handleEditorDidMount}
+            options={{
+              automaticLayout: true,
+              fontFamily: "Menlo, Monaco, 'Courier New', monospace",
+              fontSize: 16,
+              minimap: { enabled: false },
+              scrollBeyondLastLine: false,
+              readOnly: true,
+              lineNumbers: "on",
+              padding: { top: 16 },
+            }}
+          />
+        </div>
+
+        {/* AI Evaluation Section */}
+        {submissionDetail?.aiScoreReason && (
+          <AiReviewCard
+            score={submissionDetail.aiScore}
+            reason={submissionDetail.aiScoreReason || ""}
+          />
+        )}
+
+        {/* Comment Section */}
+        <div className="flex w-full flex-col gap-6">
+          {/* Existing Comments */}
+          <div className="flex w-full flex-col overflow-hidden rounded-xl border border-gray-200/80 bg-white p-6 shadow-lg">
+            <div className="flex flex-col gap-4">
+              {Array.isArray(comments) &&
+                comments.map((comment, index) => (
+                  <CommentItem
+                    key={comment.reviewId}
+                    {...comment}
+                    onReply={handleReply}
+                    currentUserId={currentUser?.userId}
+                    onDelete={handleDeleteReview}
+                    onUpdate={handleUpdateReview}
+                    onLike={handleAddLike}
+                    onUnlike={handleDeleteLike}
+                    hasNextSibling={index < comments.length - 1}
+                  />
+                ))}
+            </div>
+          </div>
+
+          {/* Write Comment */}
+          <div ref={commentInputRef}>
+            <CommentInput
+              initSelectedLine={initSelectedLine}
+              onSubmit={handleAddComment}
+              selectedLine={selectedLine}
+            />
+          </div>
+        </div>
+      </div>
+
+      <ConfirmModal
+        isOpen={deleteConfirm.isOpen}
+        title="리뷰 삭제"
+        message="정말 이 리뷰를 삭제하시겠습니까?"
+        onConfirm={confirmDeleteReview}
+        onCancel={cancelDeleteReview}
+        confirmLabel="삭제"
+        cancelLabel="취소"
+      />
     </BasePage>
   );
 };

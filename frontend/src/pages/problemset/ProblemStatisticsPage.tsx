@@ -279,10 +279,17 @@ export default function ProblemStatisticsPage() {
                 문제집으로 돌아가기
               </button>
             </div>
-            <h1 className="flex items-baseline gap-3 text-[28px] font-bold text-[#333333]">
-              {problemInfo?.problemNo}. {problemInfo?.title}
-              <span className="text-[16px] font-bold text-gray-400">통계</span>
-            </h1>
+            <div className="flex items-baseline gap-3">
+              <h1 className="text-[28px] leading-tight font-bold text-[#333333]">
+                {problemInfo?.problemNo}. {problemInfo?.title}
+              </h1>
+              {/* 플랫폼 정보 - 문제 제목 바로 옆 */}
+              {problemInfo?.platformType && (
+                <span className="inline-flex items-center rounded-md border border-[#d0d7de] bg-[#f6f8fa] px-2 py-0.5 text-xs leading-none font-semibold text-[#1f2328]">
+                  {problemInfo.platformType}
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center gap-3">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import BasePage from "@pages/BasePage";
 import GroupDetailInfo from "@components/cards/group/GroupDetailInfo";
@@ -17,15 +17,17 @@ import GroupMemberModal from "./GroupMembersModal";
 import GroupJoinRequestModal from "./GroupJoinRequestsModal";
 import AddProblemModal from "./AddGroupProblemModal";
 import ConfirmModal from "@components/modal/ConfirmModal";
-import Toast, { type ToastType } from "@components/toast/Toast";
 import Pagination from "@components/pagination/Pagination";
+import useToast from "@hooks/useToast";
 
 export default function GroupDetailPage() {
     const { groupId } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const programId = Number(groupId);
 
     const queryClient = useQueryClient();
+    const { showToast } = useToast();
 
     // --- Modal States ---
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -33,7 +35,15 @@ export default function GroupDetailPage() {
     const [isJoinRequestModalOpen, setIsJoinRequestModalOpen] = useState(false); // 가입 요청 모달
     const [isAddProblemModalOpen, setIsAddProblemModalOpen] = useState(false); // 문제 추가 모달
 
-    const [toastConfig, setToastConfig] = useState<{ message: string; type: ToastType } | null>(null);
+    // 알람에서 그룹방으로 이동 시 가입 요청 모달 자동 오픈
+    useEffect(() => {
+        if (location.state?.openJoinRequestModal) {
+            setIsJoinRequestModalOpen(true);
+            // state를 제거하여 새로고침 시 모달이 다시 뜨지 않도록 함
+            navigate(location.pathname, { replace: true, state: null });
+        }
+    }, [location.state, navigate, location.pathname]);
+
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
         title: string;
@@ -121,10 +131,10 @@ export default function GroupDetailPage() {
     const { mutate: deleteGroupMutate } = useMutation({
         mutationFn: () => deleteGroup(programId),
         onSuccess: () => {
-            setToastConfig({ message: "그룹이 삭제되었습니다.", type: "success" });
+            showToast("그룹이 삭제되었습니다.", "success");
             setTimeout(() => navigate("/group"), 1000); // 1초 뒤 이동
         },
-        onError: () => setToastConfig({ message: "그룹 삭제 실패", type: "error" }),
+        onError: () => showToast("그룹 삭제 실패", "error"),
     });
 
     // 그룹 탈퇴
@@ -135,7 +145,7 @@ export default function GroupDetailPage() {
             message: "정말 이 그룹을 탈퇴하시겠습니까?",
             onConfirm: () => {
                 // api call...
-                setToastConfig({ message: "탈퇴 기능은 아직 구현 중입니다.", type: "success" }); // info -> success temporarily to fix type error
+                showToast("탈퇴 기능은 아직 구현 중입니다.", "info");
                 setConfirmModal((prev) => ({ ...prev, isOpen: false }));
             },
         });
@@ -147,21 +157,21 @@ export default function GroupDetailPage() {
         onSuccess: () => {
             // 리스트 갱신
             queryClient.invalidateQueries({ queryKey: ["groupProblems", programId] });
-            setToastConfig({ message: "문제가 삭제되었습니다.", type: "success" });
+            showToast("문제가 삭제되었습니다.", "success");
         },
-        onError: () => setToastConfig({ message: "문제 삭제 실패", type: "error" }),
+        onError: () => showToast("문제 삭제 실패", "error"),
     });
 
     // 가입 신청 Mutation
     const { mutate: joinMutation } = useMutation({
         mutationFn: () => joinGroup(programId),
         onSuccess: () => {
-            setToastConfig({ message: "가입 신청이 완료되었습니다.", type: "success" });
+            showToast("가입 신청이 완료되었습니다.", "success");
             queryClient.invalidateQueries({ queryKey: ["groupDetail", programId] });
         },
         onError: (err: any) => {
             const msg = err.response?.data?.message || "가입 신청 실패";
-            setToastConfig({ message: msg, type: "error" });
+            showToast(msg, "error");
         },
     });
 
@@ -181,10 +191,7 @@ export default function GroupDetailPage() {
     const handleJoin = () => {
         // 정원 초과 확인
         if (groupDetail.memberCount >= groupDetail.capacity) {
-            setToastConfig({
-                message: "정원이 가득 찬 그룹입니다.",
-                type: "error",
-            });
+            showToast("정원이 가득 찬 그룹입니다.", "error");
             return;
         }
 
@@ -204,15 +211,6 @@ export default function GroupDetailPage() {
 
     return (
         <BasePage>
-            {/* Toast */}
-            {toastConfig && (
-                <Toast
-                    message={toastConfig.message}
-                    type={toastConfig.type}
-                    onClose={() => setToastConfig(null)}
-                />
-            )}
-
             {/* 모달들 */}
             {isEditModalOpen && (
                 <EditGroupModal

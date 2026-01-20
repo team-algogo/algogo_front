@@ -50,7 +50,7 @@
   /* Primary: Clean, Professional Blue */
   --color-primary-50: #eef4ff;
   --color-primary-100: #dce9ff;
-  --color-primary-200: #btd9ff;
+  --color-primary-200: #b9d9ff;
   /* Adjusted typo from b9d9ff to valid if needed, keeping manual hex */
   --color-primary-200-real: #b9d9ff;
   --color-primary-300: #7eb6ff;
@@ -167,11 +167,9 @@ body {
   /* Custom Logo Text Style */
   .text-logo {
     font-family: var(--font-display);
-    background: linear-gradient(
-      135deg,
-      var(--color-primary-500) 0%,
-      var(--color-primary-300) 100%
-    );
+    background: linear-gradient(135deg,
+        var(--color-primary-500) 0%,
+        var(--color-primary-300) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -211,6 +209,7 @@ body {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -219,4 +218,44 @@ body {
 
 .animate-fade-in-up {
   animation: fadeInUp 0.5s ease-out forwards;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slideDown {
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }

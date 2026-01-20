@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getCategoryList } from "@api/problemset/getCategoryList";
@@ -36,15 +36,32 @@ export default function ProblemSetPage() {
     queryFn: getCategoryList,
   });
 
-  const { userType } = useAuthStore();
+  const { userType, authorization } = useAuthStore();
   const isLogined = !!userType;
 
-  // 사용자 정보 조회 (ADMIN 확인용)
+  // 사용자 정보 조회 (ADMIN 확인용 및 인증 상태 확인)
   const { data: meData } = useQuery({
     queryKey: ["me"],
     queryFn: () => getCheckUser(),
     enabled: isLogined,
+    retry: false,
   });
+
+  // 비로그인 유저 체크 및 리다이렉트 (로그인한 사용자는 제외)
+  useEffect(() => {
+    // 로그인한 사용자는 리다이렉트하지 않음
+    if (userType === "User" && authorization) {
+      return;
+    }
+    
+    // 비로그인 사용자만 리다이렉트
+    if (!authorization && !userType) {
+      navigate("/login", {
+        state: { requireLogin: true, redirectTo: "/problemset" },
+        replace: true,
+      });
+    }
+  }, [authorization, userType, navigate]);
 
   const tabs = ["전체", ...(categoryList?.map((c) => c.name) || [])];
   const sortOptions: SelectOption[] = [

@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { searchUsersForGroup, inviteUserToGroup } from "../../api/group/groupApi";
 import ConfirmModal from "@components/modal/ConfirmModal";
-import Toast, { type ToastType } from "@components/toast/Toast";
 import Button from "@components/button/Button";
+import useToast from "@hooks/useToast";
 
 interface GroupInviteModalProps {
     programId: number;
@@ -13,7 +13,7 @@ interface GroupInviteModalProps {
 export default function GroupInviteModal({ programId, onClose }: GroupInviteModalProps) {
     const [keyword, setKeyword] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
-    const [toastConfig, setToastConfig] = useState<{ message: string; type: ToastType } | null>(null);
+    const { showToast } = useToast();
 
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
@@ -40,12 +40,12 @@ export default function GroupInviteModal({ programId, onClose }: GroupInviteModa
     const inviteMutation = useMutation({
         mutationFn: (userId: number) => inviteUserToGroup(programId, userId),
         onSuccess: () => {
-            setToastConfig({ message: "초대 요청을 보냈습니다.", type: "success" });
+            showToast("초대 요청을 보냈습니다.", "success");
         },
         onError: (err: any) => {
             console.error(err);
             const msg = err.response?.data?.message || "초대에 실패했습니다.";
-            setToastConfig({ message: msg, type: "error" });
+            showToast(msg, "error");
         },
     });
 
@@ -69,13 +69,6 @@ export default function GroupInviteModal({ programId, onClose }: GroupInviteModa
 
     return (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-            {toastConfig && (
-                <Toast
-                    message={toastConfig.message}
-                    type={toastConfig.type}
-                    onClose={() => setToastConfig(null)}
-                />
-            )}
             <div className="bg-white w-[600px] max-h-[85vh] rounded-3xl flex flex-col shadow-2xl overflow-hidden relative border border-gray-100">
 
                 {/* 헤더 */}

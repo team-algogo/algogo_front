@@ -16,9 +16,12 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [showToast, setShowToast] = useState(false);
+  const [showLoginRequiredBanner, setShowLoginRequiredBanner] = useState(false);
+  const [bannerVisible, setBannerVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
+  const [redirectTo, setRedirectTo] = useState<string | null>(null);
 
   const { setUserType, setAuthorization } = useAuthStore();
   const { openModal, closeModal } = useModalStore();
@@ -28,6 +31,28 @@ const LoginPage = () => {
       setShowToast(true);
       // Clear state so toast doesn't show on refresh
       window.history.replaceState({}, document.title);
+    }
+    if (location.state?.requireLogin) {
+      setShowLoginRequiredBanner(true);
+      setBannerVisible(true);
+      setRedirectTo(location.state.redirectTo || null);
+      // Clear state so banner doesn't show on refresh
+      window.history.replaceState({}, document.title);
+      
+      // 3초 후 배너 fade-out 시작
+      const fadeTimer = setTimeout(() => {
+        setBannerVisible(false);
+      }, 3000);
+      
+      // fade-out 애니메이션 후 완전히 제거
+      const removeTimer = setTimeout(() => {
+        setShowLoginRequiredBanner(false);
+      }, 3500);
+      
+      return () => {
+        clearTimeout(fadeTimer);
+        clearTimeout(removeTimer);
+      };
     }
   }, [location]);
 
@@ -39,7 +64,8 @@ const LoginPage = () => {
       const accessToken = response.headers.authorization;
       setUserType("User");
       setAuthorization(accessToken);
-      navigate("/", { replace: true });
+      // 리다이렉트 경로가 있으면 해당 경로로, 없으면 메인으로
+      navigate(redirectTo || "/", { replace: true });
     } catch (err) {
       console.log(err);
       setError(true);
@@ -55,6 +81,36 @@ const LoginPage = () => {
           type="success"
           onClose={() => setShowToast(false)}
         />
+      )}
+      {/* 로그인 필요 안내 배너 - fixed position으로 레이아웃 shift 방지 */}
+      {showLoginRequiredBanner && (
+        <div
+          className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-[420px] px-4 transition-opacity duration-500 ${
+            bannerVisible ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 shadow-lg">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="text-blue-600 flex-shrink-0"
+            >
+              <path
+                d="M12 8V12M12 16H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <p className="text-sm font-medium text-blue-900">
+              로그인이 필요한 서비스입니다.
+            </p>
+          </div>
+        </div>
       )}
       <div className="w-full min-h-[calc(100vh-200px)] flex justify-center items-center py-10">
         <form

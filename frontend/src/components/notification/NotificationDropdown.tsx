@@ -1,26 +1,31 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import NotificationItem from "./NotificationItem";
-import InviteModal from "./InviteModal";
 import { getNotificationList } from "@api/notification/getNotificationList";
 import { deleteNotification } from "@api/notification/deleteNotification";
 import { respondToJoinRequest } from "@api/notification/respondToJoinRequest";
 import { respondToInvite } from "@api/notification/respondToInvite";
-import Toast, { type ToastType } from "@components/toast/Toast";
+import useToast from "@hooks/useToast";
 import type { Alarm } from "@type/notification/notification.d.ts";
 import { useNavigate } from "react-router-dom";
 
 type TabType = "NOTIFICATION" | "INVITE";
 
-export default function NotificationDropdown() {
+interface NotificationDropdownProps {
+  onClose: () => void;
+}
+
+export default function NotificationDropdown({ onClose }: NotificationDropdownProps) {
   const [activeTab, setActiveTab] = useState<TabType>("NOTIFICATION");
-  const [selectedNotification, setSelectedNotification] =
-    useState<Alarm | null>(null);
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  const [toastConfig, setToastConfig] = useState<{ message: string; type: ToastType } | null>(null);
+  // 각 섹션별 펼침 상태 관리
+  const [isExpandedRequiredReview, setIsExpandedRequiredReview] = useState(false);
+  const [isExpandedNewComment, setIsExpandedNewComment] = useState(false);
+  const [isExpandedInvite, setIsExpandedInvite] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   // Fetch notifications
   const {
@@ -45,7 +50,7 @@ export default function NotificationDropdown() {
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
       setSelectedIds([]);
       setIsDeleteMode(false);
-      setToastConfig({ message: "알림이 삭제되었습니다.", type: "success" });
+      showToast("알림이 삭제되었습니다.", "success");
     },
   });
 
@@ -53,18 +58,21 @@ export default function NotificationDropdown() {
     mutationFn: respondToJoinRequest,
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      setSelectedNotification(null);
-      setToastConfig({
-        message: variables.isAccepted === "ACCEPTED"
+      // setSelectedNotification(null); // Fix: undefined variable
+      showToast(
+        variables.isAccepted === "ACCEPTED"
           ? "참여 신청을 수락했습니다."
           : "참여 신청을 거절했습니다.",
-        type: "success"
-      });
+        "success"
+      );
     },
     onError: (error: any) => {
       console.error("Failed to respond to join request", error);
-      const msg = error.response?.data?.message || "요청 처리에 실패했습니다.";
-      setToastConfig({ message: msg, type: "error" });
+      if (error.response?.status === 400) {
+        showToast("이미 처리된 요청입니다.", "error");
+      } else {
+        showToast("요청 처리에 실패했습니다.", "error");
+      }
     },
   });
 
@@ -72,22 +80,22 @@ export default function NotificationDropdown() {
     mutationFn: respondToInvite,
     onSuccess: (data: any, variables) => {
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      setSelectedNotification(null);
-      setToastConfig({
-        message: data?.message || (variables.isAccepted === "ACCEPTED"
+      // setSelectedNotification(null);
+      showToast(
+        data?.message || (variables.isAccepted === "ACCEPTED"
           ? "초대를 수락했습니다."
           : "초대를 거절했습니다."),
-        type: "success"
-      });
+        "success"
+      );
     },
     onError: (error: any) => {
       console.error("Failed to respond to invite", error);
-      const msg = error.response?.data?.message || "요청 처리에 실패했습니다.";
-      setToastConfig({ message: msg, type: "error" });
-
-      // 이미 처리된 경우(400 등)에도 목록 갱신 시도
-      if (error.response?.status === 400 || error.response?.status === 409) {
+      if (error.response?.status === 400) {
+        showToast("이미 처리된 요청입니다.", "error");
+        // 이미 처리된 경우에도 목록 갱신 필요
         queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      } else {
+        showToast("요청 처리에 실패했습니다.", "error");
       }
     },
   });
@@ -105,8 +113,13 @@ export default function NotificationDropdown() {
 
   const notifications: Alarm[] = notificationData?.data?.alarms || [];
 
+  // Sort notifications by createdAt (newest first)
+  const sortedNotifications = [...notifications].sort((a, b) => {
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
   // Filter Logic
-  const filteredNotifications = notifications.filter((item) => {
+  const filteredNotifications = sortedNotifications.filter((item) => {
     const isGroupRelated = item.type.startsWith("GROUP_");
 
     if (activeTab === "INVITE") {
@@ -117,125 +130,102 @@ export default function NotificationDropdown() {
   });
 
   const handleNotificationClick = (item: Alarm) => {
-    // Only open modal for invites or join requests
-    if (
-      activeTab === "INVITE" &&
-      (item.type === "GROUP_INVITE_APPLY" || item.type === "GROUP_JOIN_APPLY")
-    ) {
-      setSelectedNotification(item);
-    } else {
-      // Navigate or other handling for normal notifications
-      navigate(`/review/${item.payload.submissionId}`);
-      console.log("Clicked notification", item.id);
+    // 초대 탭의 알람 처리
+    if (activeTab === "INVITE") {
+      const { type, payload } = item;
+      const programId = payload?.programId || payload?.program_id;
+
+      // GROUP_JOIN_APPLY: 그룹방 페이지로 이동 (가입 요청 모달 자동 오픈)
+      if (type === "GROUP_JOIN_APPLY") {
+        if (programId) {
+          navigate(`/group/${programId}`, {
+            state: { openJoinRequestModal: true }
+          });
+          onClose();
+        }
+        return;
+      }
+
+      // GROUP_INVITE_APPLY: 마이페이지로 이동
+      if (type === "GROUP_INVITE_APPLY") {
+        navigate("/mypage");
+        onClose();
+        return;
+      }
+
+      // GROUP_JOIN_UPDATE: 수락인 경우 그룹방으로 이동, 거절인 경우 클릭 불가
+      if (type === "GROUP_JOIN_UPDATE") {
+        const isAccepted = item.message && (item.message.includes("수락") || item.message.includes("ACCEPTED"));
+        if (isAccepted) {
+          const programId = payload?.programId || payload?.program_id;
+          if (programId) {
+            navigate(`/group/${programId}`);
+            onClose();
+          }
+        }
+        // 거절인 경우 아무 동작 안 함
+        return;
+      }
+
+      // GROUP_INVITE_UPDATE: 클릭 불가 (아무 동작 안 함)
+      if (type === "GROUP_INVITE_UPDATE") {
+        return;
+      }
     }
-  };
 
-  const handleAcceptInvite = () => {
-    console.log("handleAcceptInvite called", selectedNotification);
-    if (!selectedNotification) return;
-
-    const { type, payload } = selectedNotification;
-    console.log("Payload:", payload);
-
-    // Fallback for snake_case
-    const pId = payload?.programId || payload?.program_id;
-    const jId = payload?.joinId || payload?.join_id;
-    const iId = payload?.inviteId || payload?.invite_id;
-
-    if (type === "GROUP_JOIN_APPLY") {
-      if (pId && jId) {
-        console.log("Mutating join request accept");
-        respondToJoinMutation.mutate({
-          programId: pId,
-          joinId: jId,
-          isAccepted: "ACCEPTED",
-        });
+    // 알림 탭의 리뷰 관련 알람 (기존 로직 유지)
+    if (activeTab === "NOTIFICATION") {
+      const submissionId = item.payload.submissionId || item.payload?.submission_id;
+      if (submissionId) {
+        navigate(`/review/${submissionId}`);
+        console.log("Clicked notification", item.id);
+        // 페이지 이동 후 알람창 닫기
+        onClose();
       } else {
-        console.error("Missing payload for JOIN_APPLY", payload);
-      }
-    } else if (type === "GROUP_INVITE_APPLY") {
-      if (pId && iId) {
-        console.log("Mutating invite accept");
-        respondToInviteMutation.mutate({
-          programId: pId,
-          inviteId: iId,
-          isAccepted: "ACCEPTED",
-        });
-      } else {
-        console.error("Missing payload for INVITE_APPLY", payload);
+        console.warn("No submissionId found for notification", item);
       }
     }
   };
 
-  const handleRejectInvite = () => {
-    console.log("handleRejectInvite called", selectedNotification);
-    if (!selectedNotification) return;
-
-    const { type, payload } = selectedNotification;
-
-    // Fallback for snake_case
-    const pId = payload?.programId || payload?.program_id;
-    const jId = payload?.joinId || payload?.join_id;
-    const iId = payload?.inviteId || payload?.invite_id;
-
-    if (type === "GROUP_JOIN_APPLY") {
-      if (pId && jId) {
-        console.log("Mutating join request deny");
-        respondToJoinMutation.mutate({
-          programId: pId,
-          joinId: jId,
-          isAccepted: "DENIED",
-        });
-      }
-    } else if (type === "GROUP_INVITE_APPLY") {
-      if (pId && iId) {
-        console.log("Mutating invite deny");
-        respondToInviteMutation.mutate({
-          programId: pId,
-          inviteId: iId,
-          isAccepted: "DENIED",
-        });
-      }
-    }
-  };
 
   return (
     <>
-      {toastConfig && (
-        <Toast
-          message={toastConfig.message}
-          type={toastConfig.type}
-          onClose={() => setToastConfig(null)}
-        />
-      )}
-      <div className="absolute top-[60px] right-0 z-50 flex w-[400px] flex-col overflow-hidden rounded-[12px] border border-[#F4F4F5] bg-white shadow-lg">
+      <div className="absolute top-[60px] right-0 z-50 flex w-[420px] flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl backdrop-blur-sm">
         {/* Header / Tabs */}
-        <div className="relative flex h-[48px] w-full flex-row border-b border-[#F4F4F5] bg-white">
+        <div className="relative flex h-[52px] w-full flex-row border-b border-gray-100 bg-gradient-to-b from-gray-50/50 to-white">
           <button
             onClick={() => setActiveTab("NOTIFICATION")}
-            className={`flex flex-1 items-center justify-center text-[15px] font-medium transition-colors ${activeTab === "NOTIFICATION"
-              ? "border-b-2 border-[#333333] text-[#333333]"
-              : "text-[#999999] hover:text-[#555555]"
+            className={`relative flex flex-1 items-center justify-center text-[15px] font-semibold transition-all duration-200 ${activeTab === "NOTIFICATION"
+              ? "text-gray-900"
+              : "text-gray-500 hover:text-gray-700"
               }`}
           >
             알림
+            {activeTab === "NOTIFICATION" && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-500"></span>
+            )}
           </button>
+          <div className="h-6 w-px bg-gray-200 my-auto"></div>
           <button
             onClick={() => setActiveTab("INVITE")}
-            className={`flex flex-1 items-center justify-center text-[15px] font-medium transition-colors ${activeTab === "INVITE"
-              ? "border-b-2 border-[#333333] text-[#333333]"
-              : "text-[#999999] hover:text-[#555555]"
+            className={`relative flex flex-1 items-center justify-center text-[15px] font-semibold transition-all duration-200 ${activeTab === "INVITE"
+              ? "text-gray-900"
+              : "text-gray-500 hover:text-gray-700"
               }`}
           >
             초대
+            {activeTab === "INVITE" && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-500"></span>
+            )}
           </button>
         </div>
 
         {/* Content List */}
-        <div className="max-h-[500px] overflow-y-auto">
+        <div className="max-h-[520px] overflow-y-auto bg-gray-50/30">
           {isLoading ? (
-            <div className="flex justify-center p-8 text-[14px] text-[#999999]">
-              Loading...
+            <div className="flex flex-col items-center justify-center p-12 gap-3">
+              <div className="w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+              <div className="text-sm text-gray-500 font-medium">알림을 불러오는 중...</div>
             </div>
           ) : (
             <div className="flex flex-col">
@@ -243,25 +233,76 @@ export default function NotificationDropdown() {
                 // Invite Tab Content
                 <>
                   {filteredNotifications.length > 0 && (
-                    <div className="flex items-center justify-between border-b border-[#F4F4F5] bg-[#F9FAFB] px-4 py-3 text-[13px] font-medium text-[#727479]">
-                      <span>초대 알림 ({filteredNotifications.length})</span>
+                    <div className="sticky top-0 z-10 flex items-center gap-2 border-b border-gray-200 bg-white/95 backdrop-blur-sm px-5 py-3.5 shadow-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary-500"></div>
+                        <span className="text-sm font-semibold text-gray-900">초대 알림</span>
+                      </div>
+                      <span className="ml-auto rounded-full bg-primary-100 px-2.5 py-0.5 text-xs font-semibold text-primary-700">
+                        {filteredNotifications.length}
+                      </span>
                     </div>
                   )}
-                  {filteredNotifications.map((item) => (
-                    <NotificationItem
-                      key={item.id}
-                      alarm={item}
-                      onClick={() => handleNotificationClick(item)}
-                      isDeleteMode={isDeleteMode}
-                      isSelected={selectedIds.includes(item.id)}
-                      onToggleSelect={() => toggleSelect(item.id)}
-                    />
-                  ))}
-                  {filteredNotifications.length === 0 && (
-                    <div className="flex flex-col items-center justify-center gap-2 p-12 text-[#999999]">
-                      <div className="text-[14px]">
-                        초대 관련 알림이 없습니다.
+                  {filteredNotifications.length > 0 ? (
+                    <>
+                      {(() => {
+                        const MAX_DISPLAY = 10;
+                        const displayCount = isExpandedInvite
+                          ? filteredNotifications.length
+                          : Math.min(filteredNotifications.length, MAX_DISPLAY);
+                        const displayItems = filteredNotifications.slice(0, displayCount);
+                        const hasMore = filteredNotifications.length > MAX_DISPLAY;
+
+                        return (
+                          <>
+                            {displayItems.map((item) => (
+                              <NotificationItem
+                                key={item.id}
+                                alarm={item}
+                                onClick={() => handleNotificationClick(item)}
+                                isDeleteMode={isDeleteMode}
+                                isSelected={selectedIds.includes(item.id)}
+                                onToggleSelect={() => toggleSelect(item.id)}
+                              />
+                            ))}
+                            {hasMore && (
+                              <button
+                                onClick={() => setIsExpandedInvite(!isExpandedInvite)}
+                                className="flex items-center justify-center gap-2 px-4 py-3.5 text-sm font-semibold text-primary-600 hover:bg-primary-50 transition-all border-t border-gray-100 group"
+                              >
+                                {isExpandedInvite ? (
+                                  <>
+                                    <svg className="w-4 h-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                    </svg>
+                                    접기
+                                  </>
+                                ) : (
+                                  <>
+                                    알람 더보기
+                                    <span className="rounded-full bg-primary-100 px-2 py-0.5 text-xs font-semibold text-primary-700">
+                                      +{filteredNotifications.length - MAX_DISPLAY}
+                                    </span>
+                                    <svg className="w-4 h-4 transition-transform group-hover:translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                  </>
+                                )}
+                              </button>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center gap-3 p-16">
+                      <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
+                        <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                        </svg>
                       </div>
+                      <div className="text-sm font-medium text-gray-600">초대 관련 알림이 없습니다</div>
+                      <div className="text-xs text-gray-400">새로운 초대가 도착하면 여기에 표시됩니다</div>
                     </div>
                   )}
                 </>
@@ -273,29 +314,70 @@ export default function NotificationDropdown() {
                     const requiredReviews = filteredNotifications.filter(
                       (n) => n.type === "REQUIRED_REVIEW",
                     );
+                    const MAX_DISPLAY = 10;
+                    const displayCount = isExpandedRequiredReview
+                      ? requiredReviews.length
+                      : Math.min(requiredReviews.length, MAX_DISPLAY);
+                    const displayItems = requiredReviews.slice(0, displayCount);
+                    const hasMore = requiredReviews.length > MAX_DISPLAY;
+
                     return (
-                      <div className="flex flex-col border-b border-[#F4F4F5]">
-                        <div className="flex items-center justify-between border-b border-[#F4F4F5] bg-[#F9FAFB] px-4 py-3 text-[13px] font-medium text-[#727479]">
-                          <span>
-                            작성해야할 리뷰 ({requiredReviews.length})
+                      <div className="flex flex-col border-b border-gray-200 bg-white">
+                        <div className="sticky top-0 z-10 flex items-center gap-2 border-b border-gray-200 bg-white/95 backdrop-blur-sm px-5 py-3.5 shadow-sm">
+                          <div className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+                            <span className="text-sm font-semibold text-gray-900">작성해야 할 리뷰</span>
+                          </div>
+                          <span className="ml-auto rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-700">
+                            {requiredReviews.length}
                           </span>
                         </div>
                         {requiredReviews.length > 0 ? (
-                          requiredReviews.map((item) => (
-                            <NotificationItem
-                              key={item.id}
-                              alarm={item}
-                              onClick={() => handleNotificationClick(item)}
-                              isDeleteMode={isDeleteMode}
-                              isSelected={selectedIds.includes(item.id)}
-                              onToggleSelect={() => toggleSelect(item.id)}
-                            />
-                          ))
+                          <>
+                            {displayItems.map((item) => (
+                              <NotificationItem
+                                key={item.id}
+                                alarm={item}
+                                onClick={() => handleNotificationClick(item)}
+                                isDeleteMode={isDeleteMode}
+                                isSelected={selectedIds.includes(item.id)}
+                                onToggleSelect={() => toggleSelect(item.id)}
+                              />
+                            ))}
+                            {hasMore && (
+                              <button
+                                onClick={() => setIsExpandedRequiredReview(!isExpandedRequiredReview)}
+                                className="flex items-center justify-center gap-2 px-4 py-3.5 text-sm font-semibold text-primary-600 hover:bg-primary-50 transition-all border-t border-gray-100 group"
+                              >
+                                {isExpandedRequiredReview ? (
+                                  <>
+                                    <svg className="w-4 h-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                    </svg>
+                                    접기
+                                  </>
+                                ) : (
+                                  <>
+                                    알람 더보기
+                                    <span className="rounded-full bg-primary-100 px-2 py-0.5 text-xs font-semibold text-primary-700">
+                                      +{requiredReviews.length - MAX_DISPLAY}
+                                    </span>
+                                    <svg className="w-4 h-4 transition-transform group-hover:translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                  </>
+                                )}
+                              </button>
+                            )}
+                          </>
                         ) : (
-                          <div className="flex flex-col items-center justify-center gap-2 p-12 text-[#999999]">
-                            <div className="text-[14px]">
-                              모든 알림을 확인했습니다.
+                          <div className="flex flex-col items-center justify-center gap-3 p-12">
+                            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                              <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
                             </div>
+                            <div className="text-sm font-medium text-gray-600">모든 알림을 확인했습니다</div>
                           </div>
                         )}
                       </div>
@@ -307,27 +389,70 @@ export default function NotificationDropdown() {
                     const otherNotifications = filteredNotifications.filter(
                       (n) => n.type !== "REQUIRED_REVIEW",
                     );
+                    const MAX_DISPLAY = 10;
+                    const displayCount = isExpandedNewComment
+                      ? otherNotifications.length
+                      : Math.min(otherNotifications.length, MAX_DISPLAY);
+                    const displayItems = otherNotifications.slice(0, displayCount);
+                    const hasMore = otherNotifications.length > MAX_DISPLAY;
+
                     return (
-                      <div className="flex flex-col">
-                        <div className="flex items-center justify-between border-b border-[#F4F4F5] bg-[#F9FAFB] px-4 py-3 text-[13px] font-medium text-[#727479]">
-                          <span>새로운 댓글 ({otherNotifications.length})</span>
+                      <div className="flex flex-col bg-white">
+                        <div className="sticky top-0 z-10 flex items-center gap-2 border-b border-gray-200 bg-white/95 backdrop-blur-sm px-5 py-3.5 shadow-sm">
+                          <div className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                            <span className="text-sm font-semibold text-gray-900">새로운 댓글</span>
+                          </div>
+                          <span className="ml-auto rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
+                            {otherNotifications.length}
+                          </span>
                         </div>
                         {otherNotifications.length > 0 ? (
-                          otherNotifications.map((item) => (
-                            <NotificationItem
-                              key={item.id}
-                              alarm={item}
-                              onClick={() => handleNotificationClick(item)}
-                              isDeleteMode={isDeleteMode}
-                              isSelected={selectedIds.includes(item.id)}
-                              onToggleSelect={() => toggleSelect(item.id)}
-                            />
-                          ))
+                          <>
+                            {displayItems.map((item) => (
+                              <NotificationItem
+                                key={item.id}
+                                alarm={item}
+                                onClick={() => handleNotificationClick(item)}
+                                isDeleteMode={isDeleteMode}
+                                isSelected={selectedIds.includes(item.id)}
+                                onToggleSelect={() => toggleSelect(item.id)}
+                              />
+                            ))}
+                            {hasMore && (
+                              <button
+                                onClick={() => setIsExpandedNewComment(!isExpandedNewComment)}
+                                className="flex items-center justify-center gap-2 px-4 py-3.5 text-sm font-semibold text-primary-600 hover:bg-primary-50 transition-all border-t border-gray-100 group"
+                              >
+                                {isExpandedNewComment ? (
+                                  <>
+                                    <svg className="w-4 h-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                    </svg>
+                                    접기
+                                  </>
+                                ) : (
+                                  <>
+                                    알람 더보기
+                                    <span className="rounded-full bg-primary-100 px-2 py-0.5 text-xs font-semibold text-primary-700">
+                                      +{otherNotifications.length - MAX_DISPLAY}
+                                    </span>
+                                    <svg className="w-4 h-4 transition-transform group-hover:translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                  </>
+                                )}
+                              </button>
+                            )}
+                          </>
                         ) : (
-                          <div className="flex flex-col items-center justify-center gap-2 p-12 text-[#999999]">
-                            <div className="text-[14px]">
-                              모든 알림을 확인했습니다.
+                          <div className="flex flex-col items-center justify-center gap-3 p-12">
+                            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                              <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
                             </div>
+                            <div className="text-sm font-medium text-gray-600">모든 알림을 확인했습니다</div>
                           </div>
                         )}
                       </div>
@@ -340,22 +465,25 @@ export default function NotificationDropdown() {
         </div>
 
         {/* Footer for Batch Delete */}
-        <div className="flex items-center justify-center border-t border-[#F4F4F5] bg-white p-3">
+        <div className="flex items-center justify-center border-t border-gray-200 bg-gradient-to-b from-white to-gray-50/50 p-4">
           {!isDeleteMode ? (
             <button
               onClick={() => setIsDeleteMode(true)}
-              className="text-[13px] text-[#727479] transition-colors hover:text-[#333333]"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors rounded-lg hover:bg-gray-100"
             >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
               알림 삭제
             </button>
           ) : (
-            <div className="flex w-full gap-2">
+            <div className="flex w-full gap-2.5">
               <button
                 onClick={() => {
                   setIsDeleteMode(false);
                   setSelectedIds([]);
                 }}
-                className="flex-1 rounded-lg bg-gray-100 py-2 text-[13px] font-medium text-gray-600 transition-colors hover:bg-gray-200"
+                className="flex-1 rounded-lg bg-gray-100 py-2.5 text-sm font-semibold text-gray-700 transition-all hover:bg-gray-200 hover:shadow-sm"
               >
                 취소
               </button>
@@ -379,7 +507,7 @@ export default function NotificationDropdown() {
                     ]);
                   }
                 }}
-                className="flex-1 rounded-lg bg-blue-100 py-2 text-[13px] font-medium text-blue-600 transition-colors hover:bg-blue-200"
+                className="flex-1 rounded-lg bg-primary-50 py-2.5 text-sm font-semibold text-primary-700 transition-all hover:bg-primary-100 hover:shadow-sm"
               >
                 {filteredNotifications.every((n) =>
                   selectedIds.includes(n.id),
@@ -390,45 +518,18 @@ export default function NotificationDropdown() {
               <button
                 onClick={handleBatchDelete}
                 disabled={selectedIds.length === 0}
-                className={`flex-1 rounded-lg py-2 text-[13px] font-medium transition-colors ${selectedIds.length > 0
-                  ? "bg-red-500 text-white hover:bg-red-600"
+                className={`flex-1 rounded-lg py-2.5 text-sm font-semibold transition-all ${selectedIds.length > 0
+                  ? "bg-red-500 text-white hover:bg-red-600 hover:shadow-md"
                   : "cursor-not-allowed bg-gray-200 text-gray-400"
                   }`}
               >
-                삭제 ({selectedIds.length})
+                삭제 {selectedIds.length > 0 && `(${selectedIds.length})`}
               </button>
             </div>
           )}
         </div>
       </div>
 
-      {selectedNotification &&
-        (() => {
-          const isInvite = selectedNotification.type === "GROUP_INVITE_APPLY";
-          const isJoinRequest =
-            selectedNotification.type === "GROUP_JOIN_APPLY";
-
-          // Only render modal if it's one of these types
-          if (isInvite || isJoinRequest) {
-            return (
-              <InviteModal
-                type={isInvite ? "INVITE" : "JOIN_REQUEST"}
-                programId={
-                  selectedNotification.payload?.programId ||
-                  selectedNotification.payload?.program_id
-                }
-                userId={
-                  selectedNotification.payload?.userId ||
-                  selectedNotification.payload?.user_id
-                }
-                onClose={() => setSelectedNotification(null)}
-                onAccept={handleAcceptInvite}
-                onReject={handleRejectInvite}
-              />
-            );
-          }
-          return null;
-        })()}
     </>
   );
 }

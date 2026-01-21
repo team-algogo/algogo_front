@@ -285,10 +285,33 @@ export default function ProblemStatisticsPage() {
               </h1>
               {/* 플랫폼 정보 - 문제 제목 바로 옆 */}
               {problemInfo?.platformType && (
-                <span className="inline-flex items-center rounded-md border border-[#d0d7de] bg-[#f6f8fa] px-2 py-0.5 text-xs leading-none font-semibold text-[#1f2328]">
+                <span className="inline-flex items-center justify-center rounded-[4px] border border-[#d0d7de] bg-[#eff1f3] px-1.5 py-0.5 text-[11px] font-semibold text-[#1f2328]">
                   {problemInfo.platformType}
                 </span>
               )}
+              
+              {/* Difficulty Badge */}
+              {problemInfo && (() => {
+                 const { difficultyViewType, difficultyType, userDifficultyType } = problemInfo;
+                  if (difficultyViewType === "PROBLEM_DIFFICULTY") {
+                    return (
+                      <span className="inline-flex items-center justify-center rounded-[4px] border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[11px] font-semibold text-slate-600">
+                        {difficultyType}
+                      </span>
+                    );
+                  } else {
+                    let style = "text-gray-600 bg-gray-50 border border-gray-200";
+                    const diff = userDifficultyType?.toLowerCase();
+                    if (diff === "easy") style = "text-green-600 bg-green-50 border border-green-200";
+                    else if (diff === "medium") style = "text-yellow-600 bg-yellow-50 border border-yellow-200";
+                    else if (diff === "hard") style = "text-red-600 bg-red-50 border border-red-200";
+                    return (
+                      <span className={`inline-flex items-center justify-center rounded-[4px] border px-1.5 py-0.5 text-[11px] font-semibold ${style}`}>
+                        {userDifficultyType}
+                      </span>
+                    );
+                  }
+              })()}
             </div>
           </div>
 

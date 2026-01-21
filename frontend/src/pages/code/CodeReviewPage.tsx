@@ -16,6 +16,7 @@ import {
 import HistoryBox from "@components/history/HistoryBox";
 import CommentItem from "@components/review/CommentItem";
 import CommentInput from "@components/review/CommentInput";
+import AlgorithmTagList from "@components/review/AlgorithmTagList";
 import AiReviewCard from "@components/review/AiReviewCard";
 import ConfirmModal from "@components/modal/ConfirmModal";
 import {
@@ -86,12 +87,12 @@ const CodeReviewPage = () => {
 
     // Handle line click to scroll to comment input
     editor.onMouseDown((e) => {
-      if (e.target.type === monaco.editor.MouseTargetType.CONTENT_TEXT) {
-        const lineNumber = e.target.position?.lineNumber;
-        if (lineNumber) {
-          shouldScrollRef.current = true;
-          setSelectedLine(lineNumber);
-        }
+      // 줄 번호 영역, 줄 전체, 또는 코드 텍스트 영역 클릭 시 모두 처리
+      const lineNumber = e.target.position?.lineNumber;
+      if (lineNumber) {
+        // 줄 번호 영역, 코드 텍스트, 빈 공간 등 모든 영역에서 클릭 가능
+        shouldScrollRef.current = true;
+        setSelectedLine(lineNumber);
       }
     });
   };
@@ -430,21 +431,19 @@ const CodeReviewPage = () => {
   return (
     <BasePage>
       <div className="mx-auto flex h-full w-full max-w-[1200px] flex-col items-start gap-8 bg-white p-[40px_0px_80px]">
-        {/* Header Section - 통계 페이지와 동일한 레이아웃 */}
-        <div className="flex w-full flex-row items-end justify-between border-b border-gray-200 pb-6">
-          <div className="flex flex-col gap-2">
-            <div className="mb-1 flex items-center gap-3 text-gray-500">
+        {/* Header Section - 세련된 헤더 */}
+        <div className="flex w-full flex-row items-end justify-between pb-6">
+          <div className="flex flex-col gap-3">
+            <div className="mb-1 flex items-center gap-3">
               <button
                 onClick={() => {
                   if (submissionDetail?.programProblemId) {
-                    // localStorage에 저장된 programId가 있으면 유지 (이미 ProblemListTable에서 저장됨)
-                    // 새로 저장하지 않고 기존 값을 유지하여 통계 페이지에서 "문제집으로 돌아가기"가 작동하도록 함
                     navigate(
                       `/statistics/${submissionDetail.programProblemId}`,
                     );
                   }
                 }}
-                className="flex items-center gap-1 text-sm transition-colors hover:text-[#333333]"
+                className="group flex items-center gap-1.5 text-sm text-gray-600 transition-all duration-200 hover:gap-2 hover:text-blue-600"
               >
                 <svg
                   width="16"
@@ -452,6 +451,7 @@ const CodeReviewPage = () => {
                   viewBox="0 0 16 16"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
+                  className="transition-transform duration-200 group-hover:-translate-x-0.5"
                 >
                   <path
                     d="M10 12L6 8L10 4"
@@ -461,15 +461,53 @@ const CodeReviewPage = () => {
                     strokeLinejoin="round"
                   />
                 </svg>
-                통계로 돌아가기
+                <span className="font-medium">통계로 돌아가기</span>
               </button>
             </div>
-            <div className="flex flex-col gap-2">
-              <h1 className="flex items-center gap-3 text-[28px] font-bold text-[#333333]">
-                {problemInfo?.problemNo}. {problemInfo?.title}
-              </h1>
+            <div className="flex flex-col gap-2.5">
+              <div className="flex items-baseline gap-3">
+                {problemInfo?.problemLink ? (
+                  <a
+                    href={problemInfo.problemLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center gap-2 text-[28px] font-bold text-gray-900 transition-all duration-200 hover:text-blue-600"
+                  >
+                    <span className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text group-hover:from-blue-600 group-hover:via-blue-500 group-hover:to-blue-600 group-hover:bg-clip-text transition-all duration-200">
+                      {problemInfo?.problemNo}. {problemInfo?.title}
+                    </span>
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      className="opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                    >
+                      <path
+                        d="M6 4L10 8L6 12"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </a>
+                ) : (
+                  <h1 className="text-[28px] font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
+                    {problemInfo?.problemNo}. {problemInfo?.title}
+                  </h1>
+                )}
+                {problemInfo?.platformType && (
+                  <span className="inline-flex items-center rounded-lg border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100/50 px-2.5 py-1 text-xs font-bold text-blue-700 shadow-sm backdrop-blur-sm">
+                    {problemInfo.platformType}
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-2 text-sm">
-                <span className="font-semibold text-gray-700">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-xs font-bold text-white shadow-sm">
+                  {submissionUserDetail?.nickname?.charAt(0) || "U"}
+                </div>
+                <span className="font-semibold text-gray-800">
                   {submissionUserDetail?.nickname}
                 </span>
                 <span className="text-gray-500">님의 코드</span>
@@ -481,27 +519,45 @@ const CodeReviewPage = () => {
         {/* Top Section: Approach & History */}
         <div className="flex w-full gap-6">
           {/* Left: Approach */}
-          <div className="flex flex-1 flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">
+          <div className="flex flex-1 flex-col gap-4 min-w-0">
+            <div className="flex w-full flex-row items-end justify-between border-b border-gradient-to-r from-gray-100 via-gray-200 to-gray-100 pb-6 shadow-sm">
+              <h2 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
                 문제 접근 방식
               </h2>
-              <div className="flex flex-wrap gap-2">
-                {submissionDetail?.algorithmList?.map((algo) => (
-                  <span
-                    key={algo.id}
-                    className="inline-flex items-center rounded-lg border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100/50 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:shadow-md"
-                  >
-                    {algo.name}
-                  </span>
-                ))}
-              </div>
+              {submissionDetail?.algorithmList && submissionDetail.algorithmList.length > 0 && (
+                <div className="min-w-0 flex-1">
+                  <AlgorithmTagList
+                    algorithms={submissionDetail.algorithmList}
+                  />
+                </div>
+              )}
             </div>
-            <div className="flex h-[380px] flex-1 flex-col overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-lg">
-              <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex h-[380px] flex-1 flex-col overflow-hidden">
+              <div className="flex-1 overflow-auto pt-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
                 <p className="text-sm leading-7 whitespace-pre-wrap text-gray-700">
-                  {submissionDetail?.strategy || (
-                    <span className="text-gray-400 italic">
+                  {submissionDetail?.strategy ? (
+                    submissionDetail.strategy
+                  ) : (
+                    <span className="flex items-center gap-2 text-gray-400 italic">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        className="opacity-50"
+                      >
+                        <path
+                          d="M8 2.5C5.5 2.5 3.5 4.5 3.5 7C3.5 9.5 5.5 11.5 8 11.5C10.5 11.5 12.5 9.5 12.5 7C12.5 4.5 10.5 2.5 8 2.5Z"
+                          stroke="currentColor"
+                          strokeWidth="1.2"
+                        />
+                        <path
+                          d="M8 5V7M8 9H8.01"
+                          stroke="currentColor"
+                          strokeWidth="1.2"
+                          strokeLinecap="round"
+                        />
+                      </svg>
                       문제를 어떻게 접근했는지 작성해주세요!
                     </span>
                   )}
@@ -522,48 +578,50 @@ const CodeReviewPage = () => {
           </div>
         </div>
 
-        {/* Code Editor Section */}
-        <div className="w-full overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-lg">
-          <div className="border-b border-gray-200/60 bg-gradient-to-r from-gray-50 to-gray-50/50 px-5 py-3">
+        {/* Code Editor Section - 세련된 카드 스타일 */}
+        <div className="w-full overflow-hidden rounded-xl border border-gray-200/60 bg-white shadow-lg backdrop-blur-sm transition-all duration-300 hover:shadow-xl">
+          <div className="border-b border-gray-200/60 bg-gradient-to-r from-gray-50 via-white to-gray-50/50 px-5 py-3.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 18 18"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="text-gray-700"
-                >
-                  <path
-                    d="M4.5 2.25H13.5C13.9142 2.25 14.25 2.58579 14.25 3V15C14.25 15.4142 13.9142 15.75 13.5 15.75H4.5C4.08579 15.75 3.75 15.4142 3.75 15V3C3.75 2.58579 4.08579 2.25 4.5 2.25Z"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M6.75 5.25H11.25M6.75 7.5H11.25M6.75 9.75H9.75"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 18 18"
+                    fill="none"
+                    className="text-white"
+                  >
+                    <path
+                      d="M4.5 2.25H13.5C13.9142 2.25 14.25 2.58579 14.25 3V15C14.25 15.4142 13.9142 15.75 13.5 15.75H4.5C4.08579 15.75 3.75 15.4142 3.75 15V3C3.75 2.58579 4.08579 2.25 4.5 2.25Z"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M6.75 5.25H11.25M6.75 7.5H11.25M6.75 9.75H9.75"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
                 <span className="text-sm font-bold text-gray-800">
                   제출 코드
                 </span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 {/* Success/Failure Badge */}
                 {submissionDetail && (
                   <span
-                    className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold ${submissionDetail.isSuccess
-                      ? "bg-emerald-50 text-emerald-700"
-                      : "bg-red-50 text-red-700"
-                      }`}
+                    className={`inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-bold shadow-sm transition-all duration-200 ${
+                      submissionDetail.isSuccess
+                        ? "bg-gradient-to-br from-emerald-50 to-emerald-100/80 text-emerald-700 border border-emerald-200/50"
+                        : "bg-gradient-to-br from-red-50 to-red-100/80 text-red-700 border border-red-200/50"
+                    }`}
                   >
-                    {submissionDetail.isSuccess ? "성공" : "실패"}
+                    {submissionDetail.isSuccess ? "✓ 성공" : "✗ 실패"}
                   </span>
                 )}
                 {/* Language Badge */}
@@ -575,7 +633,7 @@ const CodeReviewPage = () => {
                     );
                     return (
                       <span
-                        className={`inline-flex items-center rounded-md border ${style.border} ${style.bg} px-2.5 py-1 text-xs font-semibold ${style.text}`}
+                        className={`inline-flex items-center rounded-lg border ${style.border} ${style.bg} px-3 py-1.5 text-xs font-bold ${style.text} shadow-sm`}
                       >
                         {lang}
                       </span>
@@ -584,7 +642,11 @@ const CodeReviewPage = () => {
                 {/* Copy Button */}
                 <button
                   onClick={handleCopyCode}
-                  className="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white p-1.5 text-gray-500 transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700"
+                  className={`group inline-flex items-center justify-center rounded-lg border p-2 transition-all duration-200 ${
+                    isCopied
+                      ? "border-emerald-300 bg-emerald-50 text-emerald-600"
+                      : "border-gray-200 bg-white text-gray-500 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600"
+                  }`}
                   title="코드 복사"
                 >
                   {isCopied ? (
@@ -594,6 +656,7 @@ const CodeReviewPage = () => {
                       viewBox="0 0 16 16"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
+                      className="transition-transform duration-200"
                     >
                       <path
                         d="M13.3333 4L6 11.3333L2.66667 8"
@@ -610,6 +673,7 @@ const CodeReviewPage = () => {
                       viewBox="0 0 16 16"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
+                      className="transition-transform duration-200 group-hover:scale-110"
                     >
                       <path
                         d="M5.33333 2.66667H11.3333C11.7015 2.66667 12 2.96514 12 3.33333V12.6667C12 13.0349 11.7015 13.3333 11.3333 13.3333H5.33333C4.96514 13.3333 4.66667 13.0349 4.66667 12.6667V3.33333C4.66667 2.96514 4.96514 2.66667 5.33333 2.66667Z"
@@ -658,15 +722,43 @@ const CodeReviewPage = () => {
           />
         )}
 
-        {/* Comment Section */}
-        <div className="flex w-full flex-col gap-6">
-          {/* Existing Comments */}
-          <div className="flex w-full flex-col overflow-hidden rounded-xl border border-gray-200/80 bg-white p-6 shadow-lg">
-            <div className="flex flex-col gap-4">
-              {Array.isArray(comments) &&
-                comments.map((comment, index) => (
+        {/* Review Conversation Section - 세련된 섹션 */}
+        <div className="w-full border-t border-gray-200/60 pt-8">
+          <div className="mb-6 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-md">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                className="text-white"
+              >
+                <path
+                  d="M10 2C5.58 2 2 5.58 2 10C2 14.42 5.58 18 10 18C14.42 18 18 14.42 18 10C18 5.58 14.42 2 10 2ZM10 16C6.69 16 4 13.31 4 10C4 6.69 6.69 4 10 4C13.31 4 16 6.69 16 10C16 13.31 13.31 16 10 16Z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M10 6V10M10 12H10.01"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+              Review Conversation
+            </h3>
+          </div>
+
+          <div className="flex flex-col gap-0">
+            {/* Existing Comments */}
+            {Array.isArray(comments) &&
+              comments.map((comment, index) => (
+                <div
+                  key={comment.reviewId}
+                  className={index > 0 ? "pt-6 border-t border-gray-100" : ""}
+                >
                   <CommentItem
-                    key={comment.reviewId}
                     {...comment}
                     onReply={handleReply}
                     currentUserId={currentUser?.userId}
@@ -676,17 +768,17 @@ const CodeReviewPage = () => {
                     onUnlike={handleDeleteLike}
                     hasNextSibling={index < comments.length - 1}
                   />
-                ))}
-            </div>
-          </div>
+                </div>
+              ))}
 
-          {/* Write Comment */}
-          <div ref={commentInputRef}>
-            <CommentInput
-              initSelectedLine={initSelectedLine}
-              onSubmit={handleAddComment}
-              selectedLine={selectedLine}
-            />
+            {/* Write Comment */}
+            <div ref={commentInputRef} className="mt-6">
+              <CommentInput
+                initSelectedLine={initSelectedLine}
+                onSubmit={handleAddComment}
+                selectedLine={selectedLine}
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -8,11 +8,11 @@ interface HistoryBoxProps {
 
 const HistoryBox = ({ history, submissionId }: HistoryBoxProps) => {
   return (
-    <div className="flex h-[380px] w-[340px] flex-col rounded border border-[#d0d7de] bg-white">
+    <div className="flex h-[380px] w-[340px] flex-col rounded-xl border border-gray-200/60 bg-white shadow-lg backdrop-blur-sm transition-all duration-300 hover:shadow-xl">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#d0d7de] bg-[#f6f8fa] px-4 py-2.5">
-        <h3 className="text-sm font-semibold text-[#1f2328]">제출 히스토리</h3>
-        <span className="text-xs font-medium text-[#656d76]">
+      <div className="flex items-center justify-between border-b border-gray-200/60 bg-gradient-to-r from-gray-50 via-white to-gray-50/50 px-4 py-3">
+        <h3 className="text-sm font-bold text-gray-800">제출 히스토리</h3>
+        <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-bold text-blue-700">
           {history.length}개
         </span>
       </div>

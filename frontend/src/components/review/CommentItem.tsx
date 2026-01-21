@@ -208,17 +208,17 @@ const CommentItem: FC<CommentItemProps> = ({
 
         {/* Right Column: Comment Box */}
         <div className="min-w-0 flex-1">
-          <div className="relative rounded-md border border-gray-300 bg-white">
+          <div className="relative rounded-xl border border-gray-200/60 bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:border-gray-300/60">
             {/* Speech Bubble Arrow (Left) */}
-            <div className="absolute top-2.5 -left-2 h-3 w-3 rotate-45 border-b border-l border-gray-300 bg-gray-100" />
+            <div className="absolute top-3 -left-2 h-3 w-3 rotate-45 border-b border-l border-gray-200/60 bg-white shadow-sm" />
 
             {/* Header */}
-            <div className="relative flex items-center justify-between gap-2 rounded-t-md border-b border-gray-200 bg-gray-100 px-2.5 py-1.5">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <span className="font-semibold text-gray-900">
+            <div className="relative flex items-center justify-between gap-2 rounded-t-xl border-b border-gray-200/60 bg-gradient-to-r from-gray-50/50 via-white to-gray-50/50 px-3.5 py-2.5">
+              <div className="flex items-center gap-2.5 text-sm text-gray-600">
+                <span className="font-bold text-gray-900">
                   {userDetail?.nickname}
                 </span>
-                <span className="text-grayscale-warm-gray text-xs">
+                <span className="text-gray-500 text-xs">
                   {modifiedAt
                     ? formatDistanceToNow(new Date(modifiedAt), {
                         addSuffix: true,
@@ -226,12 +226,12 @@ const CommentItem: FC<CommentItemProps> = ({
                     : ""}
                 </span>
                 {codeLine && (
-                  <span className="text-primary-main inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-xs font-medium ring-1 ring-blue-700/10 ring-inset">
+                  <span className="inline-flex items-center rounded-lg border border-blue-200/60 bg-gradient-to-br from-blue-50 to-blue-100/50 px-2.5 py-1 text-xs font-bold text-blue-700 shadow-sm">
                     {codeLine}번 줄
                   </span>
                 )}
                 {isMine && (
-                  <span className="inline-flex items-center rounded-full border border-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600">
+                  <span className="inline-flex items-center rounded-full border border-blue-200/60 bg-gradient-to-br from-blue-50 to-blue-100/50 px-2.5 py-1 text-xs font-bold text-blue-700 shadow-sm">
                     Author
                   </span>
                 )}
@@ -280,7 +280,7 @@ const CommentItem: FC<CommentItemProps> = ({
             </div>
 
             {/* Body */}
-            <div className="rounded-b-md bg-white px-2.5 py-2">
+            <div className="rounded-b-xl bg-white px-3.5 py-3">
               {isEditing ? (
                 <div>
                   <CommentInput
@@ -299,15 +299,15 @@ const CommentItem: FC<CommentItemProps> = ({
               )}
             </div>
 
-            {/* Footer / Reactions (Optional) for GitHub style, usually bottom left of body or separate row */}
-            <div className="flex items-center gap-3 px-2.5 pb-2">
+            {/* Footer / Reactions */}
+            <div className="flex items-center gap-3 px-3.5 pb-3">
               {/* Like Button */}
               <button
                 onClick={handleLike}
-                className={`group flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold transition-all duration-200 ${
+                className={`group flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-all duration-200 ${
                   isLiked
-                    ? "bg-gradient-to-br from-red-50 to-pink-50 text-red-600 shadow-sm hover:from-red-100 hover:to-pink-100 hover:shadow-md"
-                    : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                    ? "bg-gradient-to-br from-red-50 to-pink-50 text-red-600 shadow-sm border border-red-200/50 hover:from-red-100 hover:to-pink-100 hover:shadow-md"
+                    : "text-gray-500 hover:bg-gray-100 hover:text-gray-700 border border-transparent hover:border-gray-200"
                 }`}
               >
                 {isLiked ? (
@@ -350,7 +350,7 @@ const CommentItem: FC<CommentItemProps> = ({
               {depth < 1 && (
                 <button
                   onClick={() => setIsReplying(!isReplying)}
-                  className="text-grayscale-warm-gray flex items-center gap-1 text-xs font-medium hover:text-gray-800"
+                  className="flex items-center gap-1.5 rounded-lg border border-transparent px-3 py-1.5 text-xs font-bold text-gray-500 transition-all duration-200 hover:border-gray-200 hover:bg-gray-50 hover:text-gray-800"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

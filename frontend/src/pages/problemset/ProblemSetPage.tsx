@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import LoginRequestOverlay from "@components/common/LoginRequestOverlay";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getCategoryList } from "@api/problemset/getCategoryList";
@@ -36,7 +37,7 @@ export default function ProblemSetPage() {
     queryFn: getCategoryList,
   });
 
-  const { userType, authorization } = useAuthStore();
+  const { userType } = useAuthStore();
   const isLogined = !!userType;
 
   // 사용자 정보 조회 (ADMIN 확인용 및 인증 상태 확인)
@@ -47,14 +48,12 @@ export default function ProblemSetPage() {
     retry: false,
   });
 
-  // 비로그인 유저 체크 및 리다이렉트 (로그인한 사용자는 제외)
+  // 비로그인 유저 체크 및 리다이렉트 -> 제거 (블러 처리된 화면 보여주기 위함)
+  /* 
   useEffect(() => {
-    // 로그인한 사용자는 리다이렉트하지 않음
     if (userType === "User" && authorization) {
       return;
     }
-    
-    // 비로그인 사용자만 리다이렉트
     if (!authorization && !userType) {
       navigate("/login", {
         state: { requireLogin: true, redirectTo: "/problemset" },
@@ -62,6 +61,7 @@ export default function ProblemSetPage() {
       });
     }
   }, [authorization, userType, navigate]);
+  */
 
   const tabs = ["전체", ...(categoryList?.map((c) => c.name) || [])];
   const sortOptions: SelectOption[] = [
@@ -158,7 +158,7 @@ export default function ProblemSetPage() {
         </div>
 
         {/* Content Section: Tabs + List */}
-        <div className="flex w-full flex-col items-start gap-6">
+        <div className="flex w-full flex-col items-start gap-6 relative">
           {/* Controls Row: Category Tabs + Sort Select */}
           <div className="flex w-full flex-row items-center justify-between">
             {/* Tabs Group - 두 번째 페이지 톤으로 스타일 조정 */}
@@ -168,8 +168,8 @@ export default function ProblemSetPage() {
                   key={tab}
                   onClick={() => handleCategoryChange(tab)}
                   className={`border-b-2 pb-4 text-base font-medium whitespace-nowrap transition-colors ${category === tab
-                      ? "border-[#0D6EFD] text-[#0D6EFD]"
-                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                    ? "border-[#0D6EFD] text-[#0D6EFD]"
+                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
                     }`}
                 >
                   {tab}
@@ -186,7 +186,7 @@ export default function ProblemSetPage() {
           </div>
 
           {/* List */}
-          <div className="w-full">
+          <div className={`w-full transition-all duration-300 ${!isLogined ? 'blur-sm select-none pointer-events-none opacity-60' : ''}`}>
             <ProblemSetList
               category={category}
               sortBy={sortBy}
@@ -200,6 +200,14 @@ export default function ProblemSetPage() {
               onDelete={handleDelete}
             />
           </div>
+
+          {/* 비로그인 시 전체 덮는 오버레이 */}
+          {!isLogined && (
+            <LoginRequestOverlay
+              className="justify-start pt-40"
+              description="문제집 전체 내용을 확인하려면 로그인을 해주세요"
+            />
+          )}
         </div>
       </div>
 

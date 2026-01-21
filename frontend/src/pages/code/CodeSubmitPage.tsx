@@ -167,9 +167,44 @@ int main() {
                 title="문제 보러가기"
               >
                 <span>Link</span>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
               </a>
             )}
+            
+            {/* Difficulty Badge */}
+            {problemInfo && (() => {
+               const { difficultyViewType, difficultyType, userDifficultyType } = problemInfo;
+                if (difficultyViewType === "PROBLEM_DIFFICULTY") {
+                  return (
+                    <span className="inline-flex items-center justify-center rounded-[4px] bg-[#333] border border-[#444] px-1.5 py-0.5 text-[11px] font-semibold text-gray-300">
+                      {difficultyType}
+                    </span>
+                  );
+                } else {
+                  let style = "text-gray-400 bg-[#333] border border-[#444]";
+                  const diff = userDifficultyType?.toLowerCase();
+                  // Dark mode styles
+                  if (diff === "easy") style = "text-green-400 bg-green-900/30 border border-green-800";
+                  else if (diff === "medium") style = "text-yellow-400 bg-yellow-900/30 border border-yellow-800";
+                  else if (diff === "hard") style = "text-red-400 bg-red-900/30 border border-red-800";
+                  return (
+                    <span className={`inline-flex items-center justify-center rounded-[4px] px-1.5 py-0.5 text-[11px] font-semibold ${style}`}>
+                      {userDifficultyType}
+                    </span>
+                  );
+                }
+            })()}
           </div>
         </div>
       </header>

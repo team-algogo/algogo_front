@@ -357,6 +357,40 @@ const CodeReviewPage = () => {
     }
   }, [selectedLine]);
 
+  // 난이도 뱃지 렌더링 (GroupProblemCard와 동일 로직)
+  const renderDifficultyBadge = () => {
+    if (!problemInfo) return null;
+    const { difficultyViewType, difficultyType, userDifficultyType } =
+      problemInfo;
+
+    if (difficultyViewType === "PROBLEM_DIFFICULTY") {
+      // Problem Difficulty (Tier)
+      return (
+        <span className="inline-flex items-center justify-center rounded-[4px] border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[11px] font-semibold text-slate-600">
+          {difficultyType}
+        </span>
+      );
+    } else {
+      // User Difficulty (Generic)
+      let style = "text-gray-600 bg-gray-50 border border-gray-200";
+      const diff = userDifficultyType?.toLowerCase();
+      if (diff === "easy")
+        style = "text-green-600 bg-green-50 border border-green-200";
+      else if (diff === "medium")
+        style = "text-yellow-600 bg-yellow-50 border border-yellow-200";
+      else if (diff === "hard")
+        style = "text-red-600 bg-red-50 border border-red-200";
+
+      return (
+        <span
+          className={`inline-flex items-center justify-center rounded-[4px] border px-1.5 py-0.5 text-[11px] font-semibold ${style}`}
+        >
+          {userDifficultyType}
+        </span>
+      );
+    }
+  };
+
   return (
     <BasePage>
       <div className="mx-auto flex h-full w-full max-w-[1200px] flex-col items-start gap-8 bg-white p-[40px_0px_80px]">
@@ -408,12 +442,14 @@ const CodeReviewPage = () => {
                     {problemInfo?.problemNo}. {problemInfo?.title}
                   </h1>
                 )}
-                {/* 플랫폼 정보 - 문제 제목 바로 옆 */}
+                {/* 플랫폼 정보 */}
                 {problemInfo?.platformType && (
-                  <span className="inline-flex items-center rounded-md border border-[#d0d7de] bg-[#f6f8fa] px-2 py-0.5 text-xs leading-none font-semibold text-[#1f2328]">
+                  <span className="inline-flex items-center justify-center rounded-[4px] border border-[#d0d7de] bg-[#eff1f3] px-1.5 py-0.5 text-[11px] font-semibold text-[#1f2328]">
                     {problemInfo.platformType}
                   </span>
                 )}
+                {/* 난이도 정보 */}
+                {renderDifficultyBadge()}
               </div>
               <div className="flex items-center gap-2 text-sm text-[#656d76]">
                 <span className="font-medium text-[#1f2328]">

@@ -59,6 +59,12 @@ export default function ProblemSetDetailPage() {
     enabled: !isNaN(id) && isLogined,
   });
 
+  useEffect(() => {
+    if (!isLogined) {
+      navigate("/");
+    }
+  }, [isLogined, navigate]);
+
   const canMoreSubmission = canMoreSubmissionData?.canMoreSubmission ?? true;
 
   // 사용자 정보 조회 (ADMIN 확인용)
@@ -227,6 +233,7 @@ export default function ProblemSetDetailPage() {
             onDelete={handleDeleteProblems}
             canMoreSubmission={canMoreSubmission}
             programId={id}
+            programTitle={detail?.title ?? ""}
           />
 
           {/* Pagination */}

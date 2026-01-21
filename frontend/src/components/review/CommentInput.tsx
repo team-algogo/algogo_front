@@ -103,9 +103,9 @@ const CommentInput: FC<CommentInputProps> = ({
     requestAnimationFrame(adjustHeight);
   }, [content, compact]);
 
-  // 메인 댓글 작성 UI - 플랫폼 스타일
+  // 메인 댓글 작성 UI - 세련된 스타일
   return (
-    <div className="rounded-xl border border-[#e1e4e8] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all duration-200 focus-within:border-[#0969da] focus-within:shadow-[0_0_0_3px_rgba(9,105,218,0.1)]">
+    <div className="rounded-xl border border-[#d0d7de] bg-white transition-all duration-300 focus-within:border-[#0969da]">
       <div className="grid grid-cols-[1fr_140px] items-stretch gap-3 p-3">
         {/* 좌측: textarea 영역 */}
         <div className="flex flex-col gap-2">

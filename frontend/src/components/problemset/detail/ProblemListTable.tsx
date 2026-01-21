@@ -10,6 +10,7 @@ interface ProblemListTableProps {
   onDelete?: (programProblemIds: number[]) => void; // 삭제 핸들러
   canMoreSubmission?: boolean; // 추가 제출 가능 여부
   programId?: number; // 문제집 ID
+  programTitle?: string; // 문제집 이름
 }
 
 export default function ProblemListTable({
@@ -19,6 +20,7 @@ export default function ProblemListTable({
   onDelete,
   canMoreSubmission = true,
   programId,
+  programTitle,
 }: ProblemListTableProps) {
   const navigate = useNavigate();
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -111,6 +113,8 @@ export default function ProblemListTable({
                     showDates={false}
                     canMoreSubmission={canMoreSubmission}
                     programId={programId}
+                    showSolveButton={false}
+                    programTitle={programTitle}
                   />
                 </div>
               </div>

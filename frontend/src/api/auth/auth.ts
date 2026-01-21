@@ -105,3 +105,8 @@ export const getUserDetailById = async (userId: number) => {
   );
   return response.data;
 };
+// 비밀번호 찾기 (임시 비밀번호 발송)
+export const postFindPassword = async (email: string) => {
+  const response = await client.post(`/api/v1/users/find-password/${email}`);
+  return response;
+};

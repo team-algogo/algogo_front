@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import PasswordResetModal from "@components/modal/auth/PasswordResetModal";
 
 import BasePage from "@pages/BasePage";
 import Toast from "@components/toast/Toast";
@@ -22,6 +23,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
   const [redirectTo, setRedirectTo] = useState<string | null>(null);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
   const { setUserType, setAuthorization } = useAuthStore();
   const { openModal, closeModal } = useModalStore();
@@ -38,17 +40,17 @@ const LoginPage = () => {
       setRedirectTo(location.state.redirectTo || null);
       // Clear state so banner doesn't show on refresh
       window.history.replaceState({}, document.title);
-      
+
       // 3초 후 배너 fade-out 시작
       const fadeTimer = setTimeout(() => {
         setBannerVisible(false);
       }, 3000);
-      
+
       // fade-out 애니메이션 후 완전히 제거
       const removeTimer = setTimeout(() => {
         setShowLoginRequiredBanner(false);
       }, 3500);
-      
+
       return () => {
         clearTimeout(fadeTimer);
         clearTimeout(removeTimer);
@@ -82,12 +84,24 @@ const LoginPage = () => {
           onClose={() => setShowToast(false)}
         />
       )}
+      {showToast && (
+        <Toast
+          message="회원가입이 완료되었습니다. 로그인을 진행해주세요."
+          type="success"
+          onClose={() => setShowToast(false)}
+        />
+      )}
+
+      {/* Password Reset Modal */}
+      {isResetModalOpen && (
+        <PasswordResetModal onClose={() => setIsResetModalOpen(false)} />
+      )}
+
       {/* 로그인 필요 안내 배너 - fixed position으로 레이아웃 shift 방지 */}
       {showLoginRequiredBanner && (
         <div
-          className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-[420px] px-4 transition-opacity duration-500 ${
-            bannerVisible ? "opacity-100" : "opacity-0"
-          }`}
+          className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-[420px] px-4 transition-opacity duration-500 ${bannerVisible ? "opacity-100" : "opacity-0"
+            }`}
         >
           <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 shadow-lg">
             <svg
@@ -172,9 +186,13 @@ const LoginPage = () => {
 
             {/** find login info / join */}
             <div className="flex justify-center gap-4 text-gray-500 text-sm">
-              <TextLink src="#">
-                <span className="text-gray-500 hover:text-gray-800">아이디/비밀번호 찾기</span>
-              </TextLink>
+              <button
+                type="button"
+                onClick={() => setIsResetModalOpen(true)}
+                className="text-gray-500 hover:text-gray-800 transition-colors"
+              >
+                비밀번호 재설정
+              </button>
 
               <div className="h-4 w-px bg-gray-300 my-auto"></div>
 
@@ -184,7 +202,7 @@ const LoginPage = () => {
             </div>
           </div>
         </form>
-      </div>
+      </div >
 
       <AlertModal.Content autoCloseDelay={0}>
         <div className="text-4xl mb-4">😢</div>
@@ -201,7 +219,7 @@ const LoginPage = () => {
           확인
         </button>
       </AlertModal.Content>
-    </BasePage>
+    </BasePage >
   );
 };
 

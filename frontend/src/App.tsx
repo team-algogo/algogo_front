@@ -15,10 +15,8 @@ function AppContent() {
 
   return (
     <>
-      <div className="fixed inset-0 z-[-1] bg-gray-50/30">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-      </div>
-      <div className="flex flex-col min-h-screen">
+
+      <div className="flex flex-col min-h-[100dvh]">
         <Header />
         <main className="flex-1 w-full text-lg mt-16 flex flex-col">
           <Outlet />

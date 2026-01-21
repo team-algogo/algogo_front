@@ -44,62 +44,45 @@ const ReviewRequestCard = ({
 
   const typeColor =
     getProgramTypeLabel(programType) === "스터디"
-      ? { bg: "bg-[#FFF3E0]", text: "text-[#EF6C00]" } // Group: Orange
+      ? { bg: "bg-orange-50 text-orange-600", border: "border-orange-100" }
       : getProgramTypeLabel(programType) === "캠페인"
-        ? { bg: "bg-[#E3F2FD]", text: "text-[#1976D2]" } // Campaign: Blue
-        : { bg: "bg-[#F5F5F5]", text: "text-[#757575]" }; // Problemset/Personal: Gray
+        ? { bg: "bg-primary-50 text-primary-600", border: "border-primary-100" }
+        : { bg: "bg-gray-50 text-gray-500", border: "border-gray-100" };
 
   const timeAgo = formatTimeAgo(submission?.createAt);
 
   return (
     <Link
       to={`review/${submission.targetSubmissionId}`}
-      className="flex w-full flex-col items-start gap-3 rounded-2xl border border-[#EBEBEB] bg-white p-5 shadow-[0px_2px_12px_0px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0px_4px_16px_0px_rgba(0,0,0,0.08)] h-full"
+      className="group relative flex h-full min-h-[180px] w-full transform flex-col justify-between overflow-hidden rounded-2xl bg-white border-2 border-gray-100 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary-100 p-5"
     >
-      {/* Header Badges */}
-      <div className="flex items-center gap-2 w-full">
-        <div
-          className={`flex items-center justify-center rounded-md px-2 py-1 ${typeColor.bg} flex-shrink-0`}
-        >
-          <span
-            className={`${typeColor.text} text-xs leading-[130%] font-medium`}
-            style={{ fontFamily: "IBM Plex Sans KR" }}
-          >
-            {getProgramTypeLabel(programType)}
-          </span>
+      {/* Top Banner / Badge */}
+      <div className="flex items-center justify-between w-full mb-3">
+        <div className={`flex items-center gap-2 px-2.5 py-1 rounded-lg ${typeColor.bg} border ${typeColor.border}`}>
+          <span className="text-xs font-semibold">{getProgramTypeLabel(programType)}</span>
         </div>
-        <span
-          className="text-xs leading-[130%] font-normal text-[#727479] truncate"
-          style={{ fontFamily: "IBM Plex Sans KR" }}
-        >
+        <span className="text-xs text-gray-400 font-medium truncate max-w-[120px]">
           {programTitle}
         </span>
       </div>
 
-      {/* Title */}
-      <div className="flex w-full flex-col items-start gap-1">
-        <span
-          className="text-base leading-[130%] font-semibold tracking-[-0.16px] text-[#333] line-clamp-1 w-full"
-          style={{ fontFamily: "IBM Plex Sans KR" }}
-          title={`[${submission?.language ?? "Unknown"}] ${problemTitle} 리뷰`}
-        >
+      {/* Main Content */}
+      <div className="flex flex-col gap-2 mb-4">
+        <h3 className="text-base font-bold text-gray-900 line-clamp-2 group-hover:text-primary-600 transition-colors">
           [{submission?.language ?? "Unknown"}] {problemTitle} 리뷰
-        </span>
+        </h3>
+
         {/* Tags */}
-        <div className="flex flex-wrap items-start gap-1 w-full h-[36px] overflow-hidden">
+        <div className="flex flex-wrap gap-1.5">
           {problemPlatform && (
-            <span
-              className="text-xs leading-[130%] font-normal text-[#727479]"
-              style={{ fontFamily: "IBM Plex Sans KR" }}
-            >
+            <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
               #{problemPlatform}
             </span>
           )}
-          {submission?.algorithmList?.map((algo) => (
+          {submission?.algorithmList?.slice(0, 3).map((algo) => (
             <span
               key={algo.id}
-              className="text-xs leading-[130%] font-normal text-[#727479]"
-              style={{ fontFamily: "IBM Plex Sans KR" }}
+              className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded"
             >
               #{algo.name}
             </span>
@@ -107,60 +90,24 @@ const ReviewRequestCard = ({
         </div>
       </div>
 
-      {/* Info Row */}
-      <div className="mt-auto flex w-full items-center justify-between border-t border-[#F2F2F2] pt-3">
-        <div className="flex items-center gap-4">
-          {/* Review Count */}
-          <div className="flex items-center gap-1">
-            <div
-              className="h-[16px] w-[16px] bg-[#727479]"
-              style={{
-                maskImage: 'url("/icons/reviewComentIcon.svg")',
-                maskRepeat: "no-repeat",
-                maskSize: "contain",
-                maskPosition: "center",
-                WebkitMaskImage: 'url("/icons/reviewComentIcon.svg")',
-                WebkitMaskRepeat: "no-repeat",
-                WebkitMaskSize: "contain",
-              }}
-            />
-            <span
-              className="text-sm leading-[130%] font-normal text-[#727479]"
-              style={{ fontFamily: "IBM Plex Sans KR" }}
-            >
-              {submission?.reviewCount ?? 0}
-            </span>
+      {/* Footer Info */}
+      <div className="mt-auto pt-3 border-t border-gray-50 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 text-gray-400">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:text-primary-500 transition-colors">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+            </svg>
+            <span className="text-xs font-medium">{submission?.reviewCount ?? 0}</span>
           </div>
-
-          {/* View Count */}
-          <div className="flex items-center gap-1">
-            <div
-              className="h-[18px] w-[18px] bg-[#727479]"
-              style={{
-                maskImage: 'url("/icons/viewOkIcon.svg")',
-                maskRepeat: "no-repeat",
-                maskSize: "contain",
-                maskPosition: "center",
-                WebkitMaskImage: 'url("/icons/viewOkIcon.svg")',
-                WebkitMaskRepeat: "no-repeat",
-                WebkitMaskSize: "contain",
-              }}
-            />
-            <span
-              className="text-sm leading-[130%] font-normal text-[#727479]"
-              style={{ fontFamily: "IBM Plex Sans KR" }}
-            >
-              {submission?.viewCount ?? 0}
-            </span>
+          <div className="flex items-center gap-1 text-gray-400">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:text-primary-500 transition-colors">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <span className="text-xs font-medium">{submission?.viewCount ?? 0}</span>
           </div>
         </div>
-
-
-        {/* Time Ago */}
-        <span
-          className="text-xs font-normal text-[#727479]"
-          style={{ fontFamily: "IBM Plex Sans KR" }}
-        >
+        <span className="text-xs text-gray-400 font-medium group-hover:text-gray-600 transition-colors">
           {timeAgo}
         </span>
       </div>

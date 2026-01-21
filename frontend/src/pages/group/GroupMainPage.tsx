@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import LoginRequestOverlay from "@components/common/LoginRequestOverlay";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import BasePage from "@pages/BasePage";
@@ -323,26 +324,10 @@ const GroupMainPage = () => {
 
                   {/* 비로그인 시 전체 덮는 오버레이 */}
                   {!isLoggedIn && (
-                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-6">
-                      <div className="bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-2xl border border-white/20 flex flex-col items-center gap-4 text-center transform hover:scale-105 transition-transform duration-300">
-                        <div className="p-3 bg-gray-100 rounded-full">
-                          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                          </svg>
-                        </div>
-                        <div className="space-y-1">
-                          <h3 className="text-xl font-bold text-gray-900">로그인이 필요한 서비스입니다</h3>
-                          <p className="text-gray-500 text-sm">그룹방 내용을 확인하려면 로그인을 해주세요</p>
-                        </div>
-                        <Button
-                          variant="primary"
-                          onClick={() => window.location.href = "https://algogo.kr/intro"}
-                          className="!w-full !py-3 font-bold shadow-lg hover:shadow-primary-main/30"
-                        >
-                          로그인 하러가기
-                        </Button>
-                      </div>
-                    </div>
+                    <LoginRequestOverlay
+                      className="justify-center gap-6"
+                      description="그룹방 내용을 확인하려면 로그인을 해주세요"
+                    />
                   )}
                 </>
               ) : (

@@ -8,10 +8,13 @@ import NotificationContainer from "@components/notification/NotificationContaine
 import AlertModal from "@components/modal/alarm/AlertModal";
 import { useModalStore } from "@store/useModalStore";
 
+import { useNavigate } from "react-router-dom";
+
 const Header = () => {
   const { userType, setUserType, setAuthorization } = useAuthStore();
   const queryClient = useQueryClient();
   const { openModal, closeModal } = useModalStore();
+  const navigate = useNavigate();
 
   const logout = async (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -23,6 +26,7 @@ const Header = () => {
 
         setUserType(null);
         setAuthorization("");
+        navigate("/intro");
       }
     } catch (err) {
       console.log(err);

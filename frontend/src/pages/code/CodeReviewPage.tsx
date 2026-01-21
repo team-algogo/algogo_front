@@ -36,7 +36,13 @@ const CodeReviewPage = () => {
   const param = useParams();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { userType, authorization } = useAuthStore();
+  const { userType } = useAuthStore();
+  
+  useEffect(() => {
+    if (!userType) {
+      navigate("/");
+    }
+  }, [userType, navigate]);
 
   const [problemInfo, setProblemInfo] = useState<ProgramProblemProps | null>(
     null,
@@ -286,24 +292,7 @@ const CodeReviewPage = () => {
     }
   };
 
-  // 비로그인 유저 체크 및 리다이렉트 (로그인한 사용자는 제외)
-  useEffect(() => {
-    // 로그인한 사용자는 리다이렉트하지 않음
-    if (userType === "User" && authorization) {
-      return;
-    }
 
-    // 비로그인 사용자만 리다이렉트
-    if (!authorization && !userType) {
-      navigate("/login", {
-        state: {
-          requireLogin: true,
-          redirectTo: `/review/${param.submissionId}`,
-        },
-        replace: true,
-      });
-    }
-  }, [authorization, userType, navigate, param.submissionId]);
 
   useEffect(() => {
     getCurrentUser();

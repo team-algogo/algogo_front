@@ -213,7 +213,7 @@ const CommentItem: FC<CommentItemProps> = ({
             <div className="absolute top-3 -left-2 h-3 w-3 rotate-45 border-b border-l border-gray-200/60 bg-white shadow-sm" />
 
             {/* Header */}
-            <div className="relative flex items-center justify-between gap-2 rounded-t-xl border-b border-gray-200/60 bg-gradient-to-r from-gray-50/50 via-white to-gray-50/50 px-3.5 py-2.5">
+            <div className="relative flex items-center justify-between gap-2 rounded-t-xl border-b border-gray-200/60 bg-gradient-to-r from-gray-50/50 via-white to-gray-50/50 px-3.5 py-1.5">
               <div className="flex items-center gap-2.5 text-sm text-gray-600">
                 <span className="font-bold text-gray-900">
                   {userDetail?.nickname}
@@ -280,7 +280,7 @@ const CommentItem: FC<CommentItemProps> = ({
             </div>
 
             {/* Body */}
-            <div className="rounded-b-xl bg-white px-3.5 py-3">
+            <div className="rounded-b-xl bg-white px-3.5 py-2">
               {isEditing ? (
                 <div>
                   <CommentInput
@@ -300,7 +300,7 @@ const CommentItem: FC<CommentItemProps> = ({
             </div>
 
             {/* Footer / Reactions */}
-            <div className="flex items-center gap-3 px-3.5 pb-3">
+            <div className="flex items-center gap-3 px-3.5 pb-2">
               {/* Like Button */}
               <button
                 onClick={handleLike}

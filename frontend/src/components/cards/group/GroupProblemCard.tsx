@@ -23,6 +23,8 @@ interface GroupProblemCardProps {
   showDates?: boolean;
   canMoreSubmission?: boolean; // 추가 제출 가능 여부
   programId?: number; // 문제집 ID
+  showSolveButton?: boolean; // 문제 풀기 버튼 표시 여부
+  programTitle?: string; // 문제집 이름 (안내 배너용)
 }
 
 const GroupProblemCard = ({
@@ -40,6 +42,8 @@ const GroupProblemCard = ({
   solvedCount,
   showDates = true,
   canMoreSubmission = true,
+  showSolveButton = true,
+  programTitle = "문제집",
 }: GroupProblemCardProps) => {
   const navigate = useNavigate();
   const [showAlertBanner, setShowAlertBanner] = useState(false);
@@ -116,6 +120,10 @@ const GroupProblemCard = ({
   const handleCardClick = () => {
     // canMoreSubmission이 false이면 카드 클릭으로 제출 페이지 이동 방지
     if (!canMoreSubmission) {
+      setShowAlertBanner(true);
+      setTimeout(() => {
+        setShowAlertBanner(false);
+      }, 5000);
       return;
     }
     if (programProblemId) {
@@ -140,7 +148,13 @@ const GroupProblemCard = ({
             </span>
           )}
 
-          <h3 className="text-base font-bold text-gray-900 truncate hover:text-primary-main hover:underline">
+          <h3 
+            className="text-base font-bold text-gray-900 truncate hover:text-primary-main hover:underline cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              window.open(problemLink, "_blank");
+            }}
+          >
             {title}
           </h3>
         </div>
@@ -237,7 +251,7 @@ const GroupProblemCard = ({
           </svg>
         </button>
 
-        {status !== 'ENDED' && (
+        {status !== 'ENDED' && showSolveButton && (
           <>
             <Button
               variant="secondary"
@@ -262,61 +276,64 @@ const GroupProblemCard = ({
             >
               문제풀기
             </Button>
-            {/* 안내 배너 - 화면 상단에 고정 */}
-            {mounted && showAlertBanner && createPortal(
-              <div
-                className="fixed top-0 left-0 right-0 z-[1001] flex items-center justify-center p-4"
-                style={{
-                  animation: "slideDown 0.3s ease-out",
-                }}
-              >
-                <div className="w-full max-w-2xl bg-amber-50 border-l-4 border-amber-400 rounded-lg shadow-lg p-4 flex items-center gap-3">
-                  {/* 아이콘 */}
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
-                    <svg
-                      className="w-5 h-5 text-amber-600"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                      />
-                    </svg>
-                  </div>
-
-                  {/* 메시지 */}
-                  <p className="flex-1 text-sm font-medium text-amber-800">
-                    문제집의 요구된 리뷰를 작성 후 다른 문제를 제출해주세요!
-                  </p>
-
-                  {/* 닫기 버튼 */}
-                  <button
-                    onClick={() => setShowAlertBanner(false)}
-                    className="flex-shrink-0 w-6 h-6 rounded-full hover:bg-amber-100 flex items-center justify-center text-amber-600 hover:text-amber-800 transition-colors"
-                  >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>,
-              document.body
-            )}
           </>
+        )}
+
+        {/* 안내 배너 - 화면 상단에 고정 */}
+        {mounted && showAlertBanner && createPortal(
+          <div
+            className="fixed top-0 left-0 right-0 z-[1001] flex items-center justify-center p-4"
+            style={{
+              animation: "slideDown 0.3s ease-out",
+            }}
+          >
+            <div className="w-full max-w-[500px] bg-white border border-amber-200 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-4 flex items-center gap-4">
+              {/* 아이콘 */}
+              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center">
+                <svg
+                  className="w-5 h-5 text-amber-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+
+              {/* 메시지 */}
+              <div className="flex-1 flex flex-col">
+                <p className="text-sm font-bold text-gray-900 break-keep">
+                   {programTitle}의 필수 리뷰를 작성 후 새로운 제출을 해주세요!
+                </p>
+              </div>
+
+              {/* 닫기 버튼 */}
+              <button
+                onClick={() => setShowAlertBanner(false)}
+                className="flex-shrink-0 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>,
+          document.body
         )}
 
         {onDelete && (

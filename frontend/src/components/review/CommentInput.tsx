@@ -105,7 +105,7 @@ const CommentInput: FC<CommentInputProps> = ({
 
   // 메인 댓글 작성 UI - 세련된 스타일
   return (
-    <div className="rounded-xl border border-gray-200/60 bg-white shadow-lg backdrop-blur-sm transition-all duration-300 focus-within:border-blue-400/60 focus-within:shadow-xl focus-within:shadow-blue-100/50">
+    <div className="rounded-xl border border-[#d0d7de] bg-white transition-all duration-300 focus-within:border-[#0969da]">
       <div className="grid grid-cols-[1fr_140px] items-stretch gap-3 p-3">
         {/* 좌측: textarea 영역 */}
         <div className="flex flex-col gap-2">

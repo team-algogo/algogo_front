@@ -227,6 +227,7 @@ export default function ProblemSetDetailPage() {
             onDelete={handleDeleteProblems}
             canMoreSubmission={canMoreSubmission}
             programId={id}
+            programTitle={detail?.title ?? ""}
           />
 
           {/* Pagination */}

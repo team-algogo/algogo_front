@@ -23,6 +23,8 @@ const MyPage = () => {
     if (tab === "group") {
       setViewMode("참여 현황");
       setInitialSubTab("그룹방");
+    } else if (tab === "invite") {
+      setViewMode("초대/신청 현황");
     }
   }, [searchParams]);
 

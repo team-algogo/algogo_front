@@ -145,14 +145,27 @@ const AddGroupProblemModal = ({ programId, onClose }: AddGroupProblemModalProps)
 
             itemsPayload.push({
                 problemId: problem.id,
-                startDate: config.startDate, // Already ISO string from DateTimePicker
-                endDate: config.endDate,
+                // Send local time string (YYYY-MM-DDTHH:mm:ss) to match KST digits exactly
+                // This prevents the server from shifting time by 9 hours (UTC->KST)
+                startDate: formatToLocalISOString(new Date(config.startDate)),
+                endDate: formatToLocalISOString(new Date(config.endDate)),
                 userDifficultyType: config.userDifficultyType,
                 difficultyViewType: config.difficultyViewType,
             });
         }
 
         mutation.mutate({ problems: itemsPayload });
+    };
+
+    // Helper to format Date to "YYYY-MM-DDTHH:mm:ss" (Local Time)
+    const formatToLocalISOString = (date: Date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
     };
 
 

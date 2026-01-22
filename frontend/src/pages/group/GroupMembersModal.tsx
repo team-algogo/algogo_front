@@ -5,6 +5,7 @@ import { getUserDetail } from "@api/auth/auth";
 import GroupInviteModal from "./GroupInviteModal";
 import ConfirmModal from "@components/modal/ConfirmModal";
 import Button from "@components/button/Button";
+import Pagination from "@components/pagination/Pagination";
 import useToast from "@hooks/useToast";
 
 interface GroupMembersModalProps {
@@ -67,6 +68,13 @@ export default function GroupMembersModal({ programId, onClose }: GroupMembersMo
         // 3. Others (Alphabetical by nickname)
         return a.nickname.localeCompare(b.nickname);
     });
+
+    // Pagination State
+    const [page, setPage] = useState(0);
+    const PAGE_SIZE = 5;
+
+    const offset = page * PAGE_SIZE;
+    const paginatedMembers = sortedMembers.slice(offset, offset + PAGE_SIZE);
 
     // --- Mutations ---
 
@@ -162,6 +170,7 @@ export default function GroupMembersModal({ programId, onClose }: GroupMembersMo
                         </div>
                     </div>
 
+
                     {/* 리스트 영역 */}
                     <div className="flex-1 overflow-auto p-0 scrollbar-hide">
                         {isLoading ? (
@@ -169,107 +178,123 @@ export default function GroupMembersModal({ programId, onClose }: GroupMembersMo
                                 로딩 중...
                             </div>
                         ) : (
-                            <table className="w-full text-left border-collapse">
-                                <thead className="sticky top-0 bg-gray-50/95 backdrop-blur-sm z-10 box-border border-b border-gray-100">
-                                    <tr className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                        <th className="px-8 py-4 w-[40%]">멤버</th>
-                                        <th className="px-6 py-4 w-[30%]">이메일</th>
-                                        <th className="px-6 py-4 w-[15%] text-center">권한</th>
-                                        {userRole === "ADMIN" && <th className="px-6 py-4 w-[15%] text-center">관리</th>}
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50">
-                                    {sortedMembers.length > 0 ? (
-                                        sortedMembers.map((member: any) => (
-                                            <tr key={member.programUserId} className="group hover:bg-gray-50/50 transition-colors">
-                                                <td className="px-8 py-4">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="relative">
-                                                            <img
-                                                                src={member.profileImage || "/icons/userIcon.svg"}
-                                                                onError={(e) => { (e.target as HTMLImageElement).src = "/icons/userIcon.svg"; }}
-                                                                alt="profile"
-                                                                className={`w-11 h-11 rounded-full object-cover border border-gray-100 shadow-sm ${!member.profileImage || (member.profileImage as string).includes("userIcon") ? "p-2 bg-gray-50 object-contain" : ""}`}
-                                                            />
-                                                            {member.role === "ADMIN" && (
-                                                                <div className="absolute -bottom-1 -right-1 bg-yellow-400 text-white p-1 rounded-full border-2 border-white" title="그룹장">
-                                                                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <div className="flex flex-col">
-                                                            <span className="font-bold text-gray-900 text-base">
-                                                                {member.nickname}
-                                                                {myUserId === member.programUserId && (
-                                                                    <span className="ml-2 text-xs bg-primary-50 text-primary-main px-1.5 py-0.5 rounded font-bold">ME</span>
-                                                                )}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <span className="text-sm text-gray-500 font-medium font-mono">{member.email}</span>
-                                                </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <div className="flex justify-center">
-                                                        <span className={`
-                                                            inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border
-                                                            ${member.role === "ADMIN"
-                                                                ? "bg-yellow-50 text-yellow-700 border-yellow-200"
-                                                                : member.role === "MANAGER"
-                                                                    ? "bg-indigo-50 text-indigo-700 border-indigo-200"
-                                                                    : "bg-gray-100 text-gray-600 border-gray-200"}
-                                                        `}>
-                                                            {member.role}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                {userRole === "ADMIN" && (
-                                                    <td className="px-6 py-4 text-center">
-                                                        <div className="flex justify-center items-center gap-2">
-                                                            {member.role !== "ADMIN" ? (
-                                                                <>
-                                                                    <div className="relative group/select">
-                                                                        <select
-                                                                            className="appearance-none bg-white border border-gray-200 text-gray-600 text-xs font-bold rounded-lg pl-3 pr-8 py-1.5 outline-none focus:border-primary-main focus:ring-2 focus:ring-primary-100 transition-all cursor-pointer hover:border-gray-300"
-                                                                            value={member.role}
-                                                                            onChange={(e) => handleRoleChange(member.programUserId, e.target.value as "MANAGER" | "USER")}
-                                                                        >
-                                                                            <option value="USER">USER</option>
-                                                                            <option value="MANAGER">MANAGER</option>
-                                                                        </select>
-                                                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400 group-hover/select:text-gray-600">
-                                                                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                                                                        </div>
+                            <>
+                                <table className="w-full text-left border-collapse">
+                                    <thead className="sticky top-0 bg-gray-50/95 backdrop-blur-sm z-10 box-border border-b border-gray-100">
+                                        <tr className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                            <th className="px-8 py-4 w-[40%]">멤버</th>
+                                            <th className="px-6 py-4 w-[30%]">이메일</th>
+                                            <th className="px-6 py-4 w-[15%] text-center">권한</th>
+                                            {userRole === "ADMIN" && <th className="px-6 py-4 w-[15%] text-center">관리</th>}
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-50">
+                                        {paginatedMembers.length > 0 ? (
+                                            paginatedMembers.map((member: any) => (
+                                                <tr key={member.programUserId} className="group hover:bg-gray-50/50 transition-colors">
+                                                    <td className="px-8 py-4">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="relative">
+                                                                <img
+                                                                    src={member.profileImage || "/icons/userIcon.svg"}
+                                                                    onError={(e) => { (e.target as HTMLImageElement).src = "/icons/userIcon.svg"; }}
+                                                                    alt="profile"
+                                                                    className={`w-11 h-11 rounded-full object-cover border border-gray-100 shadow-sm ${!member.profileImage || (member.profileImage as string).includes("userIcon") ? "p-2 bg-gray-50 object-contain" : ""}`}
+                                                                />
+                                                                {member.role === "ADMIN" && (
+                                                                    <div className="absolute -bottom-1 -right-1 bg-yellow-400 text-white p-1 rounded-full border-2 border-white" title="그룹장">
+                                                                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
                                                                     </div>
-                                                                    <button
-                                                                        onClick={() => handleDeleteMember(member.programUserId, member.nickname)}
-                                                                        className="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-alert-error hover:bg-red-50 rounded-lg transition-all"
-                                                                        title="강퇴"
-                                                                    >
-                                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                                                    </button>
-                                                                </>
-                                                            ) : (
-                                                                <span className="text-xs text-gray-300 font-medium select-none text-center block w-full">-</span>
-                                                            )}
+                                                                )}
+                                                            </div>
+                                                            <div className="flex flex-col">
+                                                                <span className="font-bold text-gray-900 text-base">
+                                                                    {member.nickname}
+                                                                    {myUserId === member.programUserId && (
+                                                                        <span className="ml-2 text-xs bg-primary-50 text-primary-main px-1.5 py-0.5 rounded font-bold">ME</span>
+                                                                    )}
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     </td>
-                                                )}
+                                                    <td className="px-6 py-4">
+                                                        <span className="text-sm text-gray-500 font-medium font-mono">{member.email}</span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center">
+                                                        <div className="flex justify-center">
+                                                            <span className={`
+                                                            inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border
+                                                            ${member.role === "ADMIN"
+                                                                    ? "bg-yellow-50 text-yellow-700 border-yellow-200"
+                                                                    : member.role === "MANAGER"
+                                                                        ? "bg-indigo-50 text-indigo-700 border-indigo-200"
+                                                                        : "bg-gray-100 text-gray-600 border-gray-200"}
+                                                        `}>
+                                                                {member.role}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    {userRole === "ADMIN" && (
+                                                        <td className="px-6 py-4 text-center">
+                                                            <div className="flex justify-center items-center gap-2">
+                                                                {member.role !== "ADMIN" ? (
+                                                                    <>
+                                                                        <div className="relative group/select">
+                                                                            <select
+                                                                                className="appearance-none bg-white border border-gray-200 text-gray-600 text-xs font-bold rounded-lg pl-3 pr-8 py-1.5 outline-none focus:border-primary-main focus:ring-2 focus:ring-primary-100 transition-all cursor-pointer hover:border-gray-300"
+                                                                                value={member.role}
+                                                                                onChange={(e) => handleRoleChange(member.programUserId, e.target.value as "MANAGER" | "USER")}
+                                                                            >
+                                                                                <option value="USER">USER</option>
+                                                                                <option value="MANAGER">MANAGER</option>
+                                                                            </select>
+                                                                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400 group-hover/select:text-gray-600">
+                                                                                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                                                            </div>
+                                                                        </div>
+                                                                        <button
+                                                                            onClick={() => handleDeleteMember(member.programUserId, member.nickname)}
+                                                                            className="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-alert-error hover:bg-red-50 rounded-lg transition-all"
+                                                                            title="강퇴"
+                                                                        >
+                                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                                        </button>
+                                                                    </>
+                                                                ) : (
+                                                                    <span className="text-xs text-gray-300 font-medium select-none text-center block w-full">-</span>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                    )}
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={userRole === "ADMIN" ? 4 : 3} className="px-6 py-20 text-center text-gray-400 gap-2 flex-col">
+                                                    <div className="flex flex-col items-center gap-2">
+                                                        <span className="text-3xl">👥</span>
+                                                        <span>멤버가 없습니다.</span>
+                                                    </div>
+                                                </td>
                                             </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan={userRole === "ADMIN" ? 4 : 3} className="px-6 py-20 text-center text-gray-400 gap-2 flex-col">
-                                                <div className="flex flex-col items-center gap-2">
-                                                    <span className="text-3xl">👥</span>
-                                                    <span>멤버가 없습니다.</span>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                        )}
+                                    </tbody>
+                                </table>
+                                {sortedMembers.length > 0 && (
+                                    <div className="p-4 border-t border-gray-100 flex justify-center">
+                                        <Pagination
+                                            pageInfo={{
+                                                number: page,
+                                                size: PAGE_SIZE,
+                                                totalElements: sortedMembers.length,
+                                                totalPages: Math.ceil(sortedMembers.length / PAGE_SIZE),
+                                            }}
+                                            currentPage={page + 1}
+                                            onPageChange={(p) => setPage(p - 1)}
+                                        />
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
                 </div>

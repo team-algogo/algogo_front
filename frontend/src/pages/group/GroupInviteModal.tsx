@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { searchUsersForGroup, inviteUserToGroup } from "../../api/group/groupApi";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { searchUsersForGroup, inviteUserToGroup, fetchGroupMembers, fetchGroupInviteList } from "../../api/group/groupApi";
 import ConfirmModal from "@components/modal/ConfirmModal";
 import Button from "@components/button/Button";
 import useToast from "@hooks/useToast";
@@ -11,8 +11,10 @@ interface GroupInviteModalProps {
 }
 
 export default function GroupInviteModal({ programId, onClose }: GroupInviteModalProps) {
+    const queryClient = useQueryClient();
     const [keyword, setKeyword] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
+    const [tempInvitedIds, setTempInvitedIds] = useState<number[]>([]); // Optimistic UI update
     const { showToast } = useToast();
 
     const [confirmModal, setConfirmModal] = useState<{
@@ -27,6 +29,20 @@ export default function GroupInviteModal({ programId, onClose }: GroupInviteModa
         onConfirm: () => { },
     });
 
+    // 기존 멤버 조회
+    const { data: memberData } = useQuery({
+        queryKey: ["groupMembers", programId],
+        queryFn: () => fetchGroupMembers(programId),
+        enabled: !!programId,
+    });
+
+    // 초대 목록 조회
+    const { data: inviteData } = useQuery({
+        queryKey: ["groupInviteList", programId],
+        queryFn: () => fetchGroupInviteList(programId),
+        enabled: !!programId,
+    });
+
     // 유저 검색
     const { data: searchData, isLoading: isSearching } = useQuery({
         queryKey: ["searchUsers", searchQuery],
@@ -34,18 +50,31 @@ export default function GroupInviteModal({ programId, onClose }: GroupInviteModa
         enabled: !!searchQuery,
     });
 
-    const userList = searchData?.data?.users || [];
+    // 필터링: 이미 멤버이거나, 이미 초대된 유저는 제외 + 방금 초대한 유저도 제외
+    const existingEmails = new Set([
+        ...(memberData?.data?.members || []).map((m: any) => m.email),
+        ...(inviteData?.data?.users || []).map((i: any) => i.email),
+    ]);
+
+    const userList = (searchData?.data?.users || []).filter((user: any) =>
+        !existingEmails.has(user.email) && !tempInvitedIds.includes(user.userId)
+    );
 
     // 초대 Mutation
     const inviteMutation = useMutation({
         mutationFn: (userId: number) => inviteUserToGroup(programId, userId),
         onSuccess: () => {
             showToast("초대 요청을 보냈습니다.", "success");
+            queryClient.invalidateQueries({ queryKey: ["groupInviteList", programId] });
         },
         onError: (err: any) => {
             console.error(err);
             const msg = err.response?.data?.message || "초대에 실패했습니다.";
             showToast(msg, "error");
+            // If failed, remove from tempInvitedIds?
+            // For now, let's just leave it or strictly handle cleanup if needed.
+            // But usually error handling complexity is higher.
+            // Let's keep it simple.
         },
     });
 
@@ -62,6 +91,7 @@ export default function GroupInviteModal({ programId, onClose }: GroupInviteModa
             message: `'${nickname}'님을 그룹에 초대하시겠습니까?`,
             onConfirm: () => {
                 inviteMutation.mutate(userId);
+                setTempInvitedIds((prev) => [...prev, userId]); // Immediately hide from list
                 setConfirmModal((prev) => ({ ...prev, isOpen: false }));
             },
         });

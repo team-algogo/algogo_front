@@ -3,7 +3,7 @@ import type { Dispatch, SetStateAction } from "react";
 
 import UserProfileCard from "./UserProfileCard";
 
-type ViewMode = "참여 현황" | "리뷰 요청" | "받은 리뷰" | "작성 리뷰" | "초대/신청 현황";
+type ViewMode = "참여 현황" | "내가 푼 문제" | "리뷰 요청" | "받은 리뷰" | "작성 리뷰" | "초대/신청 현황";
 
 interface SidebarProps {
   setViewMode: Dispatch<SetStateAction<ViewMode>>;
@@ -29,6 +29,12 @@ const Sidebar = ({ setViewMode }: SidebarProps) => {
             className="w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-50 hover:text-primary-600 rounded-md transition-colors font-medium text-sm"
           >
             참여 현황
+          </button>
+          <button
+            onClick={() => setViewMode("내가 푼 문제")}
+            className="w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-50 hover:text-primary-600 rounded-md transition-colors font-medium text-sm"
+          >
+            내가 푼 문제
           </button>
           <button
             onClick={() => setViewMode("초대/신청 현황")}

@@ -12,7 +12,7 @@ const MyPage = () => {
 
   // Initialize viewMode from location state if available, otherwise default to "참여 현황"
   const [viewMode, setViewMode] = useState<
-    "참여 현황" | "리뷰 요청" | "받은 리뷰" | "작성 리뷰" | "초대/신청 현황"
+    "참여 현황" | "내가 푼 문제" | "리뷰 요청" | "받은 리뷰" | "작성 리뷰" | "초대/신청 현황"
   >("참여 현황");
 
   const [initialSubTab, setInitialSubTab] = useState<"문제집" | "캠페인" | "그룹방" | undefined>(undefined);
@@ -23,6 +23,8 @@ const MyPage = () => {
     if (tab === "group") {
       setViewMode("참여 현황");
       setInitialSubTab("그룹방");
+    } else if (tab === "invite") {
+      setViewMode("초대/신청 현황");
     }
   }, [searchParams]);
 

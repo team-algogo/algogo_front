@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getUserProfile } from "@api/user/userApi";
 import { getReceivedReviews, getWrittenReviews, getRequiredReviews } from "@api/mypage";
 
-type ViewMode = "참여 현황" | "리뷰 요청" | "받은 리뷰" | "작성 리뷰" | "초대/신청 현황";
+type ViewMode = "참여 현황" | "내가 푼 문제" | "리뷰 요청" | "받은 리뷰" | "작성 리뷰" | "초대/신청 현황";
 
 interface UserProfileCardProps {
     setViewMode: Dispatch<SetStateAction<ViewMode>>;

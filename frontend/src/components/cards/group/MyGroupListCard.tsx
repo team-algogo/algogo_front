@@ -79,7 +79,7 @@ const MyGroupListCard = ({
               e.stopPropagation();
               onCancel();
             }}
-            className="px-3 py-1.5 text-xs font-medium text-white bg-gray-400 hover:bg-gray-500 rounded-md transition-colors"
+            className="ml-auto px-3 py-1.5 text-xs font-medium text-white bg-gray-400 hover:bg-gray-500 rounded-md transition-colors"
             style={{ fontFamily: 'Pretendard-Medium' }}
           >
             신청취소

@@ -101,7 +101,7 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
 
       // GROUP_INVITE_APPLY: 마이페이지로 이동
       if (type === "GROUP_INVITE_APPLY") {
-        navigate("/mypage");
+        navigate("/mypage?tab=invite");
         onClose();
         return;
       }

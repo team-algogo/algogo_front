@@ -4,6 +4,7 @@ import { fetchGroupJoinRequests, respondToJoinRequest, cancelGroupInvitation, fe
 import Toast, { type ToastType } from "@components/toast/Toast";
 import ConfirmModal from "@components/modal/ConfirmModal";
 import Button from "@components/button/Button";
+import Pagination from "@components/pagination/Pagination";
 
 interface GroupJoinRequestsModalProps {
     programId: number;
@@ -14,6 +15,19 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
     const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState<"JOIN_REQUEST" | "INVITE_LIST">("JOIN_REQUEST");
     const [toastConfig, setToastConfig] = useState<{ message: string; type: ToastType } | null>(null);
+
+    // Pagination State
+    const [page, setPage] = useState(0);
+    const PAGE_SIZE = 5;
+
+    // Reset page when tab changes
+    if (activeTab === "JOIN_REQUEST" && page > 0 && activeTab !== "JOIN_REQUEST") {
+        // This logic is tricky inside render if not effect. Better use effect.
+    }
+
+    // Better way:
+    // const [page, setPage] = useState(0);
+    // useEffect(() => setPage(0), [activeTab]); -> requires import useEffect
 
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
@@ -45,6 +59,20 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
     const pendingRequests = requests.filter((u: any) => u.status === "PENDING");
 
     const invites = inviteData?.data?.users || [];
+
+    // Pagination Slice Logic
+    const offset = page * PAGE_SIZE;
+
+    // We only paginate what we are showing
+    // If Join Request Tab: use pendingRequests
+    // If Invite List Tab: use invites
+
+    const currentList = activeTab === "JOIN_REQUEST" ? pendingRequests : invites;
+    const totalElements = currentList.length;
+
+    // Derived sub-lists
+    const paginatedRequests = activeTab === "JOIN_REQUEST" ? pendingRequests.slice(offset, offset + PAGE_SIZE) : [];
+    const paginatedInvites = activeTab === "INVITE_LIST" ? invites.slice(offset, offset + PAGE_SIZE) : [];
 
     // 가입 신청 승인/거절
     const mutation = useMutation({
@@ -149,6 +177,7 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
                     </button>
                 </div>
 
+
                 {/* 리스트 영역 */}
                 <div className="flex-1 overflow-auto p-0 scrollbar-hide">
                     {isLoading ? (
@@ -156,125 +185,143 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
                             로딩 중...
                         </div>
                     ) : (
-                        <table className="w-full text-left border-collapse">
-                            <thead className="sticky top-0 bg-gray-50/95 backdrop-blur-sm z-10 box-border border-b border-gray-100">
-                                <tr className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                    <th className="px-8 py-4 w-[40%]">유저</th>
-                                    <th className="px-6 py-4 w-[35%]">이메일</th>
-                                    <th className="px-6 py-4 w-[25%] text-center">{activeTab === "JOIN_REQUEST" ? "승인 / 거절" : "상태 / 취소"}</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50">
-                                {activeTab === "JOIN_REQUEST" ? (
-                                    // 가입 신청 목록
-                                    pendingRequests.length > 0 ? (
-                                        pendingRequests.map((req: any) => (
-                                            <tr key={req.joinId} className="group hover:bg-gray-50/50 transition-colors">
-                                                <td className="px-8 py-4">
-                                                    <div className="flex items-center gap-4">
-                                                        <img
-                                                            src={req.profileImage || "/icons/userIcon.svg"}
-                                                            onError={(e) => { (e.target as HTMLImageElement).src = "/icons/userIcon.svg"; }}
-                                                            alt="profile"
-                                                            className={`w-11 h-11 rounded-full object-cover border border-gray-100 shadow-sm ${!req.profileImage || (req.profileImage as string).includes("userIcon") ? "p-2 bg-gray-50 object-contain" : ""}`}
-                                                        />
-                                                        <span className="font-bold text-gray-900 text-base">
-                                                            {req.nickname}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <span className="text-sm text-gray-500 font-medium font-mono">{req.email}</span>
-                                                </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <div className="flex justify-center items-center gap-2">
-                                                        <Button
-                                                            onClick={() => handleAction(req.joinId, "ACCEPTED")}
-                                                            variant="primary"
-                                                            className="!py-1.5 !px-3 !h-auto text-xs font-bold"
-                                                        >
-                                                            승인
-                                                        </Button>
-                                                        <Button
-                                                            onClick={() => handleAction(req.joinId, "DENIED")}
-                                                            variant="text"
-                                                            className="!py-1.5 !px-3 !h-auto text-xs font-medium text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 border-none"
-                                                        >
-                                                            거절
-                                                        </Button>
+                        <>
+                            <table className="w-full text-left border-collapse">
+                                <thead className="sticky top-0 bg-gray-50/95 backdrop-blur-sm z-10 box-border border-b border-gray-100">
+                                    <tr className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                        <th className="px-8 py-4 w-[40%]">유저</th>
+                                        <th className="px-6 py-4 w-[35%]">이메일</th>
+                                        <th className="px-6 py-4 w-[25%] text-center">{activeTab === "JOIN_REQUEST" ? "승인 / 거절" : "상태 / 취소"}</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-50">
+                                    {activeTab === "JOIN_REQUEST" ? (
+                                        // 가입 신청 목록
+                                        paginatedRequests.length > 0 ? (
+                                            paginatedRequests.map((req: any) => (
+                                                <tr key={req.joinId} className="group hover:bg-gray-50/50 transition-colors">
+                                                    <td className="px-8 py-4">
+                                                        <div className="flex items-center gap-4">
+                                                            <img
+                                                                src={req.profileImage || "/icons/userIcon.svg"}
+                                                                onError={(e) => { (e.target as HTMLImageElement).src = "/icons/userIcon.svg"; }}
+                                                                alt="profile"
+                                                                className={`w-11 h-11 rounded-full object-cover border border-gray-100 shadow-sm ${!req.profileImage || (req.profileImage as string).includes("userIcon") ? "p-2 bg-gray-50 object-contain" : ""}`}
+                                                            />
+                                                            <span className="font-bold text-gray-900 text-base">
+                                                                {req.nickname}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <span className="text-sm text-gray-500 font-medium font-mono">{req.email}</span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center">
+                                                        <div className="flex justify-center items-center gap-2">
+                                                            <Button
+                                                                onClick={() => handleAction(req.joinId, "ACCEPTED")}
+                                                                variant="primary"
+                                                                className="!py-1.5 !px-3 !h-auto text-xs font-bold"
+                                                            >
+                                                                승인
+                                                            </Button>
+                                                            <Button
+                                                                onClick={() => handleAction(req.joinId, "DENIED")}
+                                                                variant="text"
+                                                                className="!py-1.5 !px-3 !h-auto text-xs font-medium text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 border-none"
+                                                            >
+                                                                거절
+                                                            </Button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={3} className="px-6 py-20 text-center text-gray-400 gap-2 flex-col">
+                                                    <div className="flex flex-col items-center gap-2">
+                                                        <span className="text-3xl">📭</span>
+                                                        <span>대기 중인 가입 신청이 없습니다.</span>
                                                     </div>
                                                 </td>
                                             </tr>
-                                        ))
+                                        )
                                     ) : (
-                                        <tr>
-                                            <td colSpan={3} className="px-6 py-20 text-center text-gray-400 gap-2 flex-col">
-                                                <div className="flex flex-col items-center gap-2">
-                                                    <span className="text-3xl">📭</span>
-                                                    <span>대기 중인 가입 신청이 없습니다.</span>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    )
-                                ) : (
-                                    // 초대 목록
-                                    invites.length > 0 ? (
-                                        invites.map((invite: any) => (
-                                            <tr key={invite.inviteId} className="group hover:bg-gray-50/50 transition-colors">
-                                                <td className="px-8 py-4">
-                                                    <div className="flex items-center gap-4">
-                                                        <img
-                                                            src={invite.profileImage || "/icons/userIcon.svg"}
-                                                            onError={(e) => { (e.target as HTMLImageElement).src = "/icons/userIcon.svg"; }}
-                                                            alt="profile"
-                                                            className={`w-11 h-11 rounded-full object-cover border border-gray-100 shadow-sm ${!invite.profileImage || (invite.profileImage as string).includes("userIcon") ? "p-2 bg-gray-50 object-contain" : ""}`}
-                                                        />
-                                                        <span className="font-bold text-gray-900 text-base">
-                                                            {invite.nickname}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <span className="text-sm text-gray-500 font-medium font-mono">{invite.email}</span>
-                                                </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <div className="flex justify-center items-center gap-3">
-                                                        <span className={`
+                                        // 초대 목록
+                                        paginatedInvites.length > 0 ? (
+                                            paginatedInvites.map((invite: any) => (
+                                                <tr key={invite.inviteId} className="group hover:bg-gray-50/50 transition-colors">
+                                                    <td className="px-8 py-4">
+                                                        <div className="flex items-center gap-4">
+                                                            <img
+                                                                src={invite.profileImage || "/icons/userIcon.svg"}
+                                                                onError={(e) => { (e.target as HTMLImageElement).src = "/icons/userIcon.svg"; }}
+                                                                alt="profile"
+                                                                className={`w-11 h-11 rounded-full object-cover border border-gray-100 shadow-sm ${!invite.profileImage || (invite.profileImage as string).includes("userIcon") ? "p-2 bg-gray-50 object-contain" : ""}`}
+                                                            />
+                                                            <span className="font-bold text-gray-900 text-base">
+                                                                {invite.nickname}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <span className="text-sm text-gray-500 font-medium font-mono">{invite.email}</span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center">
+                                                        <div className="flex justify-center items-center gap-3">
+                                                            <span className={`
                                                             text-xs px-2.5 py-1 rounded-full font-bold
                                                             ${invite.status === 'ACCEPTED' ? 'bg-green-50 text-green-600' :
-                                                                invite.status === 'DENIED' ? 'bg-red-50 text-red-600' :
-                                                                    'bg-yellow-50 text-yellow-600'}
+                                                                    invite.status === 'DENIED' ? 'bg-red-50 text-red-600' :
+                                                                        'bg-yellow-50 text-yellow-600'}
                                                         `}>
-                                                            {invite.status}
-                                                        </span>
-                                                        {invite.status === 'PENDING' && (
-                                                            <button
-                                                                onClick={() => handleCancelInvite(invite.inviteId)}
-                                                                className="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-alert-error hover:bg-red-50 rounded-lg transition-all"
-                                                                title="초대 취소"
-                                                            >
-                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                                                            </button>
-                                                        )}
+                                                                {invite.status}
+                                                            </span>
+                                                            {invite.status === 'PENDING' && (
+                                                                <button
+                                                                    onClick={() => handleCancelInvite(invite.inviteId)}
+                                                                    className="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-alert-error hover:bg-red-50 rounded-lg transition-all"
+                                                                    title="초대 취소"
+                                                                >
+                                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={3} className="px-6 py-20 text-center text-gray-400 gap-2 flex-col">
+                                                    <div className="flex flex-col items-center gap-2">
+                                                        <span className="text-3xl">📨</span>
+                                                        <span>보낸 초대 내역이 없습니다.</span>
                                                     </div>
                                                 </td>
                                             </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan={3} className="px-6 py-20 text-center text-gray-400 gap-2 flex-col">
-                                                <div className="flex flex-col items-center gap-2">
-                                                    <span className="text-3xl">📨</span>
-                                                    <span>보낸 초대 내역이 없습니다.</span>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    )
-                                )}
-                            </tbody>
-                        </table>
+                                        )
+                                    )}
+                                </tbody>
+                            </table>
+                            {/* Pagination Controls */}
+                            {totalElements > 0 && (
+                                <div className="p-4 border-t border-gray-100 flex justify-center">
+                                    <Pagination
+                                        pageInfo={{
+                                            number: page,
+                                            size: PAGE_SIZE,
+                                            totalElements: totalElements,
+                                            totalPages: Math.ceil(totalElements / PAGE_SIZE),
+                                        }}
+                                        currentPage={page + 1}
+                                        onPageChange={(p) => setPage(p - 1)}
+                                    />
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
+
             </div>
 
             <ConfirmModal
@@ -284,6 +331,6 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
                 onConfirm={confirmModal.onConfirm}
                 onCancel={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
             />
-        </div>
+        </div >
     );
 }

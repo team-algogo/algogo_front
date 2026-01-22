@@ -55,7 +55,7 @@ const getToastMessageByType = (type: string, payload: any, message?: string): To
         description: `그룹 초대를 확인하고 응답해주세요`,
         cta: {
           label: "마이페이지에서 확인",
-          route: "/mypage",
+          route: "/mypage?tab=invite",
         },
       };
 

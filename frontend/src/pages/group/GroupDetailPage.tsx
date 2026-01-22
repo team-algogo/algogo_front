@@ -402,6 +402,7 @@ export default function GroupDetailPage() {
                                                 }
                                                 : undefined
                                         }
+                                        showSolveButton={false}
                                     />
                                 </div>
                             ))

@@ -7,10 +7,19 @@ import {
   postCodeSubmit,
   type ProgramProblemProps,
 } from "@api/code/codeSubmit";
+import useAuthStore from "@store/useAuthStore";
 
 const CodeSubmitPage = () => {
   const param = useParams();
   const navigate = useNavigate();
+  const { userType } = useAuthStore();
+  const isLogined = !!userType;
+
+  useEffect(() => {
+    if (!isLogined) {
+      navigate("/intro", { state: { requireLogin: true } });
+    }
+  }, [isLogined, navigate]);
 
   // Layout State
   const [leftWidth, setLeftWidth] = useState(40); // Percentage

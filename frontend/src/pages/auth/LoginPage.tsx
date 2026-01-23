@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import PasswordResetModal from "@components/modal/auth/PasswordResetModal";
 
 import BasePage from "@pages/BasePage";
-import Toast from "@components/toast/Toast";
+import useToastStore from "@store/useToastStore";
 
 import Button from "@components/button/Button";
 import TextLink from "@components/textLink/TextLink";
@@ -16,7 +16,7 @@ import { useModalStore } from "@store/useModalStore";
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [showToast, setShowToast] = useState(false);
+  const { addToast } = useToastStore();
   const [showLoginRequiredBanner, setShowLoginRequiredBanner] = useState(false);
   const [bannerVisible, setBannerVisible] = useState(false);
   const [email, setEmail] = useState("");
@@ -30,7 +30,11 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (location.state?.signupSuccess) {
-      setShowToast(true);
+      addToast({
+        message: "회원가입이 완료되었습니다. 로그인을 진행해주세요.",
+        type: "success",
+        position: "top-center"
+      });
       // Clear state so toast doesn't show on refresh
       window.history.replaceState({}, document.title);
     }
@@ -77,20 +81,6 @@ const LoginPage = () => {
 
   return (
     <BasePage>
-      {showToast && (
-        <Toast
-          message="회원가입이 완료되었습니다. 로그인을 진행해주세요."
-          type="success"
-          onClose={() => setShowToast(false)}
-        />
-      )}
-      {showToast && (
-        <Toast
-          message="회원가입이 완료되었습니다. 로그인을 진행해주세요."
-          type="success"
-          onClose={() => setShowToast(false)}
-        />
-      )}
 
       {/* Password Reset Modal */}
       {isResetModalOpen && (

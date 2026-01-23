@@ -42,6 +42,7 @@ const GroupProblemCard = ({
   solvedCount,
   showDates = true,
   canMoreSubmission = true,
+  programId,
   showSolveButton = true,
   programTitle = "문제집",
 }: GroupProblemCardProps) => {
@@ -206,7 +207,7 @@ const GroupProblemCard = ({
           onClick={(e) => {
             e.stopPropagation();
             if (programProblemId) {
-              navigate(`/statistics/${programProblemId}`);
+              navigate(`/statistics/${programProblemId}${programId ? `?programId=${programId}` : ''}`);
             }
           }}
           onMouseEnter={() => setShowStatsTooltip(true)}

@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import BasePage from "@pages/BasePage";
 import Pagination from "@components/pagination/Pagination";
@@ -13,6 +14,7 @@ import {
 } from "@api/problemset/getProblemStatistics";
 import { getProblemInfo } from "@api/code/codeSubmit";
 import { getRequireReview } from "@api/review/manageReview";
+import { getCanMoreSubmission } from "@api/submissions/getCanMoreSubmission";
 import { format } from "date-fns";
 import type { SubmissionItem } from "@type/problemset/statistics";
 
@@ -27,6 +29,9 @@ export default function ProblemStatisticsPage() {
   const [isSuccess, setIsSuccess] = useState<boolean | undefined>(undefined);
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortDirection, setSortDirection] = useState("desc");
+  const [searchParams] = useSearchParams();
+  const [showAlertBanner, setShowAlertBanner] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const itemsPerPage = 20;
 
@@ -102,6 +107,23 @@ export default function ProblemStatisticsPage() {
     queryFn: () => getProblemSubmissionStats(id),
     enabled: !isNaN(id),
   });
+
+  // Get programId from URL query parameter
+  const programIdFromQuery = searchParams.get("programId");
+
+  // Check if more submissions are allowed
+  const { data: canMoreSubmissionData } = useQuery({
+    queryKey: ["canMoreSubmission", programIdFromQuery],
+    queryFn: () => getCanMoreSubmission(Number(programIdFromQuery)),
+    enabled: !!programIdFromQuery,
+  });
+
+  const canMoreSubmission = canMoreSubmissionData?.canMoreSubmission ?? true;
+
+  // Set mounted state
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const submissions = statisticsData?.submissions || [];
   const pageInfo = statisticsData?.page;
@@ -325,8 +347,21 @@ export default function ProblemStatisticsPage() {
             </button>
             {/* Primary Button - 문제 풀러 가기 */}
             <button
-              onClick={() => navigate(`/code/${programProblemId}`)}
-              className="flex items-center justify-center rounded-lg bg-[#0D6EFD] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-[#0B5ED7] hover:shadow-md active:bg-[#0A56C2] active:shadow-sm"
+              onClick={() => {
+                if (!canMoreSubmission) {
+                  setShowAlertBanner(true);
+                  setTimeout(() => {
+                    setShowAlertBanner(false);
+                  }, 5000);
+                  return;
+                }
+                navigate(`/code/${programProblemId}`);
+              }}
+              className={`flex items-center justify-center rounded-lg px-5 py-2.5 text-sm font-semibold shadow-sm transition-all duration-200 ${
+                !canMoreSubmission
+                  ? "bg-gray-100 text-gray-400 cursor-pointer opacity-60"
+                  : "bg-[#0D6EFD] text-white hover:bg-[#0B5ED7] hover:shadow-md active:bg-[#0A56C2] active:shadow-sm"
+              }`}
             >
               문제 풀기
             </button>
@@ -699,6 +734,63 @@ export default function ProblemStatisticsPage() {
           )}
         </div>
       </div>
+
+      {/* Alert Banner - Fixed at top */}
+      {mounted && showAlertBanner && createPortal(
+        <div
+          className="fixed top-0 left-0 right-0 z-[1001] flex items-center justify-center p-4"
+          style={{
+            animation: "slideDown 0.3s ease-out",
+          }}
+        >
+          <div className="w-full max-w-[500px] bg-white border border-amber-200 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-4 flex items-center gap-4">
+            {/* Icon */}
+            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center">
+              <svg
+                className="w-5 h-5 text-amber-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+            </div>
+
+            {/* Message */}
+            <div className="flex-1 flex flex-col">
+              <p className="text-sm font-bold text-gray-900 break-keep">
+                {problemInfo?.title || "문제"}의 필수 리뷰를 작성 후 새로운 제출을 해주세요!
+              </p>
+            </div>
+
+            {/* Close Button */}
+            <button
+              onClick={() => setShowAlertBanner(false)}
+              className="flex-shrink-0 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
     </BasePage>
   );
 }

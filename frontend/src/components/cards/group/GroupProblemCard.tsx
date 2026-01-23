@@ -48,6 +48,7 @@ const GroupProblemCard = ({
   const navigate = useNavigate();
   const [showAlertBanner, setShowAlertBanner] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [showStatsTooltip, setShowStatsTooltip] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -208,12 +209,21 @@ const GroupProblemCard = ({
               navigate(`/statistics/${programProblemId}`);
             }
           }}
-          className="relative flex items-center justify-center text-gray-400 transition-colors hover:text-primary-main p-1.5"
-          title="통계 보기"
+          onMouseEnter={() => setShowStatsTooltip(true)}
+          onMouseLeave={() => setShowStatsTooltip(false)}
+          className="relative flex items-center justify-center text-gray-400 transition-colors hover:text-primary-main p-2.5"
         >
+          {/* Custom Tooltip */}
+          {showStatsTooltip && (
+            <div className="absolute bottom-full mb-2 px-3 py-1.5 bg-gray-800 text-white text-xs font-medium rounded-lg shadow-lg whitespace-nowrap pointer-events-none z-10 animate-fadeIn">
+              통계 보기
+              <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-800"></div>
+            </div>
+          )}
+        
           <svg
-            width="20"
-            height="20"
+            width="28"
+            height="28"
             viewBox="0 0 18 18"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"

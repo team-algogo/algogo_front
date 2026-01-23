@@ -38,6 +38,8 @@ const MainPage = () => {
     useState<ProblemSetListResponse | null>(null);
 
   const [groupList, setGroupList] = useState<GroupItem[] | null>(null);
+  const [showLoginRequiredBanner, setShowLoginRequiredBanner] = useState(false);
+  const [bannerVisible, setBannerVisible] = useState(false);
 
   const { state, pathname } = useLocation();
   const navigate = useNavigate();
@@ -100,6 +102,31 @@ const MainPage = () => {
     }
   }, [state, openModal, navigate, pathname]);
 
+  // 로그인 필요 배너 표시
+  useEffect(() => {
+    if (state?.requireLogin) {
+      setShowLoginRequiredBanner(true);
+      setBannerVisible(true);
+      // Clear state so banner doesn't show on refresh
+      window.history.replaceState({}, document.title);
+
+      // 3초 후 배너 fade-out 시작
+      const fadeTimer = setTimeout(() => {
+        setBannerVisible(false);
+      }, 3000);
+
+      // fade-out 애니메이션 후 완전히 제거
+      const removeTimer = setTimeout(() => {
+        setShowLoginRequiredBanner(false);
+      }, 3500);
+
+      return () => {
+        clearTimeout(fadeTimer);
+        clearTimeout(removeTimer);
+      };
+    }
+  }, [state]);
+
 
   // Landing Page for non-logged-in users
   // Redirect to Intro Page for non-logged-in users
@@ -110,6 +137,37 @@ const MainPage = () => {
   // Dashboard for logged-in users
   return (
     <>
+      {/* 로그인 필요 안내 배너 - fixed position으로 레이아웃 shift 방지 */}
+      {showLoginRequiredBanner && (
+        <div
+          className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-[420px] px-4 transition-opacity duration-500 ${
+            bannerVisible ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 shadow-lg">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="text-blue-600 flex-shrink-0"
+            >
+              <path
+                d="M12 8V12M12 16H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <p className="text-sm font-medium text-blue-900">
+              로그인이 필요한 서비스입니다.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Banner Section - Full Width, outside BasePage */}
       <section className="w-full">
         <HeroSection />

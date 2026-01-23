@@ -100,6 +100,14 @@ int main() {
     };
   }, [resize, stopResizing]);
 
+  // Clear time/memory when switching to failed status
+  useEffect(() => {
+    if (!isSuccess) {
+      setExecTime("");
+      setMemory("");
+    }
+  }, [isSuccess]);
+
   const handleSubmit = async () => {
     if (!problemInfo) return;
     try {
@@ -122,8 +130,9 @@ int main() {
     }
   };
 
-  const isFormValid =
-    !!execTime && !!memory && !!strategy && code.trim().length > 0;
+  const isFormValid = isSuccess
+    ? !!execTime && !!memory && !!strategy && code.trim().length > 0
+    : !!strategy && code.trim().length > 0;
 
   return (
     <div className="flex h-[calc(100vh-4rem)] w-full flex-col overflow-hidden bg-[#1E1E1E] font-sans text-gray-200">
@@ -283,10 +292,17 @@ int main() {
                       type="number"
                       value={execTime}
                       onChange={(e) => setExecTime(e.target.value)}
-                      className="w-full h-8 rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm font-medium text-gray-800 placeholder-gray-500 focus:border-primary-main focus:bg-white focus:ring-2 focus:ring-primary-100 outline-none transition-all"
+                      disabled={!isSuccess}
+                      className={`w-full h-8 rounded-lg border px-3 text-sm font-medium placeholder-gray-500 outline-none transition-all ${
+                        !isSuccess
+                          ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : "border-gray-200 bg-gray-50 text-gray-800 focus:border-primary-main focus:bg-white focus:ring-2 focus:ring-primary-100"
+                      }`}
                       placeholder="0"
                     />
-                    <span className="absolute right-3 top-2 text-xs text-gray-400 font-medium">ms</span>
+                    <span className={`absolute right-3 top-2 text-xs font-medium ${
+                      !isSuccess ? "text-gray-300" : "text-gray-400"
+                    }`}>ms</span>
                   </div>
                 </div>
                 <div className="flex flex-col gap-1">
@@ -296,10 +312,17 @@ int main() {
                       type="number"
                       value={memory}
                       onChange={(e) => setMemory(e.target.value)}
-                      className="w-full h-8 rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm font-medium text-gray-800 placeholder-gray-400 focus:border-primary-main focus:bg-white focus:ring-2 focus:ring-primary-100 outline-none transition-all"
+                      disabled={!isSuccess}
+                      className={`w-full h-8 rounded-lg border px-3 text-sm font-medium placeholder-gray-400 outline-none transition-all ${
+                        !isSuccess
+                          ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : "border-gray-200 bg-gray-50 text-gray-800 focus:border-primary-main focus:bg-white focus:ring-2 focus:ring-primary-100"
+                      }`}
                       placeholder="0"
                     />
-                    <span className="absolute right-3 top-2 text-xs text-gray-400 font-medium">KB</span>
+                    <span className={`absolute right-3 top-2 text-xs font-medium ${
+                      !isSuccess ? "text-gray-300" : "text-gray-400"
+                    }`}>KB</span>
                   </div>
                 </div>
               </div>

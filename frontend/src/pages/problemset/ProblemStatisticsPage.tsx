@@ -15,6 +15,7 @@ import {
 import { getProblemInfo } from "@api/code/codeSubmit";
 import { getRequireReview } from "@api/review/manageReview";
 import { getCanMoreSubmission } from "@api/submissions/getCanMoreSubmission";
+import useAuthStore from "@store/useAuthStore";
 import { format } from "date-fns";
 import type { SubmissionItem } from "@type/problemset/statistics";
 
@@ -34,6 +35,14 @@ export default function ProblemStatisticsPage() {
   const [mounted, setMounted] = useState(false);
 
   const itemsPerPage = 20;
+  const { userType } = useAuthStore();
+  const isLogined = !!userType;
+
+  useEffect(() => {
+    if (!isLogined) {
+      navigate("/intro", { state: { requireLogin: true } });
+    }
+  }, [isLogined, navigate]);
 
   // localStorage에서 programId 가져오기
   const getCachedProgramId = () => {

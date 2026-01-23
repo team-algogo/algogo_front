@@ -61,7 +61,7 @@ export default function ProblemSetDetailPage() {
 
   useEffect(() => {
     if (!isLogined) {
-      navigate("/");
+      navigate("/intro", { state: { requireLogin: true } });
     }
   }, [isLogined, navigate]);
 

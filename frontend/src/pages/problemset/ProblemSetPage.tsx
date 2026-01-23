@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LoginRequestOverlay from "@components/common/LoginRequestOverlay";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -37,7 +37,7 @@ export default function ProblemSetPage() {
     queryFn: getCategoryList,
   });
 
-  const { userType } = useAuthStore();
+  const { userType, authorization } = useAuthStore();
   const isLogined = !!userType;
 
   // 사용자 정보 조회 (ADMIN 확인용 및 인증 상태 확인)
@@ -48,20 +48,21 @@ export default function ProblemSetPage() {
     retry: false,
   });
 
-  // 비로그인 유저 체크 및 리다이렉트 -> 제거 (블러 처리된 화면 보여주기 위함)
-  /* 
+  // 비로그인 유저 체크 및 리다이렉트
   useEffect(() => {
+    // 이미 로그인 된 상태라면 리턴
     if (userType === "User" && authorization) {
       return;
     }
+    
+    // 비로그인 상태라면 인트로 페이지로 리다이렉트
     if (!authorization && !userType) {
-      navigate("/login", {
+      navigate("/intro", {
         state: { requireLogin: true, redirectTo: "/problemset" },
         replace: true,
       });
     }
   }, [authorization, userType, navigate]);
-  */
 
   const tabs = ["전체", ...(categoryList?.map((c) => c.name) || [])];
   const sortOptions: SelectOption[] = [

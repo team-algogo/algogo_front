@@ -40,7 +40,7 @@ const CodeReviewPage = () => {
   
   useEffect(() => {
     if (!userType) {
-      navigate("/");
+      navigate("/intro", { state: { requireLogin: true } });
     }
   }, [userType, navigate]);
 

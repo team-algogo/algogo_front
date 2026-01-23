@@ -1,5 +1,5 @@
-import { postLogout } from "@api/auth/auth";
-import { useQueryClient } from "@tanstack/react-query";
+import { postLogout, getCheckUser } from "@api/auth/auth";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import TextLink from "@components/textLink/TextLink";
 import useAuthStore from "@store/useAuthStore";
 import Logo from "@components/header/Logo";
@@ -16,6 +16,12 @@ const Header = () => {
   const { openModal, closeModal } = useModalStore();
   const navigate = useNavigate();
 
+  const { data: userData } = useQuery({
+    queryKey: ["currentUser"],
+    queryFn: getCheckUser,
+    enabled: !!userType, // Only fetch if user is logged in
+  });
+
   const logout = async (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     try {
@@ -23,6 +29,7 @@ const Header = () => {
       if (response.status == 200) {
         // Clear notifications cache to prevent data leakage between users
         queryClient.removeQueries({ queryKey: ["notifications"] });
+        queryClient.removeQueries({ queryKey: ["currentUser"] });
 
         setUserType(null);
         setAuthorization("");
@@ -85,6 +92,16 @@ const Header = () => {
             <div className="flex items-center gap-2">
               {userType == "User" ? (
                 <>
+                  {userData?.data && (
+                    <div className="flex items-center mr-0.5">
+                      <span className="text-[15px] font-bold text-gray-900 tracking-tight">
+                        {userData.data.nickname}
+                      </span>
+                      <span className="text-sm font-medium text-gray-500 ml-0.5">
+                        님
+                      </span>
+                    </div>
+                  )}
                   <NotificationContainer />
                   <TextLink
                     src="/mypage"

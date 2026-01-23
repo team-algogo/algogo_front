@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Button from "@components/button/Button";
 import TextLink from "@components/textLink/TextLink";
-import Toast from "@components/toast/Toast";
-import type { ToastType } from "@components/toast/Toast";
+import useToastStore from "@store/useToastStore";
 import BasePage from "@pages/BasePage";
 import { postCheckEmail, postCheckNickname, postSignUp, postEmailVerificationRequest, postEmailVerification } from "@api/auth/auth";
 
@@ -15,11 +14,7 @@ const validateEmail = (email: string) => {
 
 const JoinPage = () => {
   const navigate = useNavigate();
-
-  // Toast State
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastType, setToastType] = useState<ToastType>("success");
+  const { addToast } = useToastStore();
 
   // input 상태
   const [nickname, setNickname] = useState("");
@@ -93,12 +88,11 @@ const JoinPage = () => {
       setEmailError(""); // Clear error if available
 
       // 3. Request Verification Code
-      // Optimistic UI: Show toast immediately before the slow email request finishes
-      // However, we wait for duplication check first (which is usually fast)
-
-      setToastMessage("인증번호가 전송되었습니다. 이메일을 확인해주세요.");
-      setToastType("success");
-      setShowToast(true);
+      addToast({
+        message: "인증번호가 전송되었습니다. 이메일을 확인해주세요.",
+        type: "success",
+        position: "top-center"
+      });
       setIsVerificationSent(true);
 
       // Send email in background (or await but we already showed success)
@@ -107,9 +101,11 @@ const JoinPage = () => {
       } catch (err) {
         // If it actually fails, show error toast
         if (axios.isAxiosError(err)) {
-          setToastMessage(err.response?.data.message || "인증번호 전송에 실패했습니다.");
-          setToastType("error");
-          setShowToast(true);
+          addToast({
+            message: err.response?.data.message || "인증번호 전송에 실패했습니다.",
+            type: "error",
+            position: "top-center"
+          });
         }
       }
     } catch (err) {
@@ -132,9 +128,11 @@ const JoinPage = () => {
       setIsEmailChecked(true); // Verified!
       setVerificationError("");
 
-      setToastMessage("이메일 인증에 성공했습니다.");
-      setToastType("success");
-      setShowToast(true);
+      addToast({
+        message: "이메일 인증에 성공했습니다.",
+        type: "success",
+        position: "top-center"
+      });
     } catch (err) {
       if (axios.isAxiosError(err)) {
         setVerificationError(err.response?.data.message || "인증번호가 올바르지 않습니다.");
@@ -170,22 +168,17 @@ const JoinPage = () => {
       navigate("/login", { state: { signupSuccess: true } });
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        setToastMessage(err.response?.data.message || "회원가입에 실패했습니다.");
-        setToastType("error");
-        setShowToast(true);
+        addToast({
+          message: err.response?.data.message || "회원가입에 실패했습니다.",
+          type: "error",
+          position: "top-center"
+        });
       }
     }
   };
 
   return (
     <BasePage>
-      {showToast && (
-        <Toast
-          message={toastMessage}
-          type={toastType}
-          onClose={() => setShowToast(false)}
-        />
-      )}
       <div className="w-full min-h-[calc(100vh-200px)] flex justify-center items-center py-10">
         <div className="flex flex-col gap-8 w-full max-w-[480px] px-8 py-10 bg-white shadow-card rounded-lg border border-gray-100">
           <div className="text-center">

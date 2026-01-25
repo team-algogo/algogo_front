@@ -207,8 +207,56 @@ export default function GroupDetailPage() {
         });
     };
 
-    if (isDetailLoading) return <div>Loading...</div>;
-    if (!groupDetail) return <div>그룹 정보를 찾을 수 없습니다.</div>;
+    if (isDetailLoading) {
+        return (
+            <BasePage>
+                <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+                    <div className="relative">
+                        <div className="border-primary-main h-12 w-12 animate-spin rounded-full border-4 border-t-transparent"></div>
+                        <div className="absolute inset-0 border-primary-200 h-12 w-12 animate-spin rounded-full border-4 opacity-20" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                        <p className="text-base font-medium text-gray-700">그룹 정보를 불러오는 중...</p>
+                        <p className="text-sm text-gray-400">잠시만 기다려주세요</p>
+                    </div>
+                </div>
+            </BasePage>
+        );
+    }
+    if (!groupDetail) {
+        return (
+            <BasePage>
+                <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
+                        <svg
+                            width="32"
+                            height="32"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="text-red-500"
+                        >
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                        <p className="text-base font-medium text-gray-700">그룹 정보를 찾을 수 없습니다</p>
+                        <button
+                            onClick={() => navigate("/group")}
+                            className="mt-2 rounded-lg bg-primary-main px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600"
+                        >
+                            그룹 목록으로 돌아가기
+                        </button>
+                    </div>
+                </div>
+            </BasePage>
+        );
+    }
 
     return (
         <BasePage>

@@ -23,3 +23,7 @@ export const searchProblems = async (keyword: string) => {
     );
     return response.data;
 };
+
+export const increaseViewCount = async (programProblemId: number) => {
+    await client.patch(`/api/v1/problems/${programProblemId}`);
+};

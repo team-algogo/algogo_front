@@ -67,12 +67,15 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
     // If Join Request Tab: use pendingRequests
     // If Invite List Tab: use invites
 
-    const currentList = activeTab === "JOIN_REQUEST" ? pendingRequests : invites;
+    const currentList = activeTab === "JOIN_REQUEST" ? pendingRequests : invites.filter((i: any) => i.status === "PENDING");
     const totalElements = currentList.length;
+
+    // Sent Invitations: Only show PENDING ones
+    const pendingInvites = activeTab === "INVITE_LIST" ? invites.filter((i: any) => i.status === "PENDING") : [];
 
     // Derived sub-lists
     const paginatedRequests = activeTab === "JOIN_REQUEST" ? pendingRequests.slice(offset, offset + PAGE_SIZE) : [];
-    const paginatedInvites = activeTab === "INVITE_LIST" ? invites.slice(offset, offset + PAGE_SIZE) : [];
+    const paginatedInvites = activeTab === "INVITE_LIST" ? pendingInvites.slice(offset, offset + PAGE_SIZE) : [];
 
     // 가입 신청 승인/거절
     const mutation = useMutation({
@@ -137,7 +140,7 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
                     onClose={() => setToastConfig(null)}
                 />
             )}
-            <div className="bg-white w-[800px] max-h-[85vh] rounded-3xl flex flex-col shadow-2xl overflow-hidden relative border border-gray-100">
+            <div className="bg-white w-[800px] min-h-[600px] max-h-[85vh] rounded-3xl flex flex-col shadow-2xl overflow-hidden relative border border-gray-100">
 
                 {/* 헤더 */}
                 <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-20">
@@ -174,6 +177,9 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
                             }`}
                     >
                         보낸 초대 목록
+                        <span className={`ml-2 px-1.5 py-0.5 rounded-full text-xs ${activeTab === "INVITE_LIST" ? "bg-primary-50 text-primary-main" : "bg-gray-100 text-gray-500"}`}>
+                            {invites.filter((i: any) => i.status === "PENDING").length}
+                        </span>
                     </button>
                 </div>
 
@@ -191,7 +197,7 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
                                     <tr className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                         <th className="px-8 py-4 w-[40%]">유저</th>
                                         <th className="px-6 py-4 w-[35%]">이메일</th>
-                                        <th className="px-6 py-4 w-[25%] text-center">{activeTab === "JOIN_REQUEST" ? "승인 / 거절" : "상태 / 취소"}</th>
+                                        <th className="px-6 py-4 w-[25%] text-center">{activeTab === "JOIN_REQUEST" ? "승인 / 거절" : "취소"}</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-50">
@@ -270,22 +276,17 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
                                                     <td className="px-6 py-4 text-center">
                                                         <div className="flex justify-center items-center gap-3">
                                                             <span className={`
-                                                            text-xs px-2.5 py-1 rounded-full font-bold
-                                                            ${invite.status === 'ACCEPTED' ? 'bg-green-50 text-green-600' :
-                                                                    invite.status === 'DENIED' ? 'bg-red-50 text-red-600' :
-                                                                        'bg-yellow-50 text-yellow-600'}
+                                                            text-xs px-2.5 py-1 rounded-full font-bold bg-yellow-50 text-yellow-600
                                                         `}>
-                                                                {invite.status}
+                                                                대기중
                                                             </span>
-                                                            {invite.status === 'PENDING' && (
-                                                                <button
-                                                                    onClick={() => handleCancelInvite(invite.inviteId)}
-                                                                    className="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-alert-error hover:bg-red-50 rounded-lg transition-all"
-                                                                    title="초대 취소"
-                                                                >
-                                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                                                                </button>
-                                                            )}
+                                                            <button
+                                                                onClick={() => handleCancelInvite(invite.inviteId)}
+                                                                className="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-alert-error hover:bg-red-50 rounded-lg transition-all"
+                                                                title="초대 취소"
+                                                            >
+                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                                            </button>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -303,24 +304,25 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
                                     )}
                                 </tbody>
                             </table>
-                            {/* Pagination Controls */}
-                            {totalElements > 0 && (
-                                <div className="p-4 border-t border-gray-100 flex justify-center">
-                                    <Pagination
-                                        pageInfo={{
-                                            number: page,
-                                            size: PAGE_SIZE,
-                                            totalElements: totalElements,
-                                            totalPages: Math.ceil(totalElements / PAGE_SIZE),
-                                        }}
-                                        currentPage={page + 1}
-                                        onPageChange={(p) => setPage(p - 1)}
-                                    />
-                                </div>
-                            )}
                         </>
                     )}
                 </div>
+
+                {/* Pagination Footer */}
+                {totalElements > 0 && (
+                    <div className="px-8 py-4 border-t border-gray-100 flex justify-center bg-white">
+                        <Pagination
+                            pageInfo={{
+                                number: page,
+                                size: PAGE_SIZE,
+                                totalElements: totalElements,
+                                totalPages: Math.ceil(totalElements / PAGE_SIZE),
+                            }}
+                            currentPage={page + 1}
+                            onPageChange={(p) => setPage(p - 1)}
+                        />
+                    </div>
+                )}
 
             </div>
 

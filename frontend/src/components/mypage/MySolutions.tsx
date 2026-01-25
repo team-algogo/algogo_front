@@ -155,12 +155,12 @@ export default function MySolutions() {
     };
 
     return (
-        <div className="flex h-full w-full flex-col items-start gap-6 bg-white">
+        <div className="flex h-full w-full flex-col items-start gap-6 bg-white flex-1">
             {/* Header */}
             <h2 className="text-xl font-bold text-[#333333]">내가 푼 문제</h2>
 
             {/* Main Content: Full Width Table */}
-            <div className="flex w-full flex-col gap-4">
+            <div className="flex w-full flex-col gap-4 flex-1">
                 <div className="flex w-full flex-col rounded-[12px] border border-[#F4F4F5]">
                     {/* Table Header */}
                     <div className="flex h-[50px] w-full flex-row items-center rounded-t-[12px] border-b border-gray-100 bg-[#F9FAFB]">
@@ -386,16 +386,18 @@ export default function MySolutions() {
                         </div>
                     )}
                 </div>
+            </div>
 
-                {/* Pagination */}
-                {pageInfo && totalPages > 0 && (
+            {/* Pagination */}
+            {pageInfo && totalPages > 0 && (
+                <div className="mt-auto py-4 w-full flex justify-center">
                     <Pagination
                         pageInfo={pageInfo}
                         currentPage={page}
                         onPageChange={handlePageChange}
                     />
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 }

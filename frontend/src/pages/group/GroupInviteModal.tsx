@@ -51,9 +51,15 @@ export default function GroupInviteModal({ programId, onClose }: GroupInviteModa
     });
 
     // 필터링: 이미 멤버이거나, 이미 초대된 유저는 제외 + 방금 초대한 유저도 제외
+    // 변경: 거절하거나 수락한 경우(이미 멤버에서 걸러짐)는 다시 초대 가능해야 할 수도 있으나,
+    // 요구사항: "거절한 경우는 다시 검색에 포함될 수 있도록 해야 됨" -> 즉 PENDING 상태인 경우만 제외
+
     const existingEmails = new Set([
         ...(memberData?.data?.members || []).map((m: any) => m.email),
-        ...(inviteData?.data?.users || []).map((i: any) => i.email),
+        // inviteData에서 status가 'PENDING'인 유저만 제외 목록에 추가
+        ...(inviteData?.data?.users || [])
+            .filter((i: any) => i.status === 'PENDING')
+            .map((i: any) => i.email),
     ]);
 
     const userList = (searchData?.data?.users || []).filter((user: any) =>

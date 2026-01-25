@@ -7,6 +7,7 @@ import Group from "@components/cards/group/GroupListCard";
 import MyGroupListCard from "@components/cards/group/MyGroupListCard";
 import Button from "@components/button/Button";
 import { fetchGroupList, fetchMyGroupList } from "../../api/group/groupApi";
+import { getSentJoins } from "@api/mypage";
 import CreateGroupModal from "./CreateGroupModal";
 import useAuthStore from "@store/useAuthStore";
 import Pagination from "@components/pagination/Pagination";
@@ -59,6 +60,20 @@ const GroupMainPage = () => {
   });
 
   const myGroupList = myGroupData?.data?.groupLists || [];
+
+  // (C) [NEW] 내 가입 신청 현황 (로그인 했을 때만 fetch)
+  const { data: myJoinData } = useQuery({
+    queryKey: ["myJoinRequests"],
+    queryFn: getSentJoins,
+    enabled: isLoggedIn,
+  });
+
+  // PENDING 상태인 programId 목록 추출
+  const pendingGroupIds = new Set(
+    (myJoinData?.joins || [])
+      .filter((join: any) => join.joinStatus === "PENDING")
+      .map((join: any) => join.groupRoom.programId)
+  );
 
   // --- 3. UI Logic ---
   // 비로그인 시 보여줄 흐릿한 리스트 (3개)
@@ -317,6 +332,7 @@ const GroupMainPage = () => {
                           createdAt={formatDate(group.createdAt)}
                           isMember={group.isMember}
                           isLoggedIn={isLoggedIn}
+                          isPending={pendingGroupIds.has(group.programId)}
                         />
                       </div>
                     ))}

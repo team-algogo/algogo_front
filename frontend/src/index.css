@@ -107,6 +107,7 @@
 /* Prevent horizontal layout shift from scrollbar */
 html {
   scrollbar-gutter: stable;
+  zoom: 0.8; /* User requested 80% scale */
 }
 
 /* Global Reset & Base Styles */

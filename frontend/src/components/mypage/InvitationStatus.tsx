@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import MyGroupListCard from "@components/cards/group/MyGroupListCard";
+import useToast from "@hooks/useToast";
 import { getReceivedInvites, getSentJoins, respondToReceivedInvite, cancelSentJoin } from "@api/mypage";
-import InvitationResponseModal from "@components/modal/mypage/InvitationResponseModal";
+
 import ConfirmModal from "@components/modal/ConfirmModal";
 import type { Invite, Join } from "@type/mypage/InvitationStatus";
 
@@ -10,8 +11,8 @@ type Tab = "초대" | "신청";
 
 const InvitationStatus = () => {
     const [activeTab, setActiveTab] = useState<Tab>("초대");
-    const [selectedInvite, setSelectedInvite] = useState<Invite | null>(null);
     const [selectedJoinToCancel, setSelectedJoinToCancel] = useState<Join | null>(null);
+    const { showToast } = useToast();
     const queryClient = useQueryClient();
 
     const { data: invitesData } = useQuery({
@@ -41,21 +42,21 @@ const InvitationStatus = () => {
             inviteId: number;
             isAccepted: "ACCEPTED" | "DENIED";
         }) => respondToReceivedInvite(programId, inviteId, isAccepted),
-        onSuccess: () => {
+        onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ["receivedInvites"] });
-            setSelectedInvite(null);
+            const message = variables.isAccepted === "ACCEPTED" ? "초대를 수락했습니다." : "초대를 거절했습니다.";
+            showToast(message, "success");
         },
         onError: (error) => {
             console.error("Failed to respond to invite:", error);
-            // Optional: Show error toast
+            showToast("요청 처리에 실패했습니다.", "error");
         },
     });
 
-    const handleConfirmResponse = (isAccepted: boolean) => {
-        if (!selectedInvite) return;
+    const handleRespond = (invite: Invite, isAccepted: boolean) => {
         respondMutation.mutate({
-            programId: selectedInvite.groupRoom.programId,
-            inviteId: selectedInvite.inviteId,
+            programId: invite.groupRoom.programId,
+            inviteId: invite.inviteId,
             isAccepted: isAccepted ? "ACCEPTED" : "DENIED",
         });
     };
@@ -70,10 +71,12 @@ const InvitationStatus = () => {
         }) => cancelSentJoin(programId, joinId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["sentJoins"] });
+            showToast("참여 신청을 취소했습니다.", "success");
             setSelectedJoinToCancel(null);
         },
         onError: (error) => {
             console.error("Failed to cancel join request:", error);
+            showToast("취소 요청에 실패했습니다.", "error");
         },
     });
 
@@ -164,9 +167,12 @@ const InvitationStatus = () => {
                                         description={invite.groupRoom.description}
                                         memberCount={invite.groupRoom.memberCount}
                                         problemCount={invite.groupRoom.programProblemCount}
-                                        role={invite.groupRoom.isMember ? "USER" : "USER"} /* role mapping? */
+                                        role={invite.groupRoom.isMember ? "USER" : "USER"}
                                         variant="mypage"
-                                        onClick={() => setSelectedInvite(invite)}
+                                        onClick={() => { }} // Remove selection
+                                        onAccept={() => handleRespond(invite, true)}
+                                        onReject={() => handleRespond(invite, false)}
+                                        hideRoleBadge={true}
                                     />
                                 ))}
 
@@ -181,21 +187,13 @@ const InvitationStatus = () => {
                                         role={join.groupRoom.isMember ? "USER" : "USER"}
                                         variant="mypage"
                                         onCancel={() => setSelectedJoinToCancel(join)}
+                                        hideRoleBadge={true}
                                     />
                                 ))}
                         </div>
                     </div>
                 </div>
             </div>
-            {/* Modal */}
-            {selectedInvite && (
-                <InvitationResponseModal
-                    isOpen={!!selectedInvite}
-                    onClose={() => setSelectedInvite(null)}
-                    onConfirm={handleConfirmResponse}
-                    groupName={selectedInvite.groupRoom.title}
-                />
-            )}
 
             {/* Cancel Confirm Modal */}
             <ConfirmModal

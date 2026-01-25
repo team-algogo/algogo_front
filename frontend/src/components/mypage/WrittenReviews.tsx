@@ -1,22 +1,24 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Pagination from "@components/pagination/Pagination";
 import { getWrittenReviews } from "../../api/mypage";
+import { useNavigate } from "react-router-dom";
 
 const WrittenReviews = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
+  const navigate = useNavigate();
 
-  const { data } = useQuery({
+  const { data: reviewsData } = useQuery({
     queryKey: ["receiveCodeReviews", currentPage],
     queryFn: () => getWrittenReviews(currentPage - 1, pageSize),
   });
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
-  const reviews =
-    data?.receiveCodeReviews || (data as any)?.writtenCodeReviews || [];
-  const totalPages = data?.pageInfo.totalPages || 1;
-  const totalElements = data?.pageInfo.totalElements || 0;
+  const reviews = reviewsData?.receiveCodeReviews || (reviewsData as any)?.writtenCodeReviews || [];
+  const totalPages = reviewsData?.pageInfo.totalPages || 1;
+  const totalElements = reviewsData?.pageInfo.totalElements || 0;
 
   const getTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
@@ -48,7 +50,7 @@ const WrittenReviews = () => {
   };
 
   return (
-    <div className="flex w-full flex-col items-start gap-4">
+    <div className="flex w-full flex-col items-start gap-4 h-full flex-1">
       <div className="flex w-full items-center gap-2  mb-5">
         <span
           className="text-xl leading-[130%] font-bold tracking-[-0.2px] text-[#050505]"
@@ -67,7 +69,7 @@ const WrittenReviews = () => {
         </div>
       </div>
 
-      <div className="flex w-full flex-col items-start gap-3">
+      <div className="flex w-full flex-col items-start gap-3 flex-1">
         {/* Empty State */}
         {totalElements === 0 ? (
           <div className="flex w-full items-center justify-center py-10">
@@ -90,7 +92,10 @@ const WrittenReviews = () => {
             return (
               <div
                 key={review.submissionId}
-                className="flex w-full flex-col items-start gap-3 rounded-2xl border border-[#F2F2F2] bg-white p-5"
+                onClick={() => navigate(`/review/${review.submissionId}`)}
+                className="flex w-full flex-col items-start gap-3 rounded-2xl border border-[#F2F2F2] bg-white p-5 cursor-pointer hover:border-[#0D6EFD] transition-colors"
+                role="button"
+                tabIndex={0}
               >
                 <div className="flex items-center gap-2">
                   <div
@@ -151,11 +156,13 @@ const WrittenReviews = () => {
         )}
       </div>
 
-      <Pagination
-        pageInfo={{ number: currentPage - 1, totalPages }}
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
-      />
+      <div className="mt-auto py-4 w-full flex justify-center">
+        <Pagination
+          pageInfo={{ number: currentPage - 1, totalPages }}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+        />
+      </div>
     </div>
   );
 };

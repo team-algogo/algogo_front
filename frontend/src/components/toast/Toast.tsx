@@ -17,32 +17,24 @@ const Toast = ({ message, type = "success", onClose }: ToastProps) => {
   const prevMessageRef = useRef<string>("");
   const prevTypeRef = useRef<ToastType>("success");
 
-  // 내가 한 행동에 대한 메시지 패턴 감지 (상단 가운데로 표시)
+  // SSE 알림 패턴 감지 (우하단으로 표시)
   const getPosition = (msg: string): ToastPosition => {
-    const myActionPatterns = [
-      "참여신청이 완료되었습니다",
-      "관리자의 승인이 될 때까지 기다려주세요",
-      "초대가 취소되었습니다",
-      "초대 요청을 보냈습니다",
-      "초대를 보냈습니다",
-      "초대를 보냈습니다",
-      "승인되었습니다",
-      "거절되었습니다",
-      "그룹이 성공적으로 생성되었습니다",
-      "그룹 생성에 실패했습니다",
-      "처리 중 오류가 발생했습니다",
-      "초대 취소에 실패했습니다",
-      "중복 확인 중 오류가 발생했습니다",
-      "참여 신청 중 오류가 발생했습니다",
+    const sseNotificationPatterns = [
+      "님이 그룹에 참여 신청을 보냈습니다",
+      "님이 초대를 수락했습니다",
+      "님이 초대를 거절했습니다",
+      "님이 그룹에 가입했습니다",
+      "님이 그룹을 탈퇴했습니다",
+      "새로운 알림이 있습니다",
     ];
 
-    // 내가 한 행동 메시지 패턴이 포함되어 있으면 상단 가운데
-    if (myActionPatterns.some((pattern) => msg.includes(pattern))) {
-      return "top-center";
+    // SSE 알림 패턴이 포함되어 있으면 우하단
+    if (sseNotificationPatterns.some((pattern) => msg.includes(pattern))) {
+      return "bottom-right";
     }
 
-    // 기본값: 우하단 (남이 한 행동에 대한 알람)
-    return "bottom-right";
+    // 기본값: 상단 가운데 (사용자 동작에 대한 알림)
+    return "top-center";
   };
 
   useEffect(() => {

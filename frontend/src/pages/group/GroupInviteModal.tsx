@@ -140,18 +140,18 @@ export default function GroupInviteModal({ programId, onClose }: GroupInviteModa
                 </div>
 
                 {/* 리스트 영역 */}
-                <div className="flex-1 overflow-auto p-0 min-h-[300px] scrollbar-hide">
+                <div className="flex-1 overflow-auto p-0 min-h-[300px] scrollbar-hide relative">
                     {isSearching ? (
                         <div className="flex justify-center items-center h-full text-gray-400 font-medium">
                             검색 중...
                         </div>
                     ) : searchQuery && userList.length === 0 ? (
-                        <div className="flex flex-col justify-center items-center h-full text-gray-400 gap-2">
+                        <div className="absolute inset-0 flex flex-col justify-center items-center text-gray-400 gap-2">
                             <span className="text-3xl">🤔</span>
                             <span>검색 결과가 없습니다.</span>
                         </div>
                     ) : !searchQuery ? (
-                        <div className="flex flex-col justify-center items-center h-full text-gray-400 gap-2">
+                        <div className="absolute inset-0 flex flex-col justify-center items-center text-gray-400 gap-2">
                             <span className="text-3xl">🔍</span>
                             <span>유저를 검색하여 멤버를 초대해보세요.</span>
                         </div>

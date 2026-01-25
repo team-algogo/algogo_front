@@ -239,17 +239,66 @@ export default function GroupMembersModal({ programId, onClose }: GroupMembersMo
                                                             <div className="flex justify-center items-center gap-2">
                                                                 {member.role !== "ADMIN" ? (
                                                                     <>
-                                                                        <div className="relative group/select">
-                                                                            <select
-                                                                                className="appearance-none bg-white border border-gray-200 text-gray-600 text-xs font-bold rounded-lg pl-3 pr-8 py-1.5 outline-none focus:border-primary-main focus:ring-2 focus:ring-primary-100 transition-all cursor-pointer hover:border-gray-300"
-                                                                                value={member.role}
-                                                                                onChange={(e) => handleRoleChange(member.programUserId, e.target.value as "MANAGER" | "USER")}
+                                                                        <div className="relative">
+                                                                            <button
+                                                                                onClick={() => {
+                                                                                    const dropdown = document.getElementById(`role-dropdown-${member.programUserId}`);
+                                                                                    if (dropdown) {
+                                                                                        dropdown.classList.toggle('hidden');
+                                                                                    }
+                                                                                }}
+                                                                                className="appearance-none bg-white border border-gray-200 text-gray-700 text-xs font-bold rounded-lg px-3 py-2 outline-none focus:border-primary-main focus:ring-2 focus:ring-primary-100 transition-all cursor-pointer hover:border-gray-300 hover:shadow-sm flex items-center gap-2 min-w-[110px]"
                                                                             >
-                                                                                <option value="USER">USER</option>
-                                                                                <option value="MANAGER">MANAGER</option>
-                                                                            </select>
-                                                                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400 group-hover/select:text-gray-600">
-                                                                                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                                                                {member.role === "MANAGER" ? (
+                                                                                    <span>MANAGER</span>
+                                                                                ) : (
+                                                                                    <span>USER</span>
+                                                                                )}
+                                                                                <svg className="h-3 w-3 ml-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                                                </svg>
+                                                                            </button>
+                                                                            <div
+                                                                                id={`role-dropdown-${member.programUserId}`}
+                                                                                className="hidden absolute top-full mt-1 left-0 min-w-[110px] bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50"
+                                                                                onClick={(e) => e.stopPropagation()}
+                                                                            >
+                                                                                <button
+                                                                                    onClick={() => {
+                                                                                        handleRoleChange(member.programUserId, "USER");
+                                                                                        document.getElementById(`role-dropdown-${member.programUserId}`)?.classList.add('hidden');
+                                                                                    }}
+                                                                                    className={`w-full px-3 py-2.5 text-left text-xs font-bold transition-colors flex items-center gap-2 ${
+                                                                                        member.role === "USER"
+                                                                                            ? "bg-gray-100 text-gray-900"
+                                                                                            : "text-gray-700 hover:bg-gray-50"
+                                                                                    }`}
+                                                                                >
+                                                                                    <span>USER</span>
+                                                                                    {member.role === "USER" && (
+                                                                                        <svg className="w-4 h-4 ml-auto text-primary-main" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                                                                        </svg>
+                                                                                    )}
+                                                                                </button>
+                                                                                <button
+                                                                                    onClick={() => {
+                                                                                        handleRoleChange(member.programUserId, "MANAGER");
+                                                                                        document.getElementById(`role-dropdown-${member.programUserId}`)?.classList.add('hidden');
+                                                                                    }}
+                                                                                    className={`w-full px-3 py-2.5 text-left text-xs font-bold transition-colors flex items-center gap-2 ${
+                                                                                        member.role === "MANAGER"
+                                                                                            ? "bg-indigo-50 text-indigo-900"
+                                                                                            : "text-gray-700 hover:bg-gray-50"
+                                                                                    }`}
+                                                                                >
+                                                                                    <span>MANAGER</span>
+                                                                                    {member.role === "MANAGER" && (
+                                                                                        <svg className="w-4 h-4 ml-auto text-primary-main" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                                                                        </svg>
+                                                                                    )}
+                                                                                </button>
                                                                             </div>
                                                                         </div>
                                                                         <button

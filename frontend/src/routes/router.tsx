@@ -18,31 +18,127 @@ import SettingsPage from "@pages/mypage/SettingsPage";
 import ProblemStatisticsPage from "@pages/problemset/ProblemStatisticsPage";
 
 import IntroPage from "@pages/intro/IntroPage";
+import ProtectedRoute from "./ProtectedRoute";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
     children: [
-      { index: true, element: <MainPage /> },
+      {
+        index: true,
+        element: (
+          <ProtectedRoute>
+            <MainPage />
+          </ProtectedRoute>
+        ),
+      },
       { path: "intro", element: <IntroPage /> },
       { path: "login", element: <LoginPage /> },
       { path: "join", element: <JoinPage /> },
-      { path: "mypage", element: <MyPage /> },
-      { path: "group", element: <GroupMainPage /> },
-      { path: "group/:groupId", element: <GroupDetailPage /> },
-      { path: "group/:groupId/members", element: <GroupMembersPage /> },
-      { path: "mypage/settings", element: <SettingsPage /> },
-      { path: "code/:programProblemId", element: <CodeSubmitPage /> },
-      { path: "review/:submissionId", element: <CodeReviewPage /> },
-      { path: "problemset", element: <ProblemSetPage /> },
-      { path: "problemset/create", element: <CreateProblemSetPage /> },
-      { path: "problemset/:programId/edit", element: <EditProblemSetPage /> },
-      { path: "problemset/:programId", element: <ProblemSetDetailPage /> },
-      { path: "search", element: <SearchPage /> },
+      {
+        path: "mypage",
+        element: (
+          <ProtectedRoute>
+            <MyPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "group",
+        element: (
+          <ProtectedRoute>
+            <GroupMainPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "group/:groupId",
+        element: (
+          <ProtectedRoute>
+            <GroupDetailPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "group/:groupId/members",
+        element: (
+          <ProtectedRoute>
+            <GroupMembersPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "mypage/settings",
+        element: (
+          <ProtectedRoute>
+            <SettingsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "code/:programProblemId",
+        element: (
+          <ProtectedRoute>
+            <CodeSubmitPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "review/:submissionId",
+        element: (
+          <ProtectedRoute>
+            <CodeReviewPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "problemset",
+        element: (
+          <ProtectedRoute>
+            <ProblemSetPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "problemset/create",
+        element: (
+          <ProtectedRoute>
+            <CreateProblemSetPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "problemset/:programId/edit",
+        element: (
+          <ProtectedRoute>
+            <EditProblemSetPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "problemset/:programId",
+        element: (
+          <ProtectedRoute>
+            <ProblemSetDetailPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "search",
+        element: (
+          <ProtectedRoute>
+            <SearchPage />
+          </ProtectedRoute>
+        ),
+      },
       {
         path: "statistics/:programProblemId",
-        element: <ProblemStatisticsPage />,
+        element: (
+          <ProtectedRoute>
+            <ProblemStatisticsPage />
+          </ProtectedRoute>
+        ),
       },
     ],
   },

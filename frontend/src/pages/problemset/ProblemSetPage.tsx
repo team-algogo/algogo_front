@@ -48,21 +48,7 @@ export default function ProblemSetPage() {
     retry: false,
   });
 
-  // 비로그인 유저 체크 및 리다이렉트
-  useEffect(() => {
-    // 이미 로그인 된 상태라면 리턴
-    if (userType === "User" && authorization) {
-      return;
-    }
-    
-    // 비로그인 상태라면 인트로 페이지로 리다이렉트
-    if (!authorization && !userType) {
-      navigate("/intro", {
-        state: { requireLogin: true, redirectTo: "/problemset" },
-        replace: true,
-      });
-    }
-  }, [authorization, userType, navigate]);
+
 
   const tabs = ["전체", ...(categoryList?.map((c) => c.name) || [])];
   const sortOptions: SelectOption[] = [

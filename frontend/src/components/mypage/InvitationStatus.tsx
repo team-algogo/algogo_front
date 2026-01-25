@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import MyGroupListCard from "@components/cards/group/MyGroupListCard";
+import useToast from "@hooks/useToast";
 import { getReceivedInvites, getSentJoins, respondToReceivedInvite, cancelSentJoin } from "@api/mypage";
 
 import ConfirmModal from "@components/modal/ConfirmModal";
@@ -11,6 +12,7 @@ type Tab = "초대" | "신청";
 const InvitationStatus = () => {
     const [activeTab, setActiveTab] = useState<Tab>("초대");
     const [selectedJoinToCancel, setSelectedJoinToCancel] = useState<Join | null>(null);
+    const { showToast } = useToast();
     const queryClient = useQueryClient();
 
     const { data: invitesData } = useQuery({
@@ -40,12 +42,14 @@ const InvitationStatus = () => {
             inviteId: number;
             isAccepted: "ACCEPTED" | "DENIED";
         }) => respondToReceivedInvite(programId, inviteId, isAccepted),
-        onSuccess: () => {
+        onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ["receivedInvites"] });
+            const message = variables.isAccepted === "ACCEPTED" ? "초대를 수락했습니다." : "초대를 거절했습니다.";
+            showToast(message, "success");
         },
         onError: (error) => {
             console.error("Failed to respond to invite:", error);
-            // Optional: Show error toast
+            showToast("요청 처리에 실패했습니다.", "error");
         },
     });
 
@@ -67,10 +71,12 @@ const InvitationStatus = () => {
         }) => cancelSentJoin(programId, joinId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["sentJoins"] });
+            showToast("참여 신청을 취소했습니다.", "success");
             setSelectedJoinToCancel(null);
         },
         onError: (error) => {
             console.error("Failed to cancel join request:", error);
+            showToast("취소 요청에 실패했습니다.", "error");
         },
     });
 
@@ -163,7 +169,7 @@ const InvitationStatus = () => {
                                         problemCount={invite.groupRoom.programProblemCount}
                                         role={invite.groupRoom.isMember ? "USER" : "USER"}
                                         variant="mypage"
-                                        onClick={() => {}} // Remove selection
+                                        onClick={() => { }} // Remove selection
                                         onAccept={() => handleRespond(invite, true)}
                                         onReject={() => handleRespond(invite, false)}
                                         hideRoleBadge={true}

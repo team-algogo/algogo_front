@@ -322,30 +322,117 @@ const AddGroupProblemModal = ({ programId, onClose }: AddGroupProblemModalProps)
                                             <div className="grid grid-cols-2 gap-3">
                                                 <div className="flex flex-col gap-1">
                                                     <label className="text-xs font-bold text-gray-500">표시 난이도</label>
-                                                    <select
-                                                        className="bg-gray-50 border border-gray-200 rounded px-2 py-2 text-xs outline-none focus:border-primary-main"
-                                                        value={problemConfigs[problem.id]?.difficultyViewType}
-                                                        onChange={(e) => {
-                                                            const val = e.target.value;
-                                                            updateConfig(problem.id, "difficultyViewType", val);
-                                                        }}
-                                                    >
-                                                        <option value="PROBLEM_DIFFICULTY">문제 난이도</option>
-                                                        <option value="USER_DIFFICULTY">커스텀 난이도</option>
-                                                    </select>
+                                                    <div className="relative">
+                                                        <button
+                                                            onClick={() => {
+                                                                const dropdown = document.getElementById(`difficulty-view-dropdown-${problem.id}`);
+                                                                if (dropdown) {
+                                                                    dropdown.classList.toggle('hidden');
+                                                                }
+                                                            }}
+                                                            className="w-full appearance-none bg-white border border-gray-200 text-gray-700 text-xs font-bold rounded-lg px-3 py-2 outline-none focus:border-primary-main focus:ring-2 focus:ring-primary-100 transition-all cursor-pointer hover:border-gray-300 hover:shadow-sm flex items-center justify-between gap-2"
+                                                        >
+                                                            <span>{problemConfigs[problem.id]?.difficultyViewType === "USER_DIFFICULTY" ? "커스텀 난이도" : "문제 난이도"}</span>
+                                                            <svg className="h-3 w-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                            </svg>
+                                                        </button>
+                                                        <div
+                                                            id={`difficulty-view-dropdown-${problem.id}`}
+                                                            className="hidden absolute top-full mt-1 left-0 w-full bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        >
+                                                            <button
+                                                                onClick={() => {
+                                                                    updateConfig(problem.id, "difficultyViewType", "PROBLEM_DIFFICULTY");
+                                                                    document.getElementById(`difficulty-view-dropdown-${problem.id}`)?.classList.add('hidden');
+                                                                }}
+                                                                className={`w-full px-3 py-2.5 text-left text-xs font-bold transition-colors flex items-center gap-2 ${
+                                                                    problemConfigs[problem.id]?.difficultyViewType === "PROBLEM_DIFFICULTY"
+                                                                        ? "bg-gray-100 text-gray-900"
+                                                                        : "text-gray-700 hover:bg-gray-50"
+                                                                }`}
+                                                            >
+                                                                <span>문제 난이도</span>
+                                                                {problemConfigs[problem.id]?.difficultyViewType === "PROBLEM_DIFFICULTY" && (
+                                                                    <svg className="w-4 h-4 ml-auto text-primary-main" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                                                    </svg>
+                                                                )}
+                                                            </button>
+                                                            <button
+                                                                onClick={() => {
+                                                                    updateConfig(problem.id, "difficultyViewType", "USER_DIFFICULTY");
+                                                                    document.getElementById(`difficulty-view-dropdown-${problem.id}`)?.classList.add('hidden');
+                                                                }}
+                                                                className={`w-full px-3 py-2.5 text-left text-xs font-bold transition-colors flex items-center gap-2 ${
+                                                                    problemConfigs[problem.id]?.difficultyViewType === "USER_DIFFICULTY"
+                                                                        ? "bg-gray-100 text-gray-900"
+                                                                        : "text-gray-700 hover:bg-gray-50"
+                                                                }`}
+                                                            >
+                                                                <span>커스텀 난이도</span>
+                                                                {problemConfigs[problem.id]?.difficultyViewType === "USER_DIFFICULTY" && (
+                                                                    <svg className="w-4 h-4 ml-auto text-primary-main" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                                                    </svg>
+                                                                )}
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                                 <div className="flex flex-col gap-1">
                                                     <label className="text-xs font-bold text-gray-500">커스텀 난이도</label>
-                                                    <select
-                                                        className={`bg-gray-50 border border-gray-200 rounded px-2 py-2 text-xs outline-none focus:border-primary-main ${problemConfigs[problem.id]?.difficultyViewType === "PROBLEM_DIFFICULTY" ? "opacity-50 cursor-not-allowed" : ""}`}
-                                                        value={problemConfigs[problem.id]?.userDifficultyType}
-                                                        onChange={(e) => updateConfig(problem.id, "userDifficultyType", e.target.value)}
-                                                        disabled={problemConfigs[problem.id]?.difficultyViewType === "PROBLEM_DIFFICULTY"}
-                                                    >
-                                                        <option value="EASY">EASY</option>
-                                                        <option value="MEDIUM">MEDIUM</option>
-                                                        <option value="HARD">HARD</option>
-                                                    </select>
+                                                    <div className="relative">
+                                                        <button
+                                                            onClick={() => {
+                                                                if (problemConfigs[problem.id]?.difficultyViewType !== "PROBLEM_DIFFICULTY") {
+                                                                    const dropdown = document.getElementById(`user-difficulty-dropdown-${problem.id}`);
+                                                                    if (dropdown) {
+                                                                        dropdown.classList.toggle('hidden');
+                                                                    }
+                                                                }
+                                                            }}
+                                                            disabled={problemConfigs[problem.id]?.difficultyViewType === "PROBLEM_DIFFICULTY"}
+                                                            className={`w-full appearance-none bg-white border border-gray-200 text-gray-700 text-xs font-bold rounded-lg px-3 py-2 outline-none transition-all flex items-center justify-between gap-2 ${
+                                                                problemConfigs[problem.id]?.difficultyViewType === "PROBLEM_DIFFICULTY"
+                                                                    ? "opacity-50 cursor-not-allowed"
+                                                                    : "focus:border-primary-main focus:ring-2 focus:ring-primary-100 cursor-pointer hover:border-gray-300 hover:shadow-sm"
+                                                            }`}
+                                                        >
+                                                            <span>{problemConfigs[problem.id]?.userDifficultyType}</span>
+                                                            <svg className="h-3 w-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                            </svg>
+                                                        </button>
+                                                        <div
+                                                            id={`user-difficulty-dropdown-${problem.id}`}
+                                                            className="hidden absolute top-full mt-1 left-0 w-full bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        >
+                                                            {["EASY", "MEDIUM", "HARD"].map((difficulty) => (
+                                                                <button
+                                                                    key={difficulty}
+                                                                    onClick={() => {
+                                                                        updateConfig(problem.id, "userDifficultyType", difficulty as "EASY" | "MEDIUM" | "HARD");
+                                                                        document.getElementById(`user-difficulty-dropdown-${problem.id}`)?.classList.add('hidden');
+                                                                    }}
+                                                                    className={`w-full px-3 py-2.5 text-left text-xs font-bold transition-colors flex items-center gap-2 ${
+                                                                        problemConfigs[problem.id]?.userDifficultyType === difficulty
+                                                                            ? "bg-gray-100 text-gray-900"
+                                                                            : "text-gray-700 hover:bg-gray-50"
+                                                                    }`}
+                                                                >
+                                                                    <span>{difficulty}</span>
+                                                                    {problemConfigs[problem.id]?.userDifficultyType === difficulty && (
+                                                                        <svg className="w-4 h-4 ml-auto text-primary-main" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                                                        </svg>
+                                                                    )}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

@@ -755,7 +755,7 @@ export default function ProblemStatisticsPage() {
       {/* Alert Banner - Fixed at top */}
       {mounted && showAlertBanner && createPortal(
         <div
-          className="fixed top-0 left-0 right-0 z-[1001] flex items-center justify-center p-4"
+          className="fixed top-20 left-0 right-0 z-[1001] flex items-center justify-center p-4"
           style={{
             animation: "slideDown 0.3s ease-out",
           }}

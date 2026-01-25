@@ -12,6 +12,7 @@ import {
     deleteGroupProblems,
     joinGroup,
 } from "../../api/group/groupApi";
+import { getCanMoreSubmission } from "@api/submissions/getCanMoreSubmission";
 import EditGroupModal from "./EditGroupModal";
 import GroupMemberModal from "./GroupMembersModal";
 import GroupJoinRequestModal from "./GroupJoinRequestsModal";
@@ -111,14 +112,14 @@ export default function GroupDetailPage() {
     const totalElements = filteredProblemList.length;
     const totalPages = Math.ceil(totalElements / PAGE_SIZE);
 
+    // 추가 제출 가능 여부 조회
+    const { data: canMoreSubmissionData } = useQuery({
+        queryKey: ["canMoreSubmission", programId],
+        queryFn: () => getCanMoreSubmission(programId),
+        enabled: !!programId,
+    });
 
-    // ...
-
-
-
-
-
-
+    const canMoreSubmission = canMoreSubmissionData?.canMoreSubmission ?? true;
 
     // 내 역할 확인
     const myRole = groupDetail?.groupRole;
@@ -387,6 +388,9 @@ export default function GroupDetailPage() {
                                         viewCount={problem.viewCount}
                                         submissionCount={problem.submissionCount}
                                         solvedCount={problem.solvedCount}
+                                        canMoreSubmission={canMoreSubmission}
+                                        programId={programId}
+                                        programTitle={groupDetail.title}
                                         onDelete={
                                             canManageProblems
                                                 ? () => {

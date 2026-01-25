@@ -34,23 +34,30 @@ const CreateGroupModal = ({ onClose, onCreateSuccess }: CreateGroupModalProps) =
       const isAvailable = response.data?.isAvailable;
       const message = response.message;
 
-      if (isAvailable) {
-        setIsTitleChecked(true); // ✅ 사용 가능하므로 체크 상태 true로 변경
-        setToastConfig({
-          message: message || "사용 가능한 그룹 이름입니다.",
-          type: "success"
-        });
-      } else {
-        setIsTitleChecked(false); // ❌ 중복이므로 체크 상태 false
-        setToastConfig({
-          message: message || "이미 존재하는 그룹 이름입니다.",
-          type: "error"
-        });
-      }
+      // Toast를 초기화한 후 다시 설정하여 매번 표시되도록 함
+      setToastConfig(null);
+      setTimeout(() => {
+        if (isAvailable) {
+          setIsTitleChecked(true); // ✅ 사용 가능하므로 체크 상태 true로 변경
+          setToastConfig({
+            message: message || "사용 가능한 그룹 이름입니다.",
+            type: "success"
+          });
+        } else {
+          setIsTitleChecked(false); // ❌ 중복이므로 체크 상태 false
+          setToastConfig({
+            message: message || "이미 존재하는 그룹 이름입니다.",
+            type: "error"
+          });
+        }
+      }, 10);
     },
     onError: (error: any) => {
       const errorMsg = error.response?.data?.message || "중복 확인 중 오류가 발생했습니다.";
-      setToastConfig({ message: errorMsg, type: "error" });
+      setToastConfig(null);
+      setTimeout(() => {
+        setToastConfig({ message: errorMsg, type: "error" });
+      }, 10);
       setIsTitleChecked(false);
     }
   });
@@ -212,6 +219,26 @@ const CreateGroupModal = ({ onClose, onCreateSuccess }: CreateGroupModalProps) =
               </div>
             </div>
           </div>
+
+          {/* Validation Feedback */}
+          {(!isTitleChecked || !title.trim() || maxCount === "" || Number(maxCount) <= 0 || !description.trim()) && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div className="flex items-start gap-2">
+                <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-blue-900 mb-1">다음 항목을 확인해주세요:</p>
+                  <ul className="text-sm text-blue-800 space-y-1">
+                    {!title.trim() && <li className="flex items-center gap-1.5"><span className="text-blue-600">•</span> Group 명을 입력해주세요</li>}
+                    {title.trim() && !isTitleChecked && <li className="flex items-center gap-1.5"><span className="text-blue-600">•</span> Group 명 중복 확인을 해주세요</li>}
+                    {(maxCount === "" || Number(maxCount) <= 0) && <li className="flex items-center gap-1.5"><span className="text-blue-600">•</span> 최대 정원수를 입력해주세요</li>}
+                    {!description.trim() && <li className="flex items-center gap-1.5"><span className="text-blue-600">•</span> Group 설명을 입력해주세요</li>}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-end gap-2 mt-2">
             <div>

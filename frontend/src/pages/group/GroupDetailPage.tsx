@@ -171,7 +171,14 @@ export default function GroupDetailPage() {
             queryClient.invalidateQueries({ queryKey: ["groupDetail", programId] });
         },
         onError: (err: any) => {
-            const msg = err.response?.data?.message || "가입 신청 실패";
+            const rawMsg = err.response?.data?.message || "";
+            let msg = "가입 신청 실패";
+
+            if (rawMsg.includes("PENDING 상태")) {
+                msg = "이미 가입 신청이 진행 중입니다. 승인을 기다려주세요.";
+            } else {
+                msg = rawMsg || msg;
+            }
             showToast(msg, "error");
         },
     });

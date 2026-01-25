@@ -65,8 +65,14 @@ const Group = ({
       queryClient.invalidateQueries({ queryKey: ["myGroups"] });
     },
     onError: (error: any) => {
-      const errorMsg =
-        error.response?.data?.message || "참여 신청 중 오류가 발생했습니다.";
+      const rawMsg = error.response?.data?.message || "";
+      let errorMsg = "참여 신청 중 오류가 발생했습니다.";
+
+      if (rawMsg.includes("PENDING 상태")) {
+        errorMsg = "이미 가입 신청이 진행 중입니다. 승인을 기다려주세요.";
+      } else {
+        errorMsg = rawMsg || errorMsg;
+      }
       setToastConfig({ message: errorMsg, type: "error" });
     },
   });

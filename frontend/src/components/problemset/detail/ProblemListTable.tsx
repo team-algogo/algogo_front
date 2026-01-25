@@ -11,6 +11,7 @@ interface ProblemListTableProps {
   canMoreSubmission?: boolean; // 추가 제출 가능 여부
   programId?: number; // 문제집 ID
   programTitle?: string; // 문제집 이름
+  isMember?: boolean; // default true
 }
 
 export default function ProblemListTable({
@@ -21,6 +22,7 @@ export default function ProblemListTable({
   canMoreSubmission = true,
   programId,
   programTitle,
+  isMember = true,
 }: ProblemListTableProps) {
   const navigate = useNavigate();
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -115,6 +117,7 @@ export default function ProblemListTable({
                     programId={programId}
                     showSolveButton={false}
                     programTitle={programTitle}
+                    isMember={isMember}
                   />
                 </div>
               </div>

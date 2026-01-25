@@ -2,6 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Button from "../../button/Button";
+import useToast from "@hooks/useToast";
+import { increaseViewCount } from "@api/problem/problemApi";
 
 interface GroupProblemCardProps {
   title: string;
@@ -25,6 +27,7 @@ interface GroupProblemCardProps {
   programId?: number; // 문제집 ID
   showSolveButton?: boolean; // 문제 풀기 버튼 표시 여부
   programTitle?: string; // 문제집 이름 (안내 배너용)
+  isMember: boolean; // Member check
 }
 
 const GroupProblemCard = ({
@@ -45,8 +48,10 @@ const GroupProblemCard = ({
   programId,
   showSolveButton = true,
   programTitle = "문제집",
+  isMember = false,
 }: GroupProblemCardProps) => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [showAlertBanner, setShowAlertBanner] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [showStatsTooltip, setShowStatsTooltip] = useState(false);
@@ -120,15 +125,24 @@ const GroupProblemCard = ({
   };
 
   const handleCardClick = () => {
-    // canMoreSubmission이 false이면 카드 클릭으로 제출 페이지 이동 방지
+    // 1. 멤버 체크
+    if (!isMember) {
+      showToast("해당 그룹의 멤버만 이용 가능합니다.", "error");
+      return;
+    }
+
+    // 2. 추가 제출 가능 여부 체크
     if (!canMoreSubmission) {
       setShowAlertBanner(true);
       setTimeout(() => {
         setShowAlertBanner(false);
-      }, 5000);
+      }, 3000);
       return;
     }
+
+    // 3. 이동
     if (programProblemId) {
+      increaseViewCount(programProblemId); // 조회수 증가
       navigate(`/code/${programProblemId}`);
     } else {
       window.open(problemLink, "_blank");
@@ -150,7 +164,7 @@ const GroupProblemCard = ({
             </span>
           )}
 
-          <h3 
+          <h3
             className="text-base font-bold text-gray-900 truncate hover:text-primary-main hover:underline cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
@@ -206,6 +220,11 @@ const GroupProblemCard = ({
         <button
           onClick={(e) => {
             e.stopPropagation();
+            if (!isMember) {
+              showToast("해당 그룹의 멤버만 확인 가능합니다.", "error");
+              return;
+            }
+
             if (programProblemId) {
               // localStorage에 programId 저장 (쿼리 파라미터 대신)
               if (programId) {
@@ -228,7 +247,7 @@ const GroupProblemCard = ({
               <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-800"></div>
             </div>
           )}
-        
+
           <svg
             width="28"
             height="28"
@@ -276,6 +295,11 @@ const GroupProblemCard = ({
               className={`!h-8 !px-3 !text-xs ${!canMoreSubmission ? 'opacity-60 cursor-pointer' : ''}`}
               onClick={(e) => {
                 e.stopPropagation();
+                if (!isMember) {
+                  showToast("해당 그룹의 멤버만 문제 풀이가 가능합니다.", "error");
+                  return;
+                }
+
                 if (!canMoreSubmission) {
                   // 비활성화된 버튼 클릭 시 안내 배너 표시
                   setShowAlertBanner(true);
@@ -286,6 +310,7 @@ const GroupProblemCard = ({
                   return;
                 }
                 if (programProblemId) {
+                  increaseViewCount(programProblemId); // 조회수 증가
                   navigate(`/code/${programProblemId}`);
                 } else {
                   window.open(problemLink, "_blank");
@@ -326,7 +351,7 @@ const GroupProblemCard = ({
               {/* 메시지 */}
               <div className="flex-1 flex flex-col">
                 <p className="text-sm font-bold text-gray-900 break-keep">
-                   {programTitle}의 필수 리뷰를 작성 후 새로운 제출을 해주세요!
+                  {programTitle}의 필수 리뷰를 작성 후 새로운 제출을 해주세요!
                 </p>
               </div>
 

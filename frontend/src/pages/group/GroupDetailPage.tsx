@@ -73,6 +73,7 @@ export default function GroupDetailPage() {
         queryKey: ["groupMembers", programId],
         queryFn: () => fetchGroupMembers(programId),
         enabled: !!programId,
+        retry: false, // 403 에러 등 발생 시 무한 재시도 방지
     });
 
     // 1. 그룹 상세 정보를 fetch
@@ -485,6 +486,7 @@ export default function GroupDetailPage() {
                                         canMoreSubmission={canMoreSubmission}
                                         programId={programId}
                                         programTitle={groupDetail.title}
+                                        isMember={Boolean(isMember)} // Pass isMember
                                         onDelete={
                                             canManageProblems
                                                 ? () => {

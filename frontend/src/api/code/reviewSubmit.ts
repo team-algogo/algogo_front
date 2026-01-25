@@ -117,3 +117,8 @@ export const deleteLikeReview = (reviewId: number) => {
   const response = client.delete(`/api/v1/reviews/${reviewId}/likes`);
   return response;
 };
+
+export const deleteSubmission = async (submissionId: number) => {
+  const response = await client.delete(`/api/v1/submissions/${submissionId}`);
+  return response.data;
+};

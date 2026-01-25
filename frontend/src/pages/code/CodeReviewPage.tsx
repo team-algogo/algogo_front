@@ -28,6 +28,7 @@ import {
   deleteLikeReview,
   deleteReview,
   updateReview,
+  deleteSubmission,
 } from "@api/code/reviewSubmit";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import useAuthStore from "@store/useAuthStore";
@@ -61,6 +62,11 @@ const CodeReviewPage = () => {
     isOpen: boolean;
     reviewId: number | null;
   }>({ isOpen: false, reviewId: null });
+  const [deleteSubmissionConfirm, setDeleteSubmissionConfirm] = useState(false);
+  const [modalPosition, setModalPosition] = useState({ top: 80, left: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const modalRef = useRef<HTMLDivElement>(null);
   const shouldScrollRef = useRef(false);
 
   const [submissionHistory, setSubmissionHistory] = useState<
@@ -192,6 +198,74 @@ const CodeReviewPage = () => {
 
   const cancelDeleteReview = () => {
     setDeleteConfirm({ isOpen: false, reviewId: null });
+  };
+
+  const handleDeleteSubmission = () => {
+    setDeleteSubmissionConfirm(true);
+    // 초기 위치를 상단(0)과 중간(50%) 사이의 가운데(25%)로 설정
+    const initialTop = window.innerHeight * 0.1; // 화면 높이의 10% 위치
+    setModalPosition({ top: initialTop, left: 0 });
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (modalRef.current) {
+      setIsDragging(true);
+      const rect = modalRef.current.getBoundingClientRect();
+      setDragStart({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const newTop = e.clientY - dragStart.y;
+      const newLeft = e.clientX - dragStart.x;
+      
+      // 화면 경계 내에서만 이동 가능
+      const maxTop = window.innerHeight - (modalRef.current?.offsetHeight || 0);
+      const maxLeft = window.innerWidth - (modalRef.current?.offsetWidth || 0);
+      
+      setModalPosition({
+        top: Math.max(0, Math.min(newTop, maxTop)),
+        left: Math.max(0, Math.min(newLeft, maxLeft)),
+      });
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging, dragStart]);
+
+  const confirmDeleteSubmission = async () => {
+    if (!submissionDetail?.submissionId) return;
+    try {
+      await deleteSubmission(submissionDetail.submissionId);
+      // 삭제 성공 시 통계 페이지로 리다이렉트
+      if (submissionDetail.programProblemId) {
+        navigate(`/statistics/${submissionDetail.programProblemId}`);
+      } else {
+        navigate(-1); // 통계 페이지로 갈 수 없으면 뒤로가기
+      }
+    } catch (err) {
+      console.error("Failed to delete submission:", err);
+      setDeleteSubmissionConfirm(false);
+    }
+  };
+
+  const cancelDeleteSubmission = () => {
+    setDeleteSubmissionConfirm(false);
   };
 
   const handleUpdateReview = async (reviewId: number, content: string) => {
@@ -357,6 +431,22 @@ const CodeReviewPage = () => {
     }
   }, [selectedLine]);
 
+  // ESC 키로 제출 삭제 확인 취소
+  useEffect(() => {
+    if (!deleteSubmissionConfirm) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        cancelDeleteSubmission();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [deleteSubmissionConfirm]);
+
   // 난이도 뱃지 렌더링 (GroupProblemCard와 동일 로직)
   const renderDifficultyBadge = () => {
     if (!problemInfo) return null;
@@ -459,6 +549,32 @@ const CodeReviewPage = () => {
               </div>
             </div>
           </div>
+
+          {/* 삭제 버튼 - 내 제출인 경우에만 표시 */}
+          {submissionDetail &&
+            currentUser &&
+            submissionDetail.userId === currentUser.userId && (
+              <div className="flex items-center">
+                <button
+                  onClick={handleDeleteSubmission}
+                  className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 hover:border-red-300"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M5.5 2C5.22386 2 5 2.22386 5 2.5V3H2.5C2.22386 3 2 3.22386 2 3.5C2 3.77614 2.22386 4 2.5 4H3V13.5C3 14.3284 3.67157 15 4.5 15H11.5C12.3284 15 13 14.3284 13 13.5V4H13.5C13.7761 4 14 3.77614 14 3.5C14 3.22386 13.7761 3 13.5 3H11V2.5C11 2.22386 10.7761 2 10.5 2H5.5ZM4 4H12V13.5C12 13.7761 11.7761 14 11.5 14H4.5C4.22386 14 4 13.7761 4 13.5V4ZM6 6.5C6 6.22386 6.22386 6 6.5 6C6.77614 6 7 6.22386 7 6.5V11.5C7 11.7761 6.77614 12 6.5 12C6.22386 12 6 11.7761 6 11.5V6.5ZM9.5 6C9.22386 6 9 6.22386 9 6.5V11.5C9 11.7761 9.22386 12 9.5 12C9.77614 12 10 11.7761 10 11.5V6.5C10 6.22386 9.77614 6 9.5 6Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  제출 삭제
+                </button>
+              </div>
+            )}
         </div>
 
         {/* Top Section: Approach & History */}
@@ -652,7 +768,7 @@ const CodeReviewPage = () => {
           </div>
         </div>
 
-        {/* Delete Confirm Banner */}
+        {/* Delete Review Confirm Banner */}
         <ConfirmBanner
           isOpen={deleteConfirm.isOpen}
           message="정말 삭제하시겠습니까?"
@@ -661,6 +777,75 @@ const CodeReviewPage = () => {
           confirmLabel="삭제"
           cancelLabel="취소"
         />
+
+        {/* Delete Submission Confirm Banner */}
+        {deleteSubmissionConfirm && (
+          <div className="fixed inset-0 z-[100] flex items-start justify-center p-4">
+            <div
+              ref={modalRef}
+              className="w-full max-w-md animate-slideDown"
+              style={{
+                position: "absolute",
+                top: `${modalPosition.top}px`,
+                left: modalPosition.left === 0 ? "50%" : `${modalPosition.left}px`,
+                transform: modalPosition.left === 0 ? "translateX(-50%)" : "none",
+                cursor: isDragging ? "grabbing" : "default",
+              }}
+            >
+              <div className="rounded-lg border border-[#d0d7de] bg-white shadow-lg">
+                {/* Header - 드래그 가능 영역 */}
+                <div
+                  onMouseDown={handleMouseDown}
+                  className="flex items-center justify-between border-b border-[#d0d7de] bg-[#f6f8fa] px-4 py-2 cursor-grab active:cursor-grabbing select-none"
+                >
+                  <span className="text-sm font-semibold text-[#1f2328]">
+                    삭제 확인
+                  </span>
+                  <button
+                    onClick={cancelDeleteSubmission}
+                    className="inline-flex h-7 w-7 items-center justify-center rounded text-[#656d76] transition-colors hover:bg-[#e6e9ed] hover:text-[#1f2328]"
+                    title="닫기"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 16 16"
+                      fill="currentColor"
+                      className="h-4 w-4"
+                    >
+                      <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.75.75 0 0 1-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Body with Buttons */}
+                <div className="flex items-center justify-between gap-4 px-4 py-3">
+                  <div className="flex-1">
+                    <p className="text-sm leading-6 text-[#1f2328]">
+                      정말 이 제출을 삭제하시겠습니까?
+                    </p>
+                    <p className="mt-1 text-sm leading-6 text-[#656d76]">
+                      삭제된 제출은 복구할 수 없습니다.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={cancelDeleteSubmission}
+                      className="inline-flex h-8 items-center justify-center rounded-md border border-[#d0d7de] bg-white px-4 text-sm font-medium text-[#1f2328] transition-colors hover:bg-[#f6f8fa]"
+                    >
+                      취소
+                    </button>
+                    <button
+                      onClick={confirmDeleteSubmission}
+                      className="inline-flex h-8 items-center justify-center rounded-md bg-[#cf222e] px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#a40e26]"
+                    >
+                      삭제
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </BasePage>
   );

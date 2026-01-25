@@ -11,7 +11,10 @@ import {
     deleteGroup,
     deleteGroupProblems,
     joinGroup,
+    deleteGroupMember,
+    fetchGroupMembers,
 } from "../../api/group/groupApi";
+import { getUserDetail } from "@api/auth/auth";
 import { getCanMoreSubmission } from "@api/submissions/getCanMoreSubmission";
 import EditGroupModal from "./EditGroupModal";
 import GroupMemberModal from "./GroupMembersModal";
@@ -58,6 +61,21 @@ export default function GroupDetailPage() {
     });
 
     // --- Data Fetching ---
+    // 0. 내 정보 조회 (ID 확인용)
+    const { data: myData } = useQuery({
+        queryKey: ["myProfile"],
+        queryFn: getUserDetail,
+    });
+    const myUserId = myData?.userId;
+    const myEmail = myData?.email;
+
+    // 0.5. 멤버 리스트 fetch (내 programUserId 확인용)
+    const { data: memberData } = useQuery({
+        queryKey: ["groupMembers", programId],
+        queryFn: () => fetchGroupMembers(programId),
+        enabled: !!programId,
+    });
+
     // 1. 그룹 상세 정보를 fetch
     const { data: detailData, isLoading: isDetailLoading } = useQuery({
         queryKey: ["groupDetail", programId],
@@ -139,14 +157,36 @@ export default function GroupDetailPage() {
     });
 
     // 그룹 탈퇴
+    const { mutate: leaveGroupMutation } = useMutation({
+        mutationFn: () => {
+            if (!myEmail) throw new Error("유저 정보를 찾을 수 없습니다.");
+
+            // 멤버 리스트에서 내 이메일과 일치하는 멤버 찾기
+            const members = memberData?.data?.members || [];
+            const myMemberInfo = members.find((m: any) => m.email === myEmail);
+
+            if (!myMemberInfo) throw new Error("그룹 멤버 정보를 찾을 수 없습니다.");
+
+            // programUserId 사용
+            return deleteGroupMember(programId, myMemberInfo.programUserId);
+        },
+        onSuccess: () => {
+            showToast("그룹 탈퇴가 완료되었습니다.", "success");
+            setTimeout(() => navigate("/group"), 1000);
+        },
+        onError: (err: any) => {
+            const msg = err.response?.data?.message || err.message || "그룹 탈퇴 실패";
+            showToast(msg, "error");
+        },
+    });
+
     const handleLeaveGroup = () => {
         setConfirmModal({
             isOpen: true,
             title: "그룹 탈퇴",
             message: "정말 이 그룹을 탈퇴하시겠습니까?",
             onConfirm: () => {
-                // api call...
-                showToast("탈퇴 기능은 아직 구현 중입니다.", "info");
+                leaveGroupMutation();
                 setConfirmModal((prev) => ({ ...prev, isOpen: false }));
             },
         });

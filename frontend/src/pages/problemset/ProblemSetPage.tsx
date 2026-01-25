@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import LoginRequestOverlay from "@components/common/LoginRequestOverlay";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -37,7 +37,7 @@ export default function ProblemSetPage() {
     queryFn: getCategoryList,
   });
 
-  const { userType, authorization } = useAuthStore();
+  const { userType } = useAuthStore();
   const isLogined = !!userType;
 
   // 사용자 정보 조회 (ADMIN 확인용 및 인증 상태 확인)

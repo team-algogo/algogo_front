@@ -37,5 +37,16 @@ export default defineConfig(({ mode }: ConfigEnv) => {
         { find: "@utils", replacement: resolve(__dirname, "src/utils") },
       ],
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ["react", "react-dom", "react-router-dom", "zustand"],
+            monaco: ["monaco-editor"],
+            tanstack: ["@tanstack/react-query"],
+          },
+        },
+      },
+    },
   };
 });

@@ -140,9 +140,8 @@ const MainPage = () => {
       {/* 로그인 필요 안내 배너 - fixed position으로 레이아웃 shift 방지 */}
       {showLoginRequiredBanner && (
         <div
-          className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-[420px] px-4 transition-opacity duration-500 ${
-            bannerVisible ? "opacity-100" : "opacity-0"
-          }`}
+          className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-[420px] px-4 transition-opacity duration-500 ${bannerVisible ? "opacity-100" : "opacity-0"
+            }`}
         >
           <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 shadow-lg">
             <svg
@@ -278,13 +277,6 @@ const MainPage = () => {
                   <span className="bg-primary-500 h-8 w-2 rounded-full"></span>
                   캠페인
                 </h3>
-                <TextLink
-                  src="#"
-                  variant="secondary"
-                  className="hover:text-primary-600 text-sm font-medium text-gray-400"
-                >
-                  더보기
-                </TextLink>
               </div>
               <div className="flex flex-col gap-3">
                 <EmptyState

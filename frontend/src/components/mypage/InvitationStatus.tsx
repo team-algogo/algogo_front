@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import MyGroupListCard from "@components/cards/group/MyGroupListCard";
 import { getReceivedInvites, getSentJoins, respondToReceivedInvite, cancelSentJoin } from "@api/mypage";
-import InvitationResponseModal from "@components/modal/mypage/InvitationResponseModal";
+
 import ConfirmModal from "@components/modal/ConfirmModal";
 import type { Invite, Join } from "@type/mypage/InvitationStatus";
 
@@ -10,7 +10,6 @@ type Tab = "초대" | "신청";
 
 const InvitationStatus = () => {
     const [activeTab, setActiveTab] = useState<Tab>("초대");
-    const [selectedInvite, setSelectedInvite] = useState<Invite | null>(null);
     const [selectedJoinToCancel, setSelectedJoinToCancel] = useState<Join | null>(null);
     const queryClient = useQueryClient();
 
@@ -43,7 +42,6 @@ const InvitationStatus = () => {
         }) => respondToReceivedInvite(programId, inviteId, isAccepted),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["receivedInvites"] });
-            setSelectedInvite(null);
         },
         onError: (error) => {
             console.error("Failed to respond to invite:", error);

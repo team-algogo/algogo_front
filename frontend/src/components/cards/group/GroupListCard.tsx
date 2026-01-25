@@ -17,6 +17,7 @@ interface GroupProps {
   createdAt: string;
   isMember: boolean;
   isLoggedIn?: boolean;
+  isPending?: boolean;
 }
 
 const Group = ({
@@ -29,6 +30,7 @@ const Group = ({
   createdAt,
   isMember,
   isLoggedIn = false,
+  isPending = false,
 }: GroupProps) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -53,7 +55,7 @@ const Group = ({
   });
 
   // [React Query] 그룹 참여 Mutation
-  const { mutate: joinMutate, isPending } = useMutation({
+  const { mutate: joinMutate, isPending: isJoinPending } = useMutation({
     mutationFn: () => joinGroup(id),
     onSuccess: () => {
       setToastConfig({
@@ -63,6 +65,7 @@ const Group = ({
       });
       queryClient.invalidateQueries({ queryKey: ["groups"] });
       queryClient.invalidateQueries({ queryKey: ["myGroups"] });
+      queryClient.invalidateQueries({ queryKey: ["myJoinRequests"] });
     },
     onError: (error: any) => {
       const rawMsg = error.response?.data?.message || "";
@@ -169,15 +172,24 @@ const Group = ({
             </div>
           </div>
 
-          {!isMember && isLoggedIn && (
+          {!isMember && isLoggedIn && !isPending && (
             <Button
               variant="secondary"
               className="!w-24 !h-9 !text-sm !font-bold hover:!bg-primary-main hover:!text-white group-hover:border-primary-main transition-all"
               onClick={handleButtonClick}
-              disabled={isPending}
+              disabled={isJoinPending}
             >
               참여하기
             </Button>
+          )}
+
+          {!isMember && isLoggedIn && isPending && (
+            <button
+              disabled
+              className="w-24 h-9 flex items-center justify-center rounded-lg text-sm font-bold bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
+            >
+              신청 완료
+            </button>
           )}
         </div>
       </div>

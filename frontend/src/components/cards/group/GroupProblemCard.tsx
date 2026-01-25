@@ -135,7 +135,7 @@ const GroupProblemCard = ({
       setShowAlertBanner(true);
       setTimeout(() => {
         setShowAlertBanner(false);
-      }, 5000);
+      }, 3000);
       return;
     }
 

@@ -152,8 +152,10 @@ const JoinPage = () => {
       setEmailError("이메일 인증을 완료해주세요.");
       return;
     }
-    if (!password || password.length < 8) {
-      setPasswordError("비밀번호는 8자 이상이어야 합니다.");
+    // 비밀번호 유효성 검사 (영문, 숫자, 특수문자 포함 8자 이상)
+    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*?_~])[A-Za-z0-9!@#$%^&*?_~]{8,}$/;
+    if (!password || !passwordRegex.test(password)) {
+      setPasswordError("비밀번호는 영문, 숫자, 특수문자를 포함하여 8자 이상이어야 합니다.");
       return;
     }
     if (password !== confirmPassword) {

@@ -28,7 +28,7 @@ const MyGroupListCard = ({
   const containerClasses =
     variant === "mypage"
       ? `group w-full bg-white rounded-xl p-3 flex flex-col justify-between gap-2 shadow-sm border border-gray-100`
-      : "group w-full bg-primary-50 border-2 border-primary-main rounded-xl p-5 flex flex-col justify-between gap-4 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer relative overflow-hidden";
+      : "group w-full bg-primary-50 border-2 border-primary-main rounded-xl p-5 flex flex-col justify-between gap-4 shadow-sm hover:shadow-lg hover:z-10 transition-all duration-300 cursor-pointer relative overflow-hidden";
 
   return (
     <div

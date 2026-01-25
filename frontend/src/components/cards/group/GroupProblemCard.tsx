@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Button from "../../button/Button";
+import { increaseViewCount } from "@api/problem/problemApi";
 
 interface GroupProblemCardProps {
   title: string;
@@ -128,7 +129,9 @@ const GroupProblemCard = ({
       }, 5000);
       return;
     }
+
     if (programProblemId) {
+      increaseViewCount(programProblemId); // 조회수 증가
       navigate(`/code/${programProblemId}`);
     } else {
       window.open(problemLink, "_blank");
@@ -150,7 +153,7 @@ const GroupProblemCard = ({
             </span>
           )}
 
-          <h3 
+          <h3
             className="text-base font-bold text-gray-900 truncate hover:text-primary-main hover:underline cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
@@ -228,7 +231,7 @@ const GroupProblemCard = ({
               <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-800"></div>
             </div>
           )}
-        
+
           <svg
             width="28"
             height="28"
@@ -286,6 +289,7 @@ const GroupProblemCard = ({
                   return;
                 }
                 if (programProblemId) {
+                  increaseViewCount(programProblemId); // 조회수 증가
                   navigate(`/code/${programProblemId}`);
                 } else {
                   window.open(problemLink, "_blank");
@@ -326,7 +330,7 @@ const GroupProblemCard = ({
               {/* 메시지 */}
               <div className="flex-1 flex flex-col">
                 <p className="text-sm font-bold text-gray-900 break-keep">
-                   {programTitle}의 필수 리뷰를 작성 후 새로운 제출을 해주세요!
+                  {programTitle}의 필수 리뷰를 작성 후 새로운 제출을 해주세요!
                 </p>
               </div>
 

@@ -8,20 +8,50 @@ import {
     type MySubmissionItem,
 } from "@api/submissions/getMySubmissions";
 import { format } from "date-fns";
+import CustomSelect, {
+    type SelectOption,
+} from "@components/selectbox/CustomSelect";
 
 export default function MySolutions() {
     const navigate = useNavigate();
     const [page, setPage] = useState(1);
+    const [language, setLanguage] = useState("");
+    const [isSuccess, setIsSuccess] = useState<boolean | undefined>(undefined);
+    const [sortBy, setSortBy] = useState("createdAt");
+    const [sortDirection, setSortDirection] = useState("desc");
     const itemsPerPage = 20;
 
+    // Language options
+    const languageOptions: SelectOption[] = [
+        { label: "모든 언어", value: "" },
+        { label: "Java", value: "java" },
+        { label: "Python", value: "python" },
+        { label: "C++", value: "cpp" },
+    ];
+
+    // Sort options
+    const sortOptions: SelectOption[] = [
+        { label: "최신순", value: "createdAt" },
+        { label: "실행 시간", value: "execTime" },
+        { label: "메모리", value: "memory" },
+    ];
+
     const { data: mySubmissionsData } = useQuery({
-        queryKey: ["mySubmissions", page],
+        queryKey: ["mySubmissions", page, language, isSuccess, sortBy, sortDirection],
         queryFn: () =>
             getMySubmissions({
                 page: page - 1,
                 size: itemsPerPage,
+                language: language || undefined,
+                isSuccess: isSuccess !== undefined ? isSuccess : undefined,
+                sort: sortBy || undefined,
+                direction: sortDirection || undefined,
             }),
     });
+
+    const handleSortToggle = () => {
+        setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    };
 
     const submissions = mySubmissionsData?.data?.submissions || [];
     const pageInfo = mySubmissionsData?.data?.page;
@@ -159,6 +189,87 @@ export default function MySolutions() {
             {/* Header */}
             <h2 className="text-xl font-bold text-[#333333]">내가 푼 문제</h2>
 
+            {/* Filters */}
+            <div className="flex w-full flex-col gap-3 rounded-lg border border-gray-100 bg-[#F9FAFB] p-4">
+                <div className="flex flex-row items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        {/* Result Filter */}
+                        <div className="flex h-[36px] items-center gap-2 rounded-lg bg-gray-100 px-1">
+                            <button
+                                onClick={() => {
+                                    setIsSuccess(undefined);
+                                    setPage(1);
+                                }}
+                                className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${isSuccess === undefined ? "bg-white text-[#333333] shadow-sm" : "text-gray-600 hover:text-[#333333]"}`}
+                            >
+                                전체
+                                {isSuccess === undefined && mySubmissionsData?.data?.page?.totalElements !== undefined && (
+                                    <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-gray-200 px-1.5 text-[11px] font-medium text-gray-600">
+                                        {mySubmissionsData.data.page.totalElements}
+                                    </span>
+                                )}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setIsSuccess(true);
+                                    setPage(1);
+                                }}
+                                className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${isSuccess === true ? "bg-white text-[#333333] shadow-sm" : "text-gray-600 hover:text-[#333333]"}`}
+                            >
+                                성공
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setIsSuccess(false);
+                                    setPage(1);
+                                }}
+                                className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${isSuccess === false ? "bg-white text-[#333333] shadow-sm" : "text-gray-600 hover:text-[#333333]"}`}
+                            >
+                                실패
+                            </button>
+                        </div>
+
+                        {/* Language Filter */}
+                        <CustomSelect
+                            value={language}
+                            onChange={(value) => {
+                                setLanguage(value);
+                                setPage(1);
+                            }}
+                            options={languageOptions}
+                            placeholder="모든 언어"
+                        />
+                    </div>
+
+                    {/* Sort Controls */}
+                    <div className="flex items-center gap-2">
+                        <CustomSelect
+                            value={sortBy}
+                            onChange={(value) => {
+                                setSortBy(value);
+                                setPage(1);
+                            }}
+                            options={sortOptions}
+                        />
+                        <button
+                            onClick={handleSortToggle}
+                            className="flex h-[36px] w-[36px] items-center justify-center rounded-lg bg-gray-100 transition-colors hover:bg-gray-200"
+                            title={sortDirection === "asc" ? "오름차순" : "내림차순"}
+                        >
+                            <svg
+                                width="12"
+                                height="12"
+                                viewBox="0 0 12 12"
+                                fill="none"
+                                className={`transform transition-transform duration-200 ${sortDirection === "asc" ? "rotate-180" : ""}`}
+                            >
+                                <path d="M6 9L2 5H10L6 9Z" fill="#666666" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             {/* Main Content: Full Width Table */}
             <div className="flex w-full flex-col gap-4 flex-1">
                 <div className="flex w-full flex-col rounded-[12px] border border-[#F4F4F5]">
@@ -214,7 +325,7 @@ export default function MySolutions() {
                             >
                                 {/* Program Name & Badge */}
                                 <div
-                                    className="w-[140px] flex flex-col items-center justify-center gap-1 px-2 cursor-pointer hover:bg-gray-100 rounded-md py-1 transition-colors"
+                                    className="group relative w-[140px] flex flex-col items-center justify-center gap-1 px-2 cursor-pointer hover:bg-gray-100 rounded-md py-1 transition-colors"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         if (program.programType.name === 'PROBLEMSET') {
@@ -227,18 +338,30 @@ export default function MySolutions() {
                                     <span className="inline-flex items-center justify-center rounded-md bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500">
                                         {getProgramTypeBadgeText(program.programType.name)}
                                     </span>
-                                    <span className="truncate w-full text-center text-sm font-medium text-[#333333] hover:text-[#0D6EFD]" title={program.title}>
+                                    <span className="truncate w-full text-center text-sm font-medium text-[#333333] hover:text-[#0D6EFD]">
                                         {program.title}
                                     </span>
+                                    {/* Tooltip */}
+                                    <div className="pointer-events-none invisible absolute bottom-full left-1/2 z-20 mb-2 w-max max-w-[200px] -translate-x-1/2 transform rounded-lg bg-gray-800 p-2 text-xs text-white opacity-0 shadow-lg transition-all group-hover:visible group-hover:opacity-100">
+                                        {program.title}
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 transform border-4 border-transparent border-t-gray-800"></div>
+                                    </div>
                                 </div>
                                 {/* Problem Name */}
-                                <div className="w-[180px] truncate px-2 text-center text-sm font-medium text-[#333333]" title={problem.title}>
-                                    {problem.title}
+                                <div className="group relative flex w-[140px] min-w-[140px] justify-center px-2">
+                                    <span className="w-full truncate text-center text-sm font-medium text-[#333333]">
+                                        {problem.title}
+                                    </span>
+                                    {/* Tooltip */}
+                                    <div className="pointer-events-none invisible absolute bottom-full left-1/2 z-20 mb-2 w-max max-w-[200px] -translate-x-1/2 transform rounded-lg bg-gray-800 p-2 text-xs text-white opacity-0 shadow-lg transition-all group-hover:visible group-hover:opacity-100">
+                                        {problem.title}
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 transform border-4 border-transparent border-t-gray-800"></div>
+                                    </div>
                                 </div>
                                 <div className="flex w-[80px] justify-center">
                                     <StateBadge hasText={true} isPassed={sub.isSuccess} />
                                 </div>
-                                <div className="w-[90px] text-center text-sm text-[#666666]">
+                                <div className="w-[90px] text-center text-sm text-[#666666] whitespace-nowrap">
                                     {sub.memory} KB
                                 </div>
                                 <div className="w-[90px] text-center text-sm font-medium text-[#E54D2E]">
@@ -261,7 +384,7 @@ export default function MySolutions() {
                                 <div className="group relative flex min-w-[150px] flex-[1] cursor-help flex-wrap justify-center gap-1.5 px-2">
                                     {sub.algorithmList?.length > 0 ? (
                                         <>
-                                            {sub.algorithmList.slice(0, 2).map((algo) => (
+                                            {sub.algorithmList.slice(0, 1).map((algo) => (
                                                 <span
                                                     key={algo.id}
                                                     className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold tracking-tight whitespace-nowrap text-slate-700"
@@ -269,7 +392,7 @@ export default function MySolutions() {
                                                     {algo.name}
                                                 </span>
                                             ))}
-                                            {sub.algorithmList.length > 2 && (
+                                            {sub.algorithmList.length > 1 && (
                                                 <span className="inline-flex items-center justify-center px-1 text-sm font-medium text-gray-600">
                                                     ...
                                                 </span>
@@ -293,18 +416,12 @@ export default function MySolutions() {
                                     )}
                                 </div>
                                 {/* AI Score */}
-                                <div className="group relative flex w-[100px] cursor-help justify-center">
+                                <div className="flex w-[100px] justify-center">
                                     <div
                                         className={`inline-flex w-fit items-center justify-center rounded-md px-2.5 py-1 text-[12px] font-semibold tracking-tight ${getAiScoreBadgeStyle(aiScoreDisplay).bg} ${getAiScoreBadgeStyle(aiScoreDisplay).text}`}
                                     >
                                         {aiScoreText}
                                     </div>
-                                    {sub.aiScoreReason && (
-                                        <div className="pointer-events-none invisible absolute bottom-full left-1/2 z-20 mb-2 w-64 -translate-x-1/2 transform rounded-lg bg-gray-800 p-3 text-xs text-white opacity-0 shadow-lg transition-all group-hover:visible group-hover:opacity-100">
-                                            {sub.aiScoreReason}
-                                            <div className="absolute top-full left-1/2 -translate-x-1/2 transform border-4 border-transparent border-t-gray-800"></div>
-                                        </div>
-                                    )}
                                 </div>
                                 <div className="w-[80px] text-center text-sm font-medium text-[#333333]">
                                     {format(new Date(sub.createAt), "MM/dd")}

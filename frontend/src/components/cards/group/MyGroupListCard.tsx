@@ -3,10 +3,13 @@ interface MyGroupListCardProps {
   description: string;
   memberCount: number;
   problemCount: number; // API에는 없지만 디자인에 있어서 props로 둠 (없으면 0 처리)
-  role: "ADMIN" | "USER"; // 그룹장 여부 구분
+  role: "ADMIN" | "USER" | "MANAGER" | string; // 그룹장 여부 구분
   onClick?: () => void;
   onCancel?: () => void;
+  onAccept?: () => void;
+  onReject?: () => void;
   variant?: "default" | "mypage";
+  hideRoleBadge?: boolean;
 }
 
 const MyGroupListCard = ({
@@ -17,14 +20,14 @@ const MyGroupListCard = ({
   role,
   onClick,
   onCancel,
+  onAccept,
+  onReject,
   variant = "default",
+  hideRoleBadge = false,
 }: MyGroupListCardProps) => {
   const containerClasses =
     variant === "mypage"
-      ? `group w-full bg-white hover:bg-primary-50 rounded-xl p-5 flex flex-col justify-between gap-4 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer relative overflow-hidden ${role === "ADMIN"
-        ? "border-2 border-primary-main"
-        : "border border-gray-100"
-      }`
+      ? `group w-full bg-white hover:bg-primary-50 rounded-xl p-3 flex flex-col justify-between gap-2 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer relative overflow-hidden border border-gray-100`
       : "group w-full bg-primary-50 border-2 border-primary-main rounded-xl p-5 flex flex-col justify-between gap-4 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer relative overflow-hidden";
 
   return (
@@ -38,29 +41,35 @@ const MyGroupListCard = ({
 
       {/* Header: Title & Badge */}
       <div className="flex justify-between items-start gap-3">
-        <h3 className="font-bold text-lg text-gray-800 line-clamp-1 break-all group-hover:text-primary-main transition-colors">
+        <h3 className={`font-bold text-gray-800 line-clamp-1 break-all group-hover:text-primary-main transition-colors ${variant === 'mypage' ? 'text-base' : 'text-lg'}`}>
           {title}
         </h3>
-        {role === "ADMIN" ? (
-          <span className="shrink-0 px-2 py-1 bg-primary-50 text-primary-600 text-[10px] uppercase font-bold tracking-wider rounded-md">
-            ADMIN
-          </span>
-        ) : (
-          <span className="shrink-0 px-2 py-1 bg-gray-50 text-gray-500 text-[10px] uppercase font-bold tracking-wider rounded-md">
-            MEMBER
-          </span>
+        {!hideRoleBadge && (
+          role === "ADMIN" ? (
+            <span className="shrink-0 px-2 py-1 bg-blue-50 text-blue-600 text-[10px] uppercase font-bold tracking-wider rounded-md">
+              ADMIN
+            </span>
+          ) : role === "MANAGER" ? (
+            <span className="shrink-0 px-2 py-1 bg-yellow-50 text-yellow-600 text-[10px] uppercase font-bold tracking-wider rounded-md">
+              MANAGER
+            </span>
+          ) : (
+            <span className="shrink-0 px-2 py-1 bg-gray-50 text-gray-500 text-[10px] uppercase font-bold tracking-wider rounded-md">
+              MEMBER
+            </span>
+          )
         )}
       </div>
 
 
       {/* Description */}
-      <p className="text-sm text-gray-500 line-clamp-2 h-[40px] leading-relaxed">
+      <p className={`text-gray-500 leading-relaxed ${variant === 'mypage' ? 'text-xs line-clamp-1' : 'text-sm line-clamp-2 h-[40px]'}`}>
         {description}
       </p>
 
 
       {/* Footer: Stats */}
-      <div className="flex items-center gap-4 text-xs font-medium text-gray-400">
+      <div className="flex items-center gap-4 text-xs font-medium text-gray-400 min-h-[36px]">
         <div className="flex items-center gap-1.5">
           <svg className="w-4 h-4 text-gray-300 group-hover:text-primary-400 transition-colors" fill="currentColor" viewBox="0 0 20 20">
             <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
@@ -79,11 +88,35 @@ const MyGroupListCard = ({
               e.stopPropagation();
               onCancel();
             }}
-            className="ml-auto px-3 py-1.5 text-xs font-medium text-white bg-gray-400 hover:bg-gray-500 rounded-md transition-colors"
+            className="ml-auto px-3 py-1.5 text-xs font-medium text-white bg-[#FF6B6B] hover:bg-[#FA5252] rounded-md transition-colors"
             style={{ fontFamily: 'Pretendard-Medium' }}
           >
             신청취소
           </button>
+        )}
+        {onAccept && onReject && (
+          <div className="ml-auto flex gap-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onReject();
+              }}
+              className="px-3 py-1.5 text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+              style={{ fontFamily: 'Pretendard-Medium' }}
+            >
+              거절
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onAccept();
+              }}
+              className="px-3 py-1.5 text-xs font-medium text-white bg-primary-main hover:bg-primary-dark rounded-md transition-colors"
+              style={{ fontFamily: 'Pretendard-Medium' }}
+            >
+              수락
+            </button>
+          </div>
         )}
       </div>
     </div>

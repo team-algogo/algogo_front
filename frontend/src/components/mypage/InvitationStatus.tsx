@@ -51,11 +51,10 @@ const InvitationStatus = () => {
         },
     });
 
-    const handleConfirmResponse = (isAccepted: boolean) => {
-        if (!selectedInvite) return;
+    const handleRespond = (invite: Invite, isAccepted: boolean) => {
         respondMutation.mutate({
-            programId: selectedInvite.groupRoom.programId,
-            inviteId: selectedInvite.inviteId,
+            programId: invite.groupRoom.programId,
+            inviteId: invite.inviteId,
             isAccepted: isAccepted ? "ACCEPTED" : "DENIED",
         });
     };
@@ -164,9 +163,12 @@ const InvitationStatus = () => {
                                         description={invite.groupRoom.description}
                                         memberCount={invite.groupRoom.memberCount}
                                         problemCount={invite.groupRoom.programProblemCount}
-                                        role={invite.groupRoom.isMember ? "USER" : "USER"} /* role mapping? */
+                                        role={invite.groupRoom.isMember ? "USER" : "USER"}
                                         variant="mypage"
-                                        onClick={() => setSelectedInvite(invite)}
+                                        onClick={() => {}} // Remove selection
+                                        onAccept={() => handleRespond(invite, true)}
+                                        onReject={() => handleRespond(invite, false)}
+                                        hideRoleBadge={true}
                                     />
                                 ))}
 
@@ -181,21 +183,13 @@ const InvitationStatus = () => {
                                         role={join.groupRoom.isMember ? "USER" : "USER"}
                                         variant="mypage"
                                         onCancel={() => setSelectedJoinToCancel(join)}
+                                        hideRoleBadge={true}
                                     />
                                 ))}
                         </div>
                     </div>
                 </div>
             </div>
-            {/* Modal */}
-            {selectedInvite && (
-                <InvitationResponseModal
-                    isOpen={!!selectedInvite}
-                    onClose={() => setSelectedInvite(null)}
-                    onConfirm={handleConfirmResponse}
-                    groupName={selectedInvite.groupRoom.title}
-                />
-            )}
 
             {/* Cancel Confirm Modal */}
             <ConfirmModal

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import BasePage from "@pages/BasePage";
 import Pagination from "@components/pagination/Pagination";
@@ -30,7 +30,6 @@ export default function ProblemStatisticsPage() {
   const [isSuccess, setIsSuccess] = useState<boolean | undefined>(undefined);
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortDirection, setSortDirection] = useState("desc");
-  const [searchParams] = useSearchParams();
   const [showAlertBanner, setShowAlertBanner] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -49,6 +48,15 @@ export default function ProblemStatisticsPage() {
     if (!programProblemId) return null;
     const cachedProgramId = localStorage.getItem(
       `problemSetProgramId_${programProblemId}`,
+    );
+    return cachedProgramId ? Number(cachedProgramId) : null;
+  };
+
+  // localStorage에서 statistics용 programId 가져오기
+  const getStatisticsProgramId = () => {
+    if (!programProblemId) return null;
+    const cachedProgramId = localStorage.getItem(
+      `statisticsProgramId_${programProblemId}`,
     );
     return cachedProgramId ? Number(cachedProgramId) : null;
   };
@@ -117,14 +125,14 @@ export default function ProblemStatisticsPage() {
     enabled: !isNaN(id),
   });
 
-  // Get programId from URL query parameter
-  const programIdFromQuery = searchParams.get("programId");
+  // Get programId from localStorage (쿼리 파라미터 대신)
+  const statisticsProgramId = getStatisticsProgramId();
 
   // Check if more submissions are allowed
   const { data: canMoreSubmissionData } = useQuery({
-    queryKey: ["canMoreSubmission", programIdFromQuery],
-    queryFn: () => getCanMoreSubmission(Number(programIdFromQuery)),
-    enabled: !!programIdFromQuery,
+    queryKey: ["canMoreSubmission", statisticsProgramId],
+    queryFn: () => getCanMoreSubmission(Number(statisticsProgramId!)),
+    enabled: !!statisticsProgramId,
   });
 
   const canMoreSubmission = canMoreSubmissionData?.canMoreSubmission ?? true;

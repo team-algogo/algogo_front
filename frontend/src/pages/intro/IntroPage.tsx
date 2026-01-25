@@ -5,7 +5,6 @@ import { FeatureSection } from "@components/main/landing/FeatureSection";
 import { HowItWorksSection } from "@components/main/landing/HowItWorksSection";
 import { GroupFeatureSection } from "@components/main/landing/GroupFeatureSection";
 import { ProblemSetFeatureSection } from "@components/main/landing/ProblemSetFeatureSection";
-import { CTASection } from "@components/main/landing/CTASection";
 
 const IntroPage = () => {
     const { state } = useLocation();
@@ -42,9 +41,8 @@ const IntroPage = () => {
             {/* 로그인 필요 안내 배너 */}
             {showLoginRequiredBanner && (
                 <div
-                    className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-[480px] px-4 transition-opacity duration-500 ${
-                        bannerVisible ? "opacity-100" : "opacity-0"
-                    }`}
+                    className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-[480px] px-4 transition-opacity duration-500 ${bannerVisible ? "opacity-100" : "opacity-0"
+                        }`}
                 >
                     <div className="flex items-start gap-3 rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-lg">
                         <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center mt-0.5">
@@ -101,7 +99,6 @@ const IntroPage = () => {
                 <HowItWorksSection />
                 <ProblemSetFeatureSection />
                 <GroupFeatureSection />
-                <CTASection />
             </div>
         </>
     );

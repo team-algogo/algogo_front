@@ -224,53 +224,53 @@ export default function ProblemStatisticsPage() {
 
     // 플랫폼의 다른 뱃지들과 일관성 유지: 연한 배경 + 진한 텍스트
     const styles: Record<string, { bg: string; text: string; border: string }> =
-      {
-        JAVA: {
-          bg: "bg-red-50",
-          text: "text-red-700",
-          border: "border-red-200",
-        },
-        PYTHON: {
-          bg: "bg-blue-50",
-          text: "text-blue-700",
-          border: "border-blue-200",
-        },
-        "C++": {
-          bg: "bg-slate-50",
-          text: "text-slate-700",
-          border: "border-slate-200",
-        },
-        JAVASCRIPT: {
-          bg: "bg-yellow-50",
-          text: "text-yellow-700",
-          border: "border-yellow-200",
-        },
-        TYPESCRIPT: {
-          bg: "bg-indigo-50",
-          text: "text-indigo-700",
-          border: "border-indigo-200",
-        },
-        KOTLIN: {
-          bg: "bg-purple-50",
-          text: "text-purple-700",
-          border: "border-purple-200",
-        },
-        SWIFT: {
-          bg: "bg-orange-50",
-          text: "text-orange-700",
-          border: "border-orange-200",
-        },
-        GO: {
-          bg: "bg-cyan-50",
-          text: "text-cyan-700",
-          border: "border-cyan-200",
-        },
-        RUST: {
-          bg: "bg-red-50",
-          text: "text-red-700",
-          border: "border-red-200",
-        },
-      };
+    {
+      JAVA: {
+        bg: "bg-red-50",
+        text: "text-red-700",
+        border: "border-red-200",
+      },
+      PYTHON: {
+        bg: "bg-blue-50",
+        text: "text-blue-700",
+        border: "border-blue-200",
+      },
+      "C++": {
+        bg: "bg-slate-50",
+        text: "text-slate-700",
+        border: "border-slate-200",
+      },
+      JAVASCRIPT: {
+        bg: "bg-yellow-50",
+        text: "text-yellow-700",
+        border: "border-yellow-200",
+      },
+      TYPESCRIPT: {
+        bg: "bg-indigo-50",
+        text: "text-indigo-700",
+        border: "border-indigo-200",
+      },
+      KOTLIN: {
+        bg: "bg-purple-50",
+        text: "text-purple-700",
+        border: "border-purple-200",
+      },
+      SWIFT: {
+        bg: "bg-orange-50",
+        text: "text-orange-700",
+        border: "border-orange-200",
+      },
+      GO: {
+        bg: "bg-cyan-50",
+        text: "text-cyan-700",
+        border: "border-cyan-200",
+      },
+      RUST: {
+        bg: "bg-red-50",
+        text: "text-red-700",
+        border: "border-red-200",
+      },
+    };
 
     return (
       styles[normalized] || {
@@ -290,12 +290,19 @@ export default function ProblemStatisticsPage() {
             <div className="mb-1 flex items-center gap-3 text-gray-500">
               <button
                 onClick={() => {
-                  const cachedProgramId = getCachedProgramId();
-                  if (cachedProgramId) {
-                    navigate(`/problemset/${cachedProgramId}`);
+                  const type = statisticsData?.programType?.toLowerCase();
+                  if (type === "problemset") {
+                    navigate(`/problemset/${statisticsData!.programId}`);
+                  } else if (type === "group") {
+                    navigate(`/group/${statisticsData!.programId}`);
                   } else {
-                    // 캐시된 programId가 없으면 뒤로가기
-                    navigate(-1);
+                    // 정보가 없거나 다른 경우, 기존 로직(캐시 or 뒤로가기)
+                    const cachedProgramId = getCachedProgramId();
+                    if (cachedProgramId) {
+                      navigate(`/problemset/${cachedProgramId}`);
+                    } else {
+                      navigate(-1);
+                    }
                   }
                 }}
                 className="flex items-center gap-1 text-sm transition-colors hover:text-[#333333]"
@@ -315,7 +322,9 @@ export default function ProblemStatisticsPage() {
                     strokeLinejoin="round"
                   />
                 </svg>
-                문제집으로 돌아가기
+                {statisticsData?.programType?.toLowerCase() === "group"
+                  ? "그룹으로 돌아가기"
+                  : "문제집으로 돌아가기"}
               </button>
             </div>
             <div className="flex items-baseline gap-3">
@@ -328,28 +337,28 @@ export default function ProblemStatisticsPage() {
                   {problemInfo.platformType}
                 </span>
               )}
-              
+
               {/* Difficulty Badge */}
               {problemInfo && (() => {
-                 const { difficultyViewType, difficultyType, userDifficultyType } = problemInfo;
-                  if (difficultyViewType === "PROBLEM_DIFFICULTY") {
-                    return (
-                      <span className="inline-flex items-center justify-center rounded-[4px] border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[11px] font-semibold text-slate-600">
-                        {difficultyType}
-                      </span>
-                    );
-                  } else {
-                    let style = "text-gray-600 bg-gray-50 border border-gray-200";
-                    const diff = userDifficultyType?.toLowerCase();
-                    if (diff === "easy") style = "text-green-600 bg-green-50 border border-green-200";
-                    else if (diff === "medium") style = "text-yellow-600 bg-yellow-50 border border-yellow-200";
-                    else if (diff === "hard") style = "text-red-600 bg-red-50 border border-red-200";
-                    return (
-                      <span className={`inline-flex items-center justify-center rounded-[4px] border px-1.5 py-0.5 text-[11px] font-semibold ${style}`}>
-                        {userDifficultyType}
-                      </span>
-                    );
-                  }
+                const { difficultyViewType, difficultyType, userDifficultyType } = problemInfo;
+                if (difficultyViewType === "PROBLEM_DIFFICULTY") {
+                  return (
+                    <span className="inline-flex items-center justify-center rounded-[4px] border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[11px] font-semibold text-slate-600">
+                      {difficultyType}
+                    </span>
+                  );
+                } else {
+                  let style = "text-gray-600 bg-gray-50 border border-gray-200";
+                  const diff = userDifficultyType?.toLowerCase();
+                  if (diff === "easy") style = "text-green-600 bg-green-50 border border-green-200";
+                  else if (diff === "medium") style = "text-yellow-600 bg-yellow-50 border border-yellow-200";
+                  else if (diff === "hard") style = "text-red-600 bg-red-50 border border-red-200";
+                  return (
+                    <span className={`inline-flex items-center justify-center rounded-[4px] border px-1.5 py-0.5 text-[11px] font-semibold ${style}`}>
+                      {userDifficultyType}
+                    </span>
+                  );
+                }
               })()}
             </div>
           </div>
@@ -374,11 +383,10 @@ export default function ProblemStatisticsPage() {
                 }
                 navigate(`/code/${programProblemId}`);
               }}
-              className={`flex items-center justify-center rounded-lg px-5 py-2.5 text-sm font-semibold shadow-sm transition-all duration-200 ${
-                !canMoreSubmission
-                  ? "bg-gray-100 text-gray-400 cursor-pointer opacity-60"
-                  : "bg-[#0D6EFD] text-white hover:bg-[#0B5ED7] hover:shadow-md active:bg-[#0A56C2] active:shadow-sm"
-              }`}
+              className={`flex items-center justify-center rounded-lg px-5 py-2.5 text-sm font-semibold shadow-sm transition-all duration-200 ${!canMoreSubmission
+                ? "bg-gray-100 text-gray-400 cursor-pointer opacity-60"
+                : "bg-[#0D6EFD] text-white hover:bg-[#0B5ED7] hover:shadow-md active:bg-[#0A56C2] active:shadow-sm"
+                }`}
             >
               문제 풀기
             </button>

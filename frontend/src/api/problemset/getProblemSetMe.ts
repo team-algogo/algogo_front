@@ -12,6 +12,7 @@ export interface ProblemSetMeItem {
     categories: string[];
     totalParticipants: number;
     problemCount: number;
+    solvedCount: number;
     thumbnail?: string; // Optional as not in JSON, but used in UI
 }
 

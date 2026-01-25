@@ -133,7 +133,11 @@ const ParticipationStatus = ({ initialTab }: ParticipationStatusProps) => {
                             key={problem.programId}
                             title={problem.title}
                             categories={problem.categories}
-                            progress={0} // Default
+                            progress={
+                                problem.problemCount > 0
+                                    ? Math.round((problem.solvedCount / problem.problemCount) * 100)
+                                    : 0
+                            }
                             problemCount={problem.problemCount}
                             memberCount={problem.totalParticipants}
                             thumbnailUrl={

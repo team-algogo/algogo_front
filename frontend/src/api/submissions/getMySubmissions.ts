@@ -64,19 +64,23 @@ export interface GetMySubmissionsParams {
     size?: number;
     sort?: string;
     direction?: string;
+    language?: string;
+    isSuccess?: boolean;
 }
 
 export const getMySubmissions = async (
     params: GetMySubmissionsParams = {},
 ): Promise<MySubmissionResponse> => {
-    const { page = 0, size = 20, sort, direction } = params;
+    const { page = 0, size = 20, sort, direction, language, isSuccess } = params;
 
     // Construct query parameters
     const queryParams = new URLSearchParams();
     queryParams.append('page', page.toString());
     queryParams.append('size', size.toString());
-    if (sort) queryParams.append('sort', sort);
-    if (direction) queryParams.append('direction', direction);
+    if (sort) queryParams.append('sortBy', sort);
+    if (direction) queryParams.append('sortDirection', direction);
+    if (language) queryParams.append('language', language);
+    if (isSuccess !== undefined) queryParams.append('isSuccess', isSuccess.toString());
 
     const response = await client.get(`/api/v1/submissions/me?${queryParams.toString()}`);
     return response.data;

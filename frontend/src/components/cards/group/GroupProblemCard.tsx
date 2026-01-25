@@ -141,6 +141,7 @@ const GroupProblemCard = ({
 
     // 3. 이동
     if (programProblemId) {
+      increaseViewCount(programProblemId); // 조회수 증가
       navigate(`/code/${programProblemId}`);
     } else {
       window.open(problemLink, "_blank");
@@ -308,6 +309,7 @@ const GroupProblemCard = ({
                   return;
                 }
                 if (programProblemId) {
+                  increaseViewCount(programProblemId); // 조회수 증가
                   navigate(`/code/${programProblemId}`);
                 } else {
                   window.open(problemLink, "_blank");

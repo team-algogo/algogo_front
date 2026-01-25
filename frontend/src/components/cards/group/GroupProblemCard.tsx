@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Button from "../../button/Button";
 import useToast from "@hooks/useToast";
+import { increaseViewCount } from "@api/problem/problemApi";
 
 interface GroupProblemCardProps {
   title: string;

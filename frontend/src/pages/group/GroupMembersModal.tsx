@@ -136,7 +136,7 @@ export default function GroupMembersModal({ programId, onClose }: GroupMembersMo
     return (
         <>
             <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                <div className="bg-white w-[800px] max-h-[85vh] rounded-3xl flex flex-col shadow-2xl overflow-hidden relative border border-gray-100">
+                <div className="bg-white w-[800px] min-h-[600px] max-h-[85vh] rounded-3xl flex flex-col shadow-2xl overflow-hidden relative border border-gray-100">
 
                     {/* 헤더 */}
                     <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-20">
@@ -329,23 +329,25 @@ export default function GroupMembersModal({ programId, onClose }: GroupMembersMo
                                         )}
                                     </tbody>
                                 </table>
-                                {sortedMembers.length > 0 && (
-                                    <div className="p-4 border-t border-gray-100 flex justify-center">
-                                        <Pagination
-                                            pageInfo={{
-                                                number: page,
-                                                size: PAGE_SIZE,
-                                                totalElements: sortedMembers.length,
-                                                totalPages: Math.ceil(sortedMembers.length / PAGE_SIZE),
-                                            }}
-                                            currentPage={page + 1}
-                                            onPageChange={(p) => setPage(p - 1)}
-                                        />
-                                    </div>
-                                )}
                             </>
                         )}
                     </div>
+
+                    {/* Pagination Footer */}
+                    {sortedMembers.length > 0 && (
+                        <div className="px-8 py-4 border-t border-gray-100 flex justify-center bg-white">
+                            <Pagination
+                                pageInfo={{
+                                    number: page,
+                                    size: PAGE_SIZE,
+                                    totalElements: sortedMembers.length,
+                                    totalPages: Math.ceil(sortedMembers.length / PAGE_SIZE),
+                                }}
+                                currentPage={page + 1}
+                                onPageChange={(p) => setPage(p - 1)}
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
 

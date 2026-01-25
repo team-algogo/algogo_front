@@ -389,11 +389,13 @@ export default function MySolutions() {
 
                 {/* Pagination */}
                 {pageInfo && totalPages > 0 && (
-                    <Pagination
-                        pageInfo={pageInfo}
-                        currentPage={page}
-                        onPageChange={handlePageChange}
-                    />
+                    <div className="mt-auto">
+                        <Pagination
+                            pageInfo={pageInfo}
+                            currentPage={page}
+                            onPageChange={handlePageChange}
+                        />
+                    </div>
                 )}
             </div>
         </div>

@@ -1,4 +1,5 @@
 import type { ReceiveCodeReview } from "../../type/mypage/ReceivedReviews";
+import { useNavigate } from "react-router-dom";
 
 interface ReceivedReviewsProps {
   reviews: ReceiveCodeReview[];
@@ -6,6 +7,7 @@ interface ReceivedReviewsProps {
 }
 
 const ReceivedReviews = ({ reviews, totalElements }: ReceivedReviewsProps) => {
+  const navigate = useNavigate();
   const getTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -75,10 +77,13 @@ const ReceivedReviews = ({ reviews, totalElements }: ReceivedReviewsProps) => {
                   ? { bg: "bg-[#E3F2FD]", text: "text-[#1976D2]" } // Campaign: Blue
                   : { bg: "bg-[#F5F5F5]", text: "text-[#757575]" }; // Problemset: Gray
 
-            return (
+              return (
               <div
                 key={review.submissionId}
-                className="flex w-full flex-col items-start gap-3 rounded-2xl border border-[#F2F2F2] bg-white p-5"
+                onClick={() => navigate(`/review/${review.submissionId}`)}
+                className="flex w-full flex-col items-start gap-3 rounded-2xl border border-[#F2F2F2] bg-white p-5 cursor-pointer hover:border-[#0D6EFD] transition-colors"
+                role="button"
+                tabIndex={0}
               >
                 <div className="flex items-center gap-2">
                   <div

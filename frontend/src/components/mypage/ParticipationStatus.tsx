@@ -169,7 +169,7 @@ const ParticipationStatus = ({ initialTab }: ParticipationStatusProps) => {
     };
 
     return (
-        <>
+        <div className="flex flex-col h-full w-full flex-1">
             {/* Main Header */}
             <div className="flex w-full items-center gap-2 mb-5">
                 <span
@@ -180,7 +180,7 @@ const ParticipationStatus = ({ initialTab }: ParticipationStatusProps) => {
                 </span>
             </div>
 
-            <div className="flex flex-col gap-8 w-full">
+            <div className="flex flex-col gap-8 w-full flex-1">
                 {/* Tabs */}
                 <div className="flex items-center border-b border-gray-200 w-full">
                     {["문제집", "캠페인", "그룹방"].map((tab) => (
@@ -201,7 +201,7 @@ const ParticipationStatus = ({ initialTab }: ParticipationStatusProps) => {
                 </div>
 
                 {/* Content */}
-                <div className="flex flex-col gap-6 w-full">
+                <div className="flex flex-col gap-6 w-full flex-1">
                     {/* Header with Sort */}
                     {activeTab !== "캠페인" && (
                         <div className="flex items-center justify-between">
@@ -234,14 +234,14 @@ const ParticipationStatus = ({ initialTab }: ParticipationStatusProps) => {
                     )}
 
                     {/* Cards */}
-                    <div className="w-full min-h-[600px] flex flex-col justify-between">
+                    <div className="w-full flex flex-col justify-between flex-1">
                         {renderContent()}
                     </div>
                 </div>
 
                 {/* Pagination */}
                 {!isLoading && activeTab !== "캠페인" && pageInfo.totalPages > 0 && (
-                    <div className="mt-4">
+                    <div className="mt-auto py-4 w-full flex justify-center">
                         <Pagination
                             pageInfo={pageInfo}
                             currentPage={page}
@@ -250,7 +250,7 @@ const ParticipationStatus = ({ initialTab }: ParticipationStatusProps) => {
                     </div>
                 )}
             </div>
-        </>
+        </div>
     );
 };
 

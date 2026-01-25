@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import MyGroupListCard from "@components/cards/group/MyGroupListCard";
 import { getReceivedInvites, getSentJoins, respondToReceivedInvite, cancelSentJoin } from "@api/mypage";
-import InvitationResponseModal from "@components/modal/mypage/InvitationResponseModal";
+
 import ConfirmModal from "@components/modal/ConfirmModal";
 import type { Invite, Join } from "@type/mypage/InvitationStatus";
 
@@ -10,7 +10,6 @@ type Tab = "초대" | "신청";
 
 const InvitationStatus = () => {
     const [activeTab, setActiveTab] = useState<Tab>("초대");
-    const [selectedInvite, setSelectedInvite] = useState<Invite | null>(null);
     const [selectedJoinToCancel, setSelectedJoinToCancel] = useState<Join | null>(null);
     const queryClient = useQueryClient();
 
@@ -43,7 +42,6 @@ const InvitationStatus = () => {
         }) => respondToReceivedInvite(programId, inviteId, isAccepted),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["receivedInvites"] });
-            setSelectedInvite(null);
         },
         onError: (error) => {
             console.error("Failed to respond to invite:", error);
@@ -51,11 +49,10 @@ const InvitationStatus = () => {
         },
     });
 
-    const handleConfirmResponse = (isAccepted: boolean) => {
-        if (!selectedInvite) return;
+    const handleRespond = (invite: Invite, isAccepted: boolean) => {
         respondMutation.mutate({
-            programId: selectedInvite.groupRoom.programId,
-            inviteId: selectedInvite.inviteId,
+            programId: invite.groupRoom.programId,
+            inviteId: invite.inviteId,
             isAccepted: isAccepted ? "ACCEPTED" : "DENIED",
         });
     };
@@ -164,9 +161,12 @@ const InvitationStatus = () => {
                                         description={invite.groupRoom.description}
                                         memberCount={invite.groupRoom.memberCount}
                                         problemCount={invite.groupRoom.programProblemCount}
-                                        role={invite.groupRoom.isMember ? "USER" : "USER"} /* role mapping? */
+                                        role={invite.groupRoom.isMember ? "USER" : "USER"}
                                         variant="mypage"
-                                        onClick={() => setSelectedInvite(invite)}
+                                        onClick={() => {}} // Remove selection
+                                        onAccept={() => handleRespond(invite, true)}
+                                        onReject={() => handleRespond(invite, false)}
+                                        hideRoleBadge={true}
                                     />
                                 ))}
 
@@ -181,21 +181,13 @@ const InvitationStatus = () => {
                                         role={join.groupRoom.isMember ? "USER" : "USER"}
                                         variant="mypage"
                                         onCancel={() => setSelectedJoinToCancel(join)}
+                                        hideRoleBadge={true}
                                     />
                                 ))}
                         </div>
                     </div>
                 </div>
             </div>
-            {/* Modal */}
-            {selectedInvite && (
-                <InvitationResponseModal
-                    isOpen={!!selectedInvite}
-                    onClose={() => setSelectedInvite(null)}
-                    onConfirm={handleConfirmResponse}
-                    groupName={selectedInvite.groupRoom.title}
-                />
-            )}
 
             {/* Cancel Confirm Modal */}
             <ConfirmModal

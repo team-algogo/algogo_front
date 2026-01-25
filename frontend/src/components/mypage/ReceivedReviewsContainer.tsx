@@ -18,14 +18,18 @@ const ReceivedReviewsContainer = () => {
     const totalElements = data?.pageInfo.totalElements || 0;
 
     return (
-        <div className="flex w-full flex-col gap-4">
-            <ReceivedReviews reviews={reviews} totalElements={totalElements} />
+        <div className="flex w-full flex-col gap-4 h-full flex-1">
+            <div className="flex-1 w-full">
+                <ReceivedReviews reviews={reviews} totalElements={totalElements} />
+            </div>
 
-            <Pagination
-                pageInfo={{ number: currentPage - 1, totalPages }}
-                currentPage={currentPage}
-                onPageChange={setCurrentPage}
-            />
+            <div className="mt-auto py-4 w-full flex justify-center">
+                <Pagination
+                    pageInfo={{ number: currentPage - 1, totalPages }}
+                    currentPage={currentPage}
+                    onPageChange={setCurrentPage}
+                />
+            </div>
         </div>
     );
 };

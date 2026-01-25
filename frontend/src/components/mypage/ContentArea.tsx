@@ -17,12 +17,12 @@ interface ContentAreaProps {
 const ContentArea = ({ viewMode, initialSubTab }: ContentAreaProps) => {
 
     return (
-        <div className="flex flex-col gap-8 flex-1 w-full max-w-4xl">
+        <div className="flex flex-col gap-8 flex-1 w-full max-w-4xl min-h-[calc(100vh-280px)]">
             {/* View Mode Switcher */}
 
 
             {/* Dynamic Content */}
-            <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="w-full flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-300">
                 {viewMode === '참여 현황' && <ParticipationStatus initialTab={initialSubTab} />}
                 {viewMode === '내가 푼 문제' && <MySolutions />}
                 {viewMode === '리뷰 요청' && <ReviewRequestsContainer />}

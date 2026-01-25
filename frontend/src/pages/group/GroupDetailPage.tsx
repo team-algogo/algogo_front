@@ -66,7 +66,6 @@ export default function GroupDetailPage() {
         queryKey: ["myProfile"],
         queryFn: getUserDetail,
     });
-    const myUserId = myData?.userId;
     const myEmail = myData?.email;
 
     // 0.5. 멤버 리스트 fetch (내 programUserId 확인용)

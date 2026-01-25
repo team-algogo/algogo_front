@@ -10,12 +10,11 @@ const WrittenReviews = () => {
   const pageSize = 5;
   const navigate = useNavigate();
 
-  const { data: reviewsData, isLoading, isError } = useQuery({
+  const { data: reviewsData } = useQuery({
     queryKey: ["receiveCodeReviews", currentPage],
     queryFn: () => getWrittenReviews(currentPage - 1, pageSize),
   });
 
-  /* eslint-disable @typescript-eslint/no-explicit-any */
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const reviews = reviewsData?.receiveCodeReviews || (reviewsData as any)?.writtenCodeReviews || [];
   const totalPages = reviewsData?.pageInfo.totalPages || 1;
@@ -159,9 +158,9 @@ const WrittenReviews = () => {
 
       <div className="mt-auto py-4 w-full flex justify-center">
         <Pagination
-            pageInfo={{ number: currentPage - 1, totalPages }}
-            currentPage={currentPage}
-            onPageChange={setCurrentPage}
+          pageInfo={{ number: currentPage - 1, totalPages }}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
         />
       </div>
     </div>

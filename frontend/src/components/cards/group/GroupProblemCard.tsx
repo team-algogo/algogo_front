@@ -207,7 +207,14 @@ const GroupProblemCard = ({
           onClick={(e) => {
             e.stopPropagation();
             if (programProblemId) {
-              navigate(`/statistics/${programProblemId}${programId ? `?programId=${programId}` : ''}`);
+              // localStorage에 programId 저장 (쿼리 파라미터 대신)
+              if (programId) {
+                localStorage.setItem(
+                  `statisticsProgramId_${programProblemId}`,
+                  programId.toString()
+                );
+              }
+              navigate(`/statistics/${programProblemId}`);
             }
           }}
           onMouseEnter={() => setShowStatsTooltip(true)}

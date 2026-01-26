@@ -26,6 +26,7 @@ const ReviewRequestCard = ({
   programType,
   programTitle,
   submission,
+  subjectSubmissionCreatedAt,
 }: RequiredCodeReview) => {
   const getProgramTypeLabel = (type: string) => {
     switch (type) {
@@ -49,7 +50,7 @@ const ReviewRequestCard = ({
         ? { bg: "bg-primary-50 text-primary-600", border: "border-primary-100" }
         : { bg: "bg-gray-50 text-gray-500", border: "border-gray-100" };
 
-  const timeAgo = formatTimeAgo(submission?.createAt);
+  const timeAgo = formatTimeAgo(subjectSubmissionCreatedAt);
 
   return (
     <Link

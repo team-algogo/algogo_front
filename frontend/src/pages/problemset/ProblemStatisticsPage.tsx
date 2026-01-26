@@ -183,6 +183,23 @@ export default function ProblemStatisticsPage() {
     return lang.toUpperCase();
   };
 
+  // 상대 시간 포맷팅 헬퍼 함수
+  const formatRelativeTime = (dateString: string) => {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diff = now.getTime() - date.getTime();
+    const diffMin = Math.floor(diff / (1000 * 60));
+    const diffHour = Math.floor(diff / (1000 * 60 * 60));
+    const diffDay = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+    if (diffMin < 1) return "방금 전";
+    if (diffMin < 60) return `${diffMin}분 전`;
+    if (diffHour < 24) return `${diffHour}시간 전`;
+    if (diffDay < 7) return `${diffDay}일 전`;
+
+    return format(date, "MM.dd");
+  };
+
   // AI 점수별 뱃지 스타일 가져오기
   const getAiScoreBadgeStyle = (score: number | null) => {
     if (score === null) {
@@ -537,7 +554,7 @@ export default function ProblemStatisticsPage() {
             {/* Removed overflow-hidden to allow tooltips */}
             {/* Table Header */}
             <div className="flex h-[50px] w-full flex-row items-center rounded-t-[12px] border-b border-gray-100 bg-[#F9FAFB]">
-              <div className="w-[80px] text-center text-sm font-medium text-gray-500">
+              <div className="w-[60px] text-center text-sm font-medium text-gray-500">
                 순위
               </div>
               <div className="w-[160px] text-center text-sm font-medium text-gray-500">
@@ -561,7 +578,7 @@ export default function ProblemStatisticsPage() {
               <div className="w-[120px] text-center text-sm font-medium text-gray-500">
                 AI 점수
               </div>
-              <div className="w-[80px] text-center text-sm font-medium text-gray-500">
+              <div className="w-[100px] text-center text-sm font-medium text-gray-500">
                 제출 시간
               </div>
               <div className="w-[120px] text-center text-sm font-medium text-gray-500">
@@ -584,7 +601,7 @@ export default function ProblemStatisticsPage() {
                   key={sub.submissionId}
                   className="flex min-h-[56px] w-full flex-row items-center border-b border-gray-50 bg-white py-3 transition-colors last:rounded-b-[12px] hover:bg-gray-50"
                 >
-                  <div className="w-[80px] text-center text-sm font-medium text-[#333333]">
+                  <div className="w-[60px] text-center text-sm font-medium text-[#333333]">
                     {rank}
                   </div>
                   <div className="w-[160px] truncate px-2 text-center text-sm font-medium text-[#333333]">
@@ -662,8 +679,13 @@ export default function ProblemStatisticsPage() {
                       </div>
                     )}
                   </div>
-                  <div className="w-[80px] text-center text-sm font-medium text-[#333333]">
-                    {format(new Date(sub.createAt), "MM/dd")}
+                  <div className="group relative flex w-[100px] cursor-help justify-center text-sm font-medium text-[#333333]">
+                    {formatRelativeTime(sub.createAt)}
+                    {/* Tooltip for Exact Time */}
+                    <div className="pointer-events-none invisible absolute bottom-full left-1/2 z-20 mb-2 w-max -translate-x-1/2 transform rounded-lg bg-gray-800 p-2 text-xs text-white opacity-0 shadow-lg transition-all group-hover:visible group-hover:opacity-100">
+                      {format(new Date(sub.createAt), "yyyy-MM-dd HH:mm:ss")}
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 transform border-4 border-transparent border-t-gray-800"></div>
+                    </div>
                   </div>
                   <div className="flex w-[120px] justify-center">
                     <button

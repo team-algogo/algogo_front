@@ -30,6 +30,7 @@ import {
   updateReview,
   deleteSubmission,
 } from "@api/code/reviewSubmit";
+import { retryAiEvaluation } from "@api/submissions/retryAiEvaluation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import useAuthStore from "@store/useAuthStore";
 
@@ -38,7 +39,7 @@ const CodeReviewPage = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { userType } = useAuthStore();
-  
+
   useEffect(() => {
     if (!userType) {
       navigate("/intro", { state: { requireLogin: true } });
@@ -63,6 +64,7 @@ const CodeReviewPage = () => {
     reviewId: number | null;
   }>({ isOpen: false, reviewId: null });
   const [deleteSubmissionConfirm, setDeleteSubmissionConfirm] = useState(false);
+  const [isRetryingAi, setIsRetryingAi] = useState(false);
   const [modalPosition, setModalPosition] = useState({ top: 80, left: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -224,11 +226,11 @@ const CodeReviewPage = () => {
     const handleMouseMove = (e: MouseEvent) => {
       const newTop = e.clientY - dragStart.y;
       const newLeft = e.clientX - dragStart.x;
-      
+
       // 화면 경계 내에서만 이동 가능
       const maxTop = window.innerHeight - (modalRef.current?.offsetHeight || 0);
       const maxLeft = window.innerWidth - (modalRef.current?.offsetWidth || 0);
-      
+
       setModalPosition({
         top: Math.max(0, Math.min(newTop, maxTop)),
         left: Math.max(0, Math.min(newLeft, maxLeft)),
@@ -266,6 +268,21 @@ const CodeReviewPage = () => {
 
   const cancelDeleteSubmission = () => {
     setDeleteSubmissionConfirm(false);
+  };
+
+  const handleRetryAiEvaluation = async () => {
+    if (!submissionDetail?.submissionId || isRetryingAi) return;
+    setIsRetryingAi(true);
+    try {
+      await retryAiEvaluation(submissionDetail.submissionId);
+      // 성공 시 약간의 딜레이 후 페이지 새로고침하여 결과 확인
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } catch (err) {
+      console.error("AI 평가 재시도 실패:", err);
+      setIsRetryingAi(false);
+    }
   };
 
   const handleUpdateReview = async (reviewId: number, content: string) => {
@@ -643,11 +660,10 @@ const CodeReviewPage = () => {
                 {/* Success/Failure Badge */}
                 {submissionDetail && (
                   <span
-                    className={`inline-flex items-center rounded-md border px-2.5 py-1 text-xs font-semibold ${
-                      submissionDetail.isSuccess
-                        ? "border-[#1a7f37]/30 bg-[#dafbe1] text-[#1a7f37]"
-                        : "border-[#cf222e]/30 bg-[#ffebe9] text-[#cf222e]"
-                    }`}
+                    className={`inline-flex items-center rounded-md border px-2.5 py-1 text-xs font-semibold ${submissionDetail.isSuccess
+                      ? "border-[#1a7f37]/30 bg-[#dafbe1] text-[#1a7f37]"
+                      : "border-[#cf222e]/30 bg-[#ffebe9] text-[#cf222e]"
+                      }`}
                   >
                     {submissionDetail.isSuccess ? "Success" : "Failed"}
                   </span>
@@ -733,6 +749,62 @@ const CodeReviewPage = () => {
             </div>
           </div>
         )}
+
+        {/* AI 측정 중 또는 에러 상태 - 재평가 버튼 표시 */}
+        {submissionDetail &&
+          !submissionDetail.aiScoreReason &&
+          currentUser &&
+          submissionDetail.userId === currentUser.userId && (
+            <div className="w-full border-t border-[#d0d7de] pt-8">
+              <div className="flex items-center justify-between rounded-lg border border-[#d0d7de] bg-[#f6f8fa] px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-400">
+                    <span className="text-xs font-semibold text-white">AI</span>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-[#656d76]">
+                      AI 평가를 생성하지 못했습니다
+                    </h3>
+                    <p className="text-xs text-[#656d76]">재평가를 시도해보세요</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleRetryAiEvaluation}
+                  disabled={isRetryingAi}
+                  className="flex items-center gap-1.5 rounded-lg border border-[#0969da] bg-white px-3 py-1.5 text-sm font-medium text-[#0969da] transition-colors hover:bg-[#0969da]/5 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={isRetryingAi ? "animate-spin" : ""}
+                  >
+                    <path
+                      d="M14 8C14 11.3137 11.3137 14 8 14C4.68629 14 2 11.3137 2 8C2 4.68629 4.68629 2 8 2"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M8 2L8 5"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M8 2L11 2"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  {isRetryingAi ? "재평가 중..." : "재평가"}
+                </button>
+              </div>
+            </div>
+          )}
 
         {/* Review Conversation Section - 플랫한 타임라인 (박스 제거) */}
         <div className="w-full border-t border-[#d0d7de] pt-8">

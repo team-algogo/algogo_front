@@ -7,6 +7,7 @@ import {
     getMySubmissions,
     type MySubmissionItem,
 } from "@api/submissions/getMySubmissions";
+import { retryAiEvaluation } from "@api/submissions/retryAiEvaluation";
 import { format } from "date-fns";
 import CustomSelect, {
     type SelectOption,
@@ -19,6 +20,7 @@ export default function MySolutions() {
     const [isSuccess, setIsSuccess] = useState<boolean | undefined>(undefined);
     const [sortBy, setSortBy] = useState("createdAt");
     const [sortDirection, setSortDirection] = useState("desc");
+    const [retryingSubmissions, setRetryingSubmissions] = useState<Set<number>>(new Set());
     const itemsPerPage = 20;
 
     // Language options
@@ -60,6 +62,26 @@ export default function MySolutions() {
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= totalPages) {
             setPage(newPage);
+        }
+    };
+
+    const handleRetryAiEvaluation = async (submissionId: number) => {
+        if (retryingSubmissions.has(submissionId)) return;
+
+        setRetryingSubmissions(prev => new Set(prev).add(submissionId));
+        try {
+            await retryAiEvaluation(submissionId);
+            // 2초 후 페이지 새로고침
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } catch (err) {
+            console.error("AI 평가 재시도 실패:", err);
+            setRetryingSubmissions(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(submissionId);
+                return newSet;
+            });
         }
     };
 
@@ -417,11 +439,58 @@ export default function MySolutions() {
                                 </div>
                                 {/* AI Score */}
                                 <div className="flex w-[100px] justify-center">
-                                    <div
-                                        className={`inline-flex w-fit items-center justify-center rounded-md px-2.5 py-1 text-[12px] font-semibold tracking-tight ${getAiScoreBadgeStyle(aiScoreDisplay).bg} ${getAiScoreBadgeStyle(aiScoreDisplay).text}`}
-                                    >
-                                        {aiScoreText}
-                                    </div>
+                                    {aiScoreDisplay === null ? (
+                                        <div className="flex items-center gap-1">
+                                            <div
+                                                className={`inline-flex w-fit items-center justify-center rounded-md px-2.5 py-1 text-[12px] font-semibold tracking-tight ${getAiScoreBadgeStyle(aiScoreDisplay).bg} ${getAiScoreBadgeStyle(aiScoreDisplay).text}`}
+                                            >
+                                                {aiScoreText}
+                                            </div>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleRetryAiEvaluation(sub.submissionId);
+                                                }}
+                                                disabled={retryingSubmissions.has(sub.submissionId)}
+                                                className="flex items-center justify-center text-gray-400 hover:text-[#0969da] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                title="AI 평가 재시도"
+                                            >
+                                                <svg
+                                                    width="14"
+                                                    height="14"
+                                                    viewBox="0 0 16 16"
+                                                    fill="none"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className={retryingSubmissions.has(sub.submissionId) ? "animate-spin" : ""}
+                                                >
+                                                    <path
+                                                        d="M14 8C14 11.3137 11.3137 14 8 14C4.68629 14 2 11.3137 2 8C2 4.68629 4.68629 2 8 2"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                        strokeLinecap="round"
+                                                    />
+                                                    <path
+                                                        d="M8 2L8 5"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                        strokeLinecap="round"
+                                                    />
+                                                    <path
+                                                        d="M8 2L11 2"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                        strokeLinecap="round"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div
+                                            className={`inline-flex w-fit items-center justify-center rounded-md px-2.5 py-1 text-[12px] font-semibold tracking-tight ${getAiScoreBadgeStyle(aiScoreDisplay).bg} ${getAiScoreBadgeStyle(aiScoreDisplay).text}`}
+                                        >
+                                            {aiScoreText}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="w-[80px] text-center text-sm font-medium text-[#333333]">
                                     {format(new Date(sub.createAt), "MM/dd")}

@@ -11,7 +11,7 @@ import MainGroupListCard from "@components/cards/main/MainGroupListCard";
 import EmptyState from "@components/empty/EmptyState";
 import TextLink from "@components/textLink/TextLink";
 
-import ProblemSearchResultCard from "@components/cards/search/ProblemSearchResultCard";
+import ProblemSetCard from "@components/problemset/ProblemSetCard";
 import AlertModal from "@components/modal/alarm/AlertModal";
 
 import BasePage from "@pages/BasePage";
@@ -239,13 +239,16 @@ const MainPage = () => {
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {recommendProblemSet?.problemSetList.slice(0, 4).map((item) => (
-                <ProblemSearchResultCard
+                <ProblemSetCard
                   key={item.programId}
                   programId={item.programId}
                   title={item.title}
                   description={item.description}
-                  problemCount={item.problemCount}
+                  thumbnail={item.thumbnail}
                   categories={item.categories}
+                  totalParticipants={item.totalParticipants}
+                  problemCount={item.problemCount}
+                  isLoggedIn={isLoggedIn}
                 />
               ))}
               {!recommendProblemSet && (

@@ -16,10 +16,7 @@ const MainGroupListCard = ({ title, memberCount, url }: MainGroupListCardProps) 
                 <h3 className="text-base font-bold text-gray-900 group-hover:text-teal-600 transition-colors line-clamp-1">
                     {title}
                 </h3>
-                <span className="text-xs text-gray-400 group-hover:text-teal-500 transition-colors flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
-                    모집중
-                </span>
+
             </div>
 
             {/* Right Content */}

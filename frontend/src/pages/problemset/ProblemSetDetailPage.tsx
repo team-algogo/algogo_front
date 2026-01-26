@@ -25,7 +25,7 @@ export default function ProblemSetDetailPage() {
 
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState("startDate");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   const sortOptions: SelectOption[] = [
     { label: "최신순", value: "startDate" },

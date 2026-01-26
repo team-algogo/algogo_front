@@ -11,7 +11,7 @@ import MainGroupListCard from "@components/cards/main/MainGroupListCard";
 import EmptyState from "@components/empty/EmptyState";
 import TextLink from "@components/textLink/TextLink";
 
-import ProblemSearchResultCard from "@components/cards/search/ProblemSearchResultCard";
+import ProblemSetCard from "@components/problemset/ProblemSetCard";
 import AlertModal from "@components/modal/alarm/AlertModal";
 
 import BasePage from "@pages/BasePage";
@@ -140,9 +140,8 @@ const MainPage = () => {
       {/* 로그인 필요 안내 배너 - fixed position으로 레이아웃 shift 방지 */}
       {showLoginRequiredBanner && (
         <div
-          className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-[420px] px-4 transition-opacity duration-500 ${
-            bannerVisible ? "opacity-100" : "opacity-0"
-          }`}
+          className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-[420px] px-4 transition-opacity duration-500 ${bannerVisible ? "opacity-100" : "opacity-0"
+            }`}
         >
           <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 shadow-lg">
             <svg
@@ -240,13 +239,16 @@ const MainPage = () => {
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {recommendProblemSet?.problemSetList.slice(0, 4).map((item) => (
-                <ProblemSearchResultCard
+                <ProblemSetCard
                   key={item.programId}
                   programId={item.programId}
                   title={item.title}
                   description={item.description}
-                  problemCount={item.problemCount}
+                  thumbnail={item.thumbnail}
                   categories={item.categories}
+                  totalParticipants={item.totalParticipants}
+                  problemCount={item.problemCount}
+                  isLoggedIn={isLoggedIn}
                 />
               ))}
               {!recommendProblemSet && (

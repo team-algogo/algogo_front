@@ -13,8 +13,10 @@ import {
     joinGroup,
     deleteGroupMember,
     fetchGroupMembers,
+    fetchMyGroupList,
 } from "../../api/group/groupApi";
 import { getUserDetail } from "@api/auth/auth";
+import { getSentJoins } from "@api/mypage";
 import { getCanMoreSubmission } from "@api/submissions/getCanMoreSubmission";
 import EditGroupModal from "./EditGroupModal";
 import GroupMemberModal from "./GroupMembersModal";
@@ -39,12 +41,11 @@ export default function GroupDetailPage() {
     const [isJoinRequestModalOpen, setIsJoinRequestModalOpen] = useState(false); // 가입 요청 모달
     const [isAddProblemModalOpen, setIsAddProblemModalOpen] = useState(false); // 문제 추가 모달
 
-    // 알람에서 그룹방으로 이동 시 가입 요청 모달 자동 오픈
+    // 알람에서 그룹방으로 이동 시 가입 요청 모달 자동 오픈 and Clear State
     useEffect(() => {
         if (location.state?.openJoinRequestModal) {
             setIsJoinRequestModalOpen(true);
-            // state를 제거하여 새로고침 시 모달이 다시 뜨지 않도록 함
-            navigate(location.pathname, { replace: true, state: null });
+            navigate(location.pathname, { replace: true, state: {} });
         }
     }, [location.state, navigate, location.pathname]);
 
@@ -74,6 +75,22 @@ export default function GroupDetailPage() {
         queryFn: () => fetchGroupMembers(programId),
         enabled: !!programId,
         retry: false, // 403 에러 등 발생 시 무한 재시도 방지
+    });
+
+    // 0.6 내 그룹 리스트 fetch (Role 확인용 fallback)
+    const { data: myGroupListData } = useQuery({
+        queryKey: ["myGroupList"],
+        queryFn: fetchMyGroupList,
+        // groupDetail만으로 role이 확실하지 않은 경우를 대비해 항상 fetch or stale check
+    });
+    const myGroupList = myGroupListData?.data?.groupLists || [];
+    const myGroupInfo = myGroupList.find((g) => g.programId === programId);
+
+    // 0.7 내 가입 신청 현황 fetch (Pending 확인용)
+    const { data: myJoinData } = useQuery({
+        queryKey: ["myJoinRequests"],
+        queryFn: getSentJoins,
+        enabled: !!myEmail,
     });
 
     // 1. 그룹 상세 정보를 fetch
@@ -139,11 +156,38 @@ export default function GroupDetailPage() {
 
     const canMoreSubmission = canMoreSubmissionData?.canMoreSubmission ?? true;
 
-    // 내 역할 확인
-    const myRole = groupDetail?.groupRole;
+    // 내 역할 확인 (groupDetail의 role 혹은 myGroupList의 role 사용)
+    const detailRole = groupDetail?.groupRole;
+    const listRole = myGroupInfo?.role;
+    const [hasPendingRequest, setHasPendingRequest] = useState(false); // 가입 신청 직후 optimistic UI
+
+    // 최종 Role 판단
+    // 1. groupDetail이 Pending 등을 명시하면 그것을 따름
+    // 2. hasPendingRequest가 true면 Pending
+    // 3. myGroupInfo가 존재하면 나는 멤버 
+
+    // 내 가입 신청 목록에서 현재 그룹이 PENDING 상태인지 확인
+    const isPendingServer = (myJoinData?.joins || []).some(
+        (join: any) => join.groupRoom.programId === programId && join.joinStatus === "PENDING"
+    );
+
+    // 최종 Role 판단
+    // 1. groupDetail이 Pending 등을 명시하면 그것을 따름
+    // 2. hasPendingRequest가 true면 Pending (Optimistic)
+    // 3. isPendingServer가 true면 Pending (Server Source of truth)
+
+    // Check case-insensitive pending status and local state
+    const isPending = detailRole?.toUpperCase() === "PENDING" || hasPendingRequest || isPendingServer;
+    // const isPending = detailRole?.toUpperCase() === "PENDING"; // Safe check?
+
+    const myRole = listRole || detailRole; // List info is more reliable for "Member" status usually
+
     const isMaster = myRole === "ADMIN" || myRole === "MASTER";
     const canManageProblems = isMaster || myRole === "MANAGER";
-    const isMember = myRole === "USER" || myRole === "MEMBER" || canManageProblems;
+
+    // 멤버 여부: 내 그룹 리스트에 있거나, 역할이 USER/MEMBER/MANAGER/ADMIN 등일 때.
+    // 주의: PENDING일 때는 멤버가 아님.
+    const isMember = (!!myGroupInfo) || (myRole === "USER" || myRole === "MEMBER" || canManageProblems);
 
     // --- Mutations ---
     // 그룹 삭제
@@ -208,7 +252,9 @@ export default function GroupDetailPage() {
         mutationFn: () => joinGroup(programId),
         onSuccess: () => {
             showToast("가입 신청이 완료되었습니다.", "success");
+            setHasPendingRequest(true); // Optimistic Update
             queryClient.invalidateQueries({ queryKey: ["groupDetail", programId] });
+            queryClient.invalidateQueries({ queryKey: ["myJoinRequests"] }); // Invalidate Join Requests
         },
         onError: (err: any) => {
             const rawMsg = err.response?.data?.message || "";
@@ -216,6 +262,7 @@ export default function GroupDetailPage() {
 
             if (rawMsg.includes("PENDING 상태")) {
                 msg = "이미 가입 신청이 진행 중입니다. 승인을 기다려주세요.";
+                setHasPendingRequest(true); // Already pending
             } else {
                 msg = rawMsg || msg;
             }
@@ -372,6 +419,14 @@ export default function GroupDetailPage() {
                                 onClick={handleLeaveGroup}
                             >
                                 탈퇴하기
+                            </Button>
+                        ) : isPending ? (
+                            <Button
+                                variant="secondary"
+                                disabled
+                                className="!bg-gray-100 !text-gray-400 !border-gray-200 cursor-not-allowed"
+                            >
+                                신청완료
                             </Button>
                         ) : (
                             <Button

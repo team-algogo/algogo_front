@@ -160,7 +160,7 @@ const ReviewRequests = ({ requests, totalCount }: ReviewRequestsProps) => {
                     </div>
 
                     {/* Timer */}
-                    <TimeDisplay createAt={req.submission?.createAt} />
+                    <TimeDisplay createAt={req.subjectSubmissionCreatedAt} />
                   </div>
                 </Link>
                 {idx < requests.length - 1 && (

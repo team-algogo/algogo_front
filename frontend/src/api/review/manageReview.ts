@@ -46,6 +46,7 @@ export interface RequiredCodeReview {
   programType: "GROUP" | "PERSONAL" | string;
   programTitle: string;
   submission: Submission;
+  subjectSubmissionCreatedAt: string;
 }
 
 export interface RequiredCodeReviewList {

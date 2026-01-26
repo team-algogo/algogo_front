@@ -19,6 +19,7 @@ export interface RequiredCodeReview {
     programType: 'GROUP' | 'CAMPAIGN' | 'PROBLEMSET' | 'OTHER';
     programTitle: string;
     submission: Submission;
+    subjectSubmissionCreatedAt: string;
 }
 
 export interface RequiredReviewsResponse {

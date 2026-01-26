@@ -49,6 +49,8 @@ export interface ProblemStatisticsResponse {
   page: PageInfo;
   sort: SortInfo;
   submissions: SubmissionItem[];
+  programId: number;
+  programType: string;
 }
 
 export interface SubmissionStats {

@@ -10,15 +10,9 @@ const ToastViewport = () => {
 
   useEffect(() => {
     setMounted(true);
-    console.log("[ToastViewport] Mounted. Initial toasts:", toasts);
   }, []);
 
-  useEffect(() => {
-    console.log("[ToastViewport] Toasts updated:", toasts);
-    toasts.forEach((toast) => {
-      console.log(`[ToastViewport] Item: ${toast.id} (${toast.position || 'default'}) - ${toast.message}`);
-    });
-  }, [toasts]);
+
 
   // 우하단 위치 토스트만 필터링 (position이 bottom-right이거나 없는 경우)
   const bottomToasts = toasts.filter(
@@ -28,7 +22,6 @@ const ToastViewport = () => {
   if (!mounted) return null;
 
   if (bottomToasts.length === 0) {
-    // console.log("[ToastViewport] No bottom toasts to render");
     return null;
   }
 

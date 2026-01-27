@@ -47,13 +47,10 @@ const useToastStore = create<ToastState>((set) => ({
       if (newToasts.length > MAX_TOASTS) {
         newToasts.shift();
       }
-      console.log("[ToastStore] Added toast:", newToast);
-      console.log("[ToastStore] Current toasts:", newToasts);
       return { toasts: newToasts };
     });
   },
   removeToast: (id: string) => {
-    console.log("[ToastStore] Removing toast:", id);
     set((state) => ({
       toasts: state.toasts.filter((toast) => toast.id !== id),
     }));

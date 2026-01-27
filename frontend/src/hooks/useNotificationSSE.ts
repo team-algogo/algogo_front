@@ -16,20 +16,17 @@ const useNotificationSSE = () => {
   useEffect(() => {
     // userType이 없거나 토큰이 없으면 연결하지 않음
     if (!userType || !authorization) {
-      console.log("[useNotificationSSE] Skipping connection - no userType or authorization");
       return;
     }
 
-    console.log("[useNotificationSSE] Setting up SSE connection...");
-    console.log(`[useNotificationSSE] Token exists: ${!!authorization}, UserType: ${userType}`);
+
 
     const onInit = () => {
-      console.log("[useNotificationSSE] SSE INIT received - Connected!");
+      // SSE 연결 성공
     };
 
 
     const onNotification = (alarm: Alarm) => {
-      console.log("[useNotificationSSE] Notification received:", alarm);
 
       try {
         // 1. 배지 카운트 갱신
@@ -68,7 +65,6 @@ const useNotificationSSE = () => {
 
         // 4. 메시지 매핑
         const toastMessage = mapAlarmToToastMessage(alarm);
-        console.log("[useNotificationSSE] Mapped toast message:", toastMessage);
 
         // Action Buttons Logic
         const actions: any[] = []; // Explicitly typed array
@@ -142,9 +138,7 @@ const useNotificationSSE = () => {
           actions: actions.length > 0 ? actions : undefined,
         };
 
-        console.log("[useNotificationSSE] Adding toast:", toast);
         addToast(toast);
-        console.log("[useNotificationSSE] Toast added successfully");
 
       } catch (error) {
         console.error("[useNotificationSSE] Error processing notification:", error);
@@ -165,7 +159,6 @@ const useNotificationSSE = () => {
     connectSSE(authorization, onInit, onNotification, onError);
 
     return () => {
-      console.log("[useNotificationSSE] Cleaning up SSE connection");
       disconnectSSE();
     };
   }, [authorization, userType, queryClient, addToast]);

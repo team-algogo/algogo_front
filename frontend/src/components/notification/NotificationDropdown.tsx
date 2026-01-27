@@ -131,7 +131,6 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
       const submissionId = item.payload.submissionId || item.payload?.submission_id;
       if (submissionId) {
         navigate(`/review/${submissionId}`);
-        console.log("Clicked notification", item.id);
         // 페이지 이동 후 알람창 닫기
         onClose();
       } else {

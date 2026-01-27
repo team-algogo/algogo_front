@@ -116,6 +116,5 @@ const getToastMessageByType = (type: string, payload: any, message?: string): To
 };
 
 export const mapAlarmToToastMessage = (alarm: Alarm): ToastMessage => {
-  console.log("[mapAlarmToToastMessage] Mapping alarm:", alarm);
   return getToastMessageByType(alarm.type, alarm.payload, alarm.message);
 };

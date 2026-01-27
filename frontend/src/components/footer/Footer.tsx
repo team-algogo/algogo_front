@@ -7,6 +7,10 @@ const Footer = () => {
                     <span className="font-logo text-lg text-gray-300 select-none">algogo</span>
                     <span className="hidden md:block w-px h-3 bg-gray-200"></span>
                     <span>© 2026 Algogo Team. All rights reserved.</span>
+                    <span className="hidden md:block w-px h-3 bg-gray-200"></span>
+                    <a href="/privacy" className="hover:text-gray-600 transition-colors cursor-pointer">
+                        개인정보 처리방침
+                    </a>
                 </div>
             </div>
         </footer>

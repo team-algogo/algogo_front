@@ -18,6 +18,7 @@ import SettingsPage from "@pages/mypage/SettingsPage";
 import ProblemStatisticsPage from "@pages/problemset/ProblemStatisticsPage";
 
 import IntroPage from "@pages/intro/IntroPage";
+import PrivacyPage from "@pages/policy/PrivacyPage";
 import ProtectedRoute from "./ProtectedRoute";
 
 const router = createBrowserRouter([
@@ -36,6 +37,7 @@ const router = createBrowserRouter([
       { path: "intro", element: <IntroPage /> },
       { path: "login", element: <LoginPage /> },
       { path: "join", element: <JoinPage /> },
+      { path: "privacy", element: <PrivacyPage /> },
       {
         path: "mypage",
         element: (

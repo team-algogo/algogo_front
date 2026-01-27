@@ -60,12 +60,10 @@ export default function NotificationContainer() {
                 );
 
                 eventSource.onopen = () => {
-                    console.log("SSE connected");
+                    // SSE 연결 성공
                 };
 
-                eventSource.addEventListener("alarm", (e: any) => {
-                    const { data: receivedData } = e;
-                    console.log("SSE Received:", receivedData);
+                eventSource.addEventListener("alarm", () => {
                     // Invalidate alarm count and list on new notification
                     queryClient.invalidateQueries({ queryKey: ['alarmCount'] });
                     queryClient.invalidateQueries({ queryKey: ['notifications'] });
@@ -83,7 +81,6 @@ export default function NotificationContainer() {
         return () => {
             if (eventSource) {
                 eventSource.close();
-                console.log("SSE closed");
             }
         };
     }, [listening, queryClient]);

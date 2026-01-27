@@ -32,9 +32,7 @@ export const connectSSE = (
     ? `${baseURL}/api/v1/alarm/subscribe`
     : `/api/v1/alarm/subscribe`;
 
-  console.log("[SSE] Connecting to:", url);
-  console.log("[SSE] Environment:", import.meta.env.MODE);
-  console.log("[SSE] Token present:", !!token);
+
 
   eventSource = new EventSourcePolyfill(url, {
     headers: {
@@ -46,14 +44,11 @@ export const connectSSE = (
 
   // INIT 이벤트
   eventSource.addEventListener("INIT", () => {
-    console.log("[SSE] INIT event received - Connected!");
     onInit();
   });
 
   // NOTIFICATION 이벤트
   const handleEvent = (event: any) => {
-    console.log(`[SSE] ${event.type} event received`);
-    console.log("[SSE] Raw event.data:", event.data);
 
     try {
       const rawData = event.data;
@@ -75,7 +70,7 @@ export const connectSSE = (
         return;
       }
 
-      console.log("[SSE] Parsed DTO:", dto);
+
 
       // 타입 표준화 (요구사항: alarmTypeName ?? type ?? alarmType?.name)
       // If type is missing, fallback to 'INFO' instead of returning
@@ -96,7 +91,6 @@ export const connectSSE = (
         createdAt: dto.createdAt || new Date().toISOString(),
       };
 
-      console.log("[SSE] Normalized alarm:", normalizedData);
       onNotification(normalizedData);
     } catch (error) {
       console.error("[SSE] Critical error in handleEvent:", error);
@@ -124,7 +118,7 @@ export const connectSSE = (
   };
 
   eventSource.onopen = () => {
-    console.log("[SSE] Connection opened");
+    // SSE 연결 열림
   };
 
   return eventSource;
@@ -132,7 +126,6 @@ export const connectSSE = (
 
 export const disconnectSSE = () => {
   if (eventSource) {
-    console.log("[SSE] Disconnecting...");
     eventSource.close();
     eventSource = null;
   }

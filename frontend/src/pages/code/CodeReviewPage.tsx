@@ -465,6 +465,18 @@ const CodeReviewPage = () => {
   }, [deleteSubmissionConfirm]);
 
   // 난이도 뱃지 렌더링 (GroupProblemCard와 동일 로직)
+  // AI 평가 상태 체크: 5분 이내면 평가 중, 그 이후면 실패
+  const getAiEvaluationStatus = () => {
+    if (!submissionDetail) return 'unknown';
+    if (submissionDetail.aiScoreReason) return 'completed';
+
+    const modifiedAt = new Date(submissionDetail.modifiedAt);
+    const now = new Date();
+    const minutesPassed = (now.getTime() - modifiedAt.getTime()) / 1000 / 60;
+
+    return minutesPassed < 5 ? 'evaluating' : 'failed';
+  };
+
   const renderDifficultyBadge = () => {
     if (!problemInfo) return null;
     const { difficultyViewType, difficultyType, userDifficultyType } =
@@ -750,61 +762,98 @@ const CodeReviewPage = () => {
           </div>
         )}
 
-        {/* AI 측정 중 또는 에러 상태 - 재평가 버튼 표시 */}
-        {submissionDetail &&
-          !submissionDetail.aiScoreReason &&
-          currentUser &&
-          submissionDetail.userId === currentUser.userId && (
-            <div className="w-full border-t border-[#d0d7de] pt-8">
-              <div className="flex items-center justify-between rounded-lg border border-[#d0d7de] bg-[#f6f8fa] px-4 py-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-400">
-                    <span className="text-xs font-semibold text-white">AI</span>
+        {/* AI 평가 상태별 UI */}
+        {submissionDetail && !submissionDetail.aiScoreReason && (() => {
+          const status = getAiEvaluationStatus();
+          const isOwner = currentUser && submissionDetail.userId === currentUser.userId;
+
+          if (status === 'evaluating') {
+            // 평가 중 상태
+            return (
+              <div className="w-full border-t border-[#d0d7de] pt-8">
+                <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="animate-spin text-white"
+                    >
+                      <path
+                        d="M14 8C14 11.3137 11.3137 14 8 14C4.68629 14 2 11.3137 2 8C2 4.68629 4.68629 2 8 2"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                    </svg>
                   </div>
                   <div>
-                    <h3 className="text-sm font-medium text-[#656d76]">
-                      AI 평가를 생성하지 못했습니다
+                    <h3 className="text-sm font-medium text-blue-800">
+                      AI 코드 평가 진행 중
                     </h3>
-                    <p className="text-xs text-[#656d76]">재평가를 시도해보세요</p>
+                    <p className="text-xs text-blue-600">잠시만 기다려주세요 (최대 5분 소요)</p>
                   </div>
                 </div>
-                <button
-                  onClick={handleRetryAiEvaluation}
-                  disabled={isRetryingAi}
-                  className="flex items-center gap-1.5 rounded-lg border border-[#0969da] bg-white px-3 py-1.5 text-sm font-medium text-[#0969da] transition-colors hover:bg-[#0969da]/5 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className={isRetryingAi ? "animate-spin" : ""}
-                  >
-                    <path
-                      d="M14 8C14 11.3137 11.3137 14 8 14C4.68629 14 2 11.3137 2 8C2 4.68629 4.68629 2 8 2"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d="M8 2L8 5"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d="M8 2L11 2"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  {isRetryingAi ? "재평가 중..." : "재평가"}
-                </button>
               </div>
-            </div>
-          )}
+            );
+          } else if (status === 'failed' && isOwner) {
+            // 평가 실패 상태 (작성자에게만 표시)
+            return (
+              <div className="w-full border-t border-[#d0d7de] pt-8">
+                <div className="flex items-center justify-between rounded-lg border border-[#d0d7de] bg-[#f6f8fa] px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-400">
+                      <span className="text-xs font-semibold text-white">AI</span>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-medium text-[#656d76]">
+                        AI 평가를 생성하지 못했습니다
+                      </h3>
+                      <p className="text-xs text-[#656d76]">재평가를 시도해보세요</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleRetryAiEvaluation}
+                    disabled={isRetryingAi}
+                    className="flex items-center gap-1.5 rounded-lg border border-[#0969da] bg-white px-3 py-1.5 text-sm font-medium text-[#0969da] transition-colors hover:bg-[#0969da]/5 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className={isRetryingAi ? "animate-spin" : ""}
+                    >
+                      <path
+                        d="M14 8C14 11.3137 11.3137 14 8 14C4.68629 14 2 11.3137 2 8C2 4.68629 4.68629 2 8 2"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                      <path
+                        d="M8 2L8 5"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                      <path
+                        d="M8 2L11 2"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    {isRetryingAi ? "재평가 중..." : "재평가"}
+                  </button>
+                </div>
+              </div>
+            );
+          }
+          return null;
+        })()}
 
         {/* Review Conversation Section - 플랫한 타임라인 (박스 제거) */}
         <div className="w-full border-t border-[#d0d7de] pt-8">

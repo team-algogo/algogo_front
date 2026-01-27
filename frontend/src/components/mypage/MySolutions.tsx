@@ -85,6 +85,17 @@ export default function MySolutions() {
         }
     };
 
+    // AI 평가 상태 체크: 5분 이내면 평가 중, 그 이후면 실패
+    const getAiEvaluationStatus = (modifiedAt: string, aiScore: number | null) => {
+        if (aiScore !== null) return 'completed';
+
+        const modifiedDate = new Date(modifiedAt);
+        const now = new Date();
+        const minutesPassed = (now.getTime() - modifiedDate.getTime()) / 1000 / 60;
+
+        return minutesPassed < 5 ? 'evaluating' : 'failed';
+    };
+
     // 언어를 정규화하여 일관된 형식으로 표시 (ProblemStatisticsPage reuse)
     const normalizeLanguage = (lang: string): string => {
         if (!lang) return "";
@@ -337,8 +348,10 @@ export default function MySolutions() {
                             programResponseDto: program,
                         } = item;
                         const aiScoreDisplay = sub.aiScore !== null ? sub.aiScore : null;
+                        const aiStatus = getAiEvaluationStatus(sub.modifiedAt, sub.aiScore);
                         const aiScoreText =
-                            sub.aiScore !== null ? `${sub.aiScore}` : "측정 중";
+                            sub.aiScore !== null ? `${sub.aiScore}` :
+                                aiStatus === 'evaluating' ? "측정 중" : "실패";
 
                         return (
                             <div
@@ -442,47 +455,69 @@ export default function MySolutions() {
                                     {aiScoreDisplay === null ? (
                                         <div className="flex items-center gap-1">
                                             <div
-                                                className={`inline-flex w-fit items-center justify-center rounded-md px-2.5 py-1 text-[12px] font-semibold tracking-tight ${getAiScoreBadgeStyle(aiScoreDisplay).bg} ${getAiScoreBadgeStyle(aiScoreDisplay).text}`}
+                                                className={`inline-flex w-fit items-center justify-center rounded-md px-2.5 py-1 text-[12px] font-semibold tracking-tight ${aiStatus === 'evaluating'
+                                                        ? 'bg-blue-50 text-blue-700'
+                                                        : getAiScoreBadgeStyle(aiScoreDisplay).bg + ' ' + getAiScoreBadgeStyle(aiScoreDisplay).text
+                                                    }`}
                                             >
+                                                {aiStatus === 'evaluating' && (
+                                                    <svg
+                                                        width="12"
+                                                        height="12"
+                                                        viewBox="0 0 16 16"
+                                                        fill="none"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        className="animate-spin mr-1"
+                                                    >
+                                                        <path
+                                                            d="M14 8C14 11.3137 11.3137 14 8 14C4.68629 14 2 11.3137 2 8C2 4.68629 4.68629 2 8 2"
+                                                            stroke="currentColor"
+                                                            strokeWidth="1.5"
+                                                            strokeLinecap="round"
+                                                        />
+                                                    </svg>
+                                                )}
                                                 {aiScoreText}
                                             </div>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleRetryAiEvaluation(sub.submissionId);
-                                                }}
-                                                disabled={retryingSubmissions.has(sub.submissionId)}
-                                                className="flex items-center justify-center text-gray-400 hover:text-[#0969da] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                                title="AI 평가 재시도"
-                                            >
-                                                <svg
-                                                    width="14"
-                                                    height="14"
-                                                    viewBox="0 0 16 16"
-                                                    fill="none"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    className={retryingSubmissions.has(sub.submissionId) ? "animate-spin" : ""}
+                                            {aiStatus === 'failed' && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleRetryAiEvaluation(sub.submissionId);
+                                                    }}
+                                                    disabled={retryingSubmissions.has(sub.submissionId)}
+                                                    className="flex items-center justify-center text-gray-400 hover:text-[#0969da] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    title="AI 평가 재시도"
                                                 >
-                                                    <path
-                                                        d="M14 8C14 11.3137 11.3137 14 8 14C4.68629 14 2 11.3137 2 8C2 4.68629 4.68629 2 8 2"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                    />
-                                                    <path
-                                                        d="M8 2L8 5"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                    />
-                                                    <path
-                                                        d="M8 2L11 2"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        strokeLinecap="round"
-                                                    />
-                                                </svg>
-                                            </button>
+                                                    <svg
+                                                        width="14"
+                                                        height="14"
+                                                        viewBox="0 0 16 16"
+                                                        fill="none"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        className={retryingSubmissions.has(sub.submissionId) ? "animate-spin" : ""}
+                                                    >
+                                                        <path
+                                                            d="M14 8C14 11.3137 11.3137 14 8 14C4.68629 14 2 11.3137 2 8C2 4.68629 4.68629 2 8 2"
+                                                            stroke="currentColor"
+                                                            strokeWidth="1.5"
+                                                            strokeLinecap="round"
+                                                        />
+                                                        <path
+                                                            d="M8 2L8 5"
+                                                            stroke="currentColor"
+                                                            strokeWidth="1.5"
+                                                            strokeLinecap="round"
+                                                        />
+                                                        <path
+                                                            d="M8 2L11 2"
+                                                            stroke="currentColor"
+                                                            strokeWidth="1.5"
+                                                            strokeLinecap="round"
+                                                        />
+                                                    </svg>
+                                                </button>
+                                            )}
                                         </div>
                                     ) : (
                                         <div

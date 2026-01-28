@@ -42,7 +42,7 @@ export default function ProblemSetDetailPage() {
 
   const { data: problemsData } = useQuery({
     queryKey: ["problemSetProblems", id, page, sortBy, sortDirection],
-    queryFn: () => getProblemSetProblems(id, page, 20, sortBy, sortDirection),
+    queryFn: () => getProblemSetProblems(id, page, 10, sortBy, sortDirection),
     enabled: !isNaN(id),
   });
 

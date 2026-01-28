@@ -28,7 +28,7 @@ const MyGroupListCard = ({
   const containerClasses =
     variant === "mypage"
       ? `group w-full bg-white rounded-xl p-3 flex flex-col justify-between gap-2 shadow-sm border border-gray-100`
-      : "group w-full bg-primary-50 border-2 border-primary-main rounded-xl p-5 flex flex-col justify-between gap-4 shadow-sm hover:shadow-lg hover:z-10 transition-all duration-300 cursor-pointer relative overflow-hidden";
+      : "group w-full bg-white border border-gray-200 rounded-xl p-5 flex flex-col justify-between gap-4 shadow-sm hover:shadow-md hover:border-primary-main transition-all duration-300 cursor-pointer relative overflow-hidden";
 
   return (
     <div
@@ -41,7 +41,7 @@ const MyGroupListCard = ({
 
       {/* Header: Title & Badge */}
       <div className="flex justify-between items-start gap-3">
-        <h3 className={`font-bold text-gray-800 line-clamp-1 break-all group-hover:text-primary-main transition-colors ${variant === 'mypage' ? 'text-base' : 'text-lg'}`}>
+        <h3 className={`font-bold text-gray-900 line-clamp-1 break-all group-hover:text-primary-main transition-colors ${variant === 'mypage' ? 'text-base' : 'text-lg'}`}>
           {title}
         </h3>
         {!hideRoleBadge && (
@@ -63,24 +63,24 @@ const MyGroupListCard = ({
 
 
       {/* Description */}
-      <p className={`text-gray-500 leading-relaxed ${variant === 'mypage' ? 'text-xs line-clamp-1' : 'text-sm line-clamp-2 h-[40px]'}`}>
+      <p className={`text-gray-700 leading-relaxed ${variant === 'mypage' ? 'text-xs line-clamp-1' : 'text-sm line-clamp-2 h-[40px]'}`}>
         {description}
       </p>
 
 
       {/* Footer: Stats */}
-      <div className="flex items-center gap-4 text-xs font-medium text-gray-400 min-h-[36px]">
+      <div className="flex items-center gap-4 text-xs font-medium text-gray-500 min-h-[36px]">
         <div className="flex items-center gap-1.5">
-          <svg className="w-4 h-4 text-gray-300 group-hover:text-primary-400 transition-colors" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-4 h-4 text-gray-400 group-hover:text-primary-400 transition-colors" fill="currentColor" viewBox="0 0 20 20">
             <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
           </svg>
-          <span className="group-hover:text-gray-600 transition-colors">{memberCount} 명</span>
+          <span className="group-hover:text-gray-700 transition-colors">{memberCount} 명</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <svg className="w-4 h-4 text-gray-300 group-hover:text-primary-400 transition-colors" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-4 h-4 text-gray-400 group-hover:text-primary-400 transition-colors" fill="currentColor" viewBox="0 0 20 20">
             <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
           </svg>
-          <span className="group-hover:text-gray-600 transition-colors">{problemCount} 문제</span>
+          <span className="group-hover:text-gray-700 transition-colors">{problemCount} 문제</span>
         </div>
         {onCancel && (
           <button

@@ -17,7 +17,7 @@ function AppContent() {
   return (
     <>
 
-      <div className="flex flex-col min-h-[100dvh]">
+      <div className="flex flex-col min-h-[125dvh]">
         <Header />
         <main className="flex-1 w-full text-lg mt-16 flex flex-col">
           <Outlet />

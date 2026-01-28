@@ -12,6 +12,7 @@ import CreateGroupModal from "./CreateGroupModal";
 import useAuthStore from "@store/useAuthStore";
 import Pagination from "@components/pagination/Pagination";
 import Toast, { type ToastType } from "@components/toast/Toast";
+import CustomSelect, { type SelectOption } from "@components/selectbox/CustomSelect";
 
 const GroupMainPage = () => {
   // --- 1. 상태 및 훅 ---
@@ -26,6 +27,12 @@ const GroupMainPage = () => {
   const [sortDirection, setSortDirection] = useState("desc");
   const [page, setPage] = useState(0);
   const size = 6; // 한 페이지에 6개만 표시 (30% 감소)
+
+  const sortOptions: SelectOption[] = [
+    { label: "최신순", value: "latest" },
+    { label: "가나다순", value: "title" },
+    { label: "수정일순", value: "modified" },
+  ];
 
   // 페이지 변경 시 스크롤 맨 위로 이동
   useEffect(() => {
@@ -95,8 +102,7 @@ const GroupMainPage = () => {
     }
   };
 
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
+  const handleSortChange = (value: string) => {
     setPage(0);
     switch (value) {
       case "latest":
@@ -286,21 +292,17 @@ const GroupMainPage = () => {
                 </span>
               </div>
               <div className="relative">
-                <select
-                  className="appearance-none bg-transparent pl-2 pr-8 py-1 text-sm font-semibold text-gray-600 cursor-pointer hover:text-gray-900 focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                <CustomSelect
+                  value={
+                    sortBy === "title"
+                      ? "title"
+                      : sortBy === "modifiedAt"
+                        ? "modified"
+                        : "latest"
+                  }
                   onChange={handleSortChange}
-                  defaultValue="latest"
-                  disabled={!isLoggedIn}
-                >
-                  <option value="latest">최신순</option>
-                  <option value="title">가나다순</option>
-                  <option value="modified">수정일순</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center text-gray-400">
-                  <svg className="fill-current h-4 w-4" viewBox="0 0 20 20">
-                    <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                  </svg>
-                </div>
+                  options={sortOptions}
+                />
               </div>
             </div>
 

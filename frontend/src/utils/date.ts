@@ -15,11 +15,11 @@ dayjs.locale("ko");
  * @returns Relative time string in Korean
  */
 export const formatToRelativeTime = (parsedDate: string): string => {
-    // If the string doesn't explicitly have Z or offset, dayjs might parse as local.
-    // However, backend usually sends ISO string (e.g. 2024-01-01T12:00:00).
-    // If we know it's UTC, we should treat it as such.
-    // .utc(parsedDate) parses it as UTC. .local() converts to browser local time.
-    return dayjs.utc(parsedDate).local().fromNow();
+    // If usage is inconsistent, or if the backend sends KST time string 'YYYY-MM-DDTHH:mm:ss' without offset,
+    // treating it as UTC (dayjs.utc) and then .local() will add +9h (if user is in KST), resulting in "9 hours later".
+    // If the input string is meant to be "server time" which matches "user time" (or we just want to treat it as absolute),
+    // we can parse it directly.
+    return dayjs(parsedDate).fromNow();
 };
 
 /**

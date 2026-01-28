@@ -7,8 +7,15 @@ export interface PasswordUpdateRequest {
 
 // 프로필 수정 (이미지, 닉네임, 상태메시지)
 // FormData를 사용하므로 Content-Type은 axios가 자동으로 설정하게 둠
-export const updateProfile = async (formData: FormData) => {
-    const response = await client.patch("/api/v1/users/profiles", formData, {
+// 프로필 정보 수정 (닉네임, 상태메시지)
+export const updateUserInfo = async (data: { nickname: string; description: string }) => {
+    const response = await client.put("/api/v1/users/profiles", data);
+    return response.data;
+};
+
+// 프로필 이미지 수정
+export const updateProfileImage = async (formData: FormData) => {
+    const response = await client.post("/api/v1/users/profile-images", formData, {
         headers: {
             "Content-Type": "multipart/form-data",
         },

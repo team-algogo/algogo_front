@@ -4,7 +4,7 @@ import ToastViewport from "@components/toast/ToastViewport";
 import TopToastViewport from "@components/toast/TopToastViewport";
 import useNotificationSSE from "@hooks/useNotificationSSE";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 
 const queryClient = new QueryClient();
 
@@ -12,6 +12,7 @@ const queryClient = new QueryClient();
 function AppContent() {
   // SSE 알림 연결 (전역)
   useNotificationSSE();
+  const location = useLocation();
 
   return (
     <>
@@ -21,7 +22,7 @@ function AppContent() {
         <main className="flex-1 w-full text-lg mt-16 flex flex-col">
           <Outlet />
         </main>
-        <Footer />
+        {!location.pathname.startsWith("/code/") && <Footer />}
       </div>
       {/* Toast Viewports (Portal to document.body) */}
       <ToastViewport /> {/* 우하단 (남이 한 행동) */}

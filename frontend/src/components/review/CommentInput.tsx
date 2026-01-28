@@ -62,14 +62,14 @@ const CommentInput: FC<CommentInputProps> = ({
             className="inline-flex h-8 items-center justify-center rounded-md border border-[#d0d7de] bg-[#f6f8fa] px-3 text-sm font-medium text-[#1f2328] transition-colors hover:bg-[#e6e9ed]"
             onClick={handleCancel}
           >
-            Cancel
+            취소
           </button>
           <button
             className="inline-flex h-8 items-center justify-center rounded-md bg-[#0969da] px-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#0550ae] disabled:cursor-not-allowed disabled:opacity-50"
             onClick={handleSubmit}
             disabled={!content.trim()}
           >
-            Comment
+            등록
           </button>
         </div>
       </div>
@@ -175,13 +175,13 @@ const CommentInput: FC<CommentInputProps> = ({
             onClick={handleSubmit}
             disabled={!content.trim()}
           >
-            Comment
+            등록
           </button>
           <button
             className="inline-flex h-9 w-full items-center justify-center rounded-lg border border-[#d1d9e0] bg-white text-xs font-medium text-[#24292f] shadow-[0_1px_0_rgba(0,0,0,0.04)] transition-all duration-200 hover:border-[#c1c9d1] hover:bg-[#f6f8fa] hover:shadow-[0_1px_2px_rgba(0,0,0,0.06)] active:bg-[#f0f2f5]"
             onClick={handleCancel}
           >
-            Cancel
+            취소
           </button>
         </div>
       </div>

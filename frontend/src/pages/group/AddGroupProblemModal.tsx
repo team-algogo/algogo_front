@@ -48,6 +48,7 @@ const AddGroupProblemModal = ({ programId, onClose }: AddGroupProblemModalProps)
         onError: (error: any) => {
             const errorMsg = error.response?.data?.message || "문제 추가에 실패했습니다.";
             setToastConfig({ message: errorMsg, type: "error" });
+            mutation.reset(); // Reset state to allow retry if logic was blocking
         },
     });
 
@@ -114,47 +115,61 @@ const AddGroupProblemModal = ({ programId, onClose }: AddGroupProblemModalProps)
 
     // 최종 제출
     const handleSubmit = () => {
-        if (selectedProblems.length === 0) {
-            setToastConfig({ message: "추가할 문제를 선택해주세요.", type: "error" });
-            return;
+        try {
+            if (selectedProblems.length === 0) {
+                setToastConfig({ message: "추가할 문제를 선택해주세요.", type: "error" });
+                return;
+            }
+
+            const itemsPayload: ProblemItem[] = [];
+
+            // 유효성 검사 및 페이로드 구성
+            for (const problem of selectedProblems) {
+                const config = problemConfigs[problem.id];
+                if (!config) {
+                    setToastConfig({ message: `"${problem.title}"의 설정 정보가 없습니다. 다시 선택해주세요.`, type: "error" });
+                    return;
+                }
+
+                if (!config.startDate || !config.endDate) {
+                    setToastConfig({ message: `"${problem.title}"의 기간을 설정해주세요.`, type: "error" });
+                    return;
+                }
+                const start = new Date(config.startDate);
+                const end = new Date(config.endDate);
+                const now = new Date();
+
+                if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+                    setToastConfig({ message: `"${problem.title}"의 날짜 형식이 올바르지 않습니다.`, type: "error" });
+                    return;
+                }
+
+                if (start > end) {
+                    setToastConfig({ message: `"${problem.title}"의 종료일이 시작일보다 빠릅니다.`, type: "error" });
+                    return;
+                }
+
+                // 종료일은 미래만 가능 (현재보다 뒤여야 함)
+                if (end <= now) {
+                    setToastConfig({ message: `"${problem.title}"의 종료일은 현재 시간 이후여야 합니다.`, type: "error" });
+                    return;
+                }
+
+                itemsPayload.push({
+                    problemId: problem.id,
+                    // Send local time string (YYYY-MM-DDTHH:mm:ss) to match KST digits exactly
+                    startDate: formatToLocalISOString(start),
+                    endDate: formatToLocalISOString(end),
+                    userDifficultyType: config.userDifficultyType,
+                    difficultyViewType: config.difficultyViewType,
+                });
+            }
+
+            mutation.mutate({ problems: itemsPayload });
+        } catch (error) {
+            console.error("HandleSubmit Error:", error);
+            setToastConfig({ message: "문제 추가 처리 중 오류가 발생했습니다.", type: "error" });
         }
-
-        const itemsPayload: ProblemItem[] = [];
-
-        // 유효성 검사 및 페이로드 구성
-        for (const problem of selectedProblems) {
-            const config = problemConfigs[problem.id];
-            if (!config.startDate || !config.endDate) {
-                setToastConfig({ message: `"${problem.title}"의 기간을 설정해주세요.`, type: "error" });
-                return;
-            }
-            const start = new Date(config.startDate);
-            const end = new Date(config.endDate);
-            const now = new Date();
-
-            if (start > end) {
-                setToastConfig({ message: `"${problem.title}"의 종료일이 시작일보다 빠릅니다.`, type: "error" });
-                return;
-            }
-
-            // 종료일은 미래만 가능 (현재보다 뒤여야 함)
-            if (end <= now) {
-                setToastConfig({ message: `"${problem.title}"의 종료일은 현재 시간 이후여야 합니다.`, type: "error" });
-                return;
-            }
-
-            itemsPayload.push({
-                problemId: problem.id,
-                // Send local time string (YYYY-MM-DDTHH:mm:ss) to match KST digits exactly
-                // This prevents the server from shifting time by 9 hours (UTC->KST)
-                startDate: formatToLocalISOString(new Date(config.startDate)),
-                endDate: formatToLocalISOString(new Date(config.endDate)),
-                userDifficultyType: config.userDifficultyType,
-                difficultyViewType: config.difficultyViewType,
-            });
-        }
-
-        mutation.mutate({ problems: itemsPayload });
     };
 
     // Helper to format Date to "YYYY-MM-DDTHH:mm:ss" (Local Time)
@@ -347,11 +362,10 @@ const AddGroupProblemModal = ({ programId, onClose }: AddGroupProblemModalProps)
                                                                     updateConfig(problem.id, "difficultyViewType", "PROBLEM_DIFFICULTY");
                                                                     document.getElementById(`difficulty-view-dropdown-${problem.id}`)?.classList.add('hidden');
                                                                 }}
-                                                                className={`w-full px-3 py-2.5 text-left text-xs font-bold transition-colors flex items-center gap-2 ${
-                                                                    problemConfigs[problem.id]?.difficultyViewType === "PROBLEM_DIFFICULTY"
-                                                                        ? "bg-gray-100 text-gray-900"
-                                                                        : "text-gray-700 hover:bg-gray-50"
-                                                                }`}
+                                                                className={`w-full px-3 py-2.5 text-left text-xs font-bold transition-colors flex items-center gap-2 ${problemConfigs[problem.id]?.difficultyViewType === "PROBLEM_DIFFICULTY"
+                                                                    ? "bg-gray-100 text-gray-900"
+                                                                    : "text-gray-700 hover:bg-gray-50"
+                                                                    }`}
                                                             >
                                                                 <span>문제 난이도</span>
                                                                 {problemConfigs[problem.id]?.difficultyViewType === "PROBLEM_DIFFICULTY" && (
@@ -365,11 +379,10 @@ const AddGroupProblemModal = ({ programId, onClose }: AddGroupProblemModalProps)
                                                                     updateConfig(problem.id, "difficultyViewType", "USER_DIFFICULTY");
                                                                     document.getElementById(`difficulty-view-dropdown-${problem.id}`)?.classList.add('hidden');
                                                                 }}
-                                                                className={`w-full px-3 py-2.5 text-left text-xs font-bold transition-colors flex items-center gap-2 ${
-                                                                    problemConfigs[problem.id]?.difficultyViewType === "USER_DIFFICULTY"
-                                                                        ? "bg-gray-100 text-gray-900"
-                                                                        : "text-gray-700 hover:bg-gray-50"
-                                                                }`}
+                                                                className={`w-full px-3 py-2.5 text-left text-xs font-bold transition-colors flex items-center gap-2 ${problemConfigs[problem.id]?.difficultyViewType === "USER_DIFFICULTY"
+                                                                    ? "bg-gray-100 text-gray-900"
+                                                                    : "text-gray-700 hover:bg-gray-50"
+                                                                    }`}
                                                             >
                                                                 <span>커스텀 난이도</span>
                                                                 {problemConfigs[problem.id]?.difficultyViewType === "USER_DIFFICULTY" && (
@@ -394,11 +407,10 @@ const AddGroupProblemModal = ({ programId, onClose }: AddGroupProblemModalProps)
                                                                 }
                                                             }}
                                                             disabled={problemConfigs[problem.id]?.difficultyViewType === "PROBLEM_DIFFICULTY"}
-                                                            className={`w-full appearance-none bg-white border border-gray-200 text-gray-700 text-xs font-bold rounded-lg px-3 py-2 outline-none transition-all flex items-center justify-between gap-2 ${
-                                                                problemConfigs[problem.id]?.difficultyViewType === "PROBLEM_DIFFICULTY"
-                                                                    ? "opacity-50 cursor-not-allowed"
-                                                                    : "focus:border-primary-main focus:ring-2 focus:ring-primary-100 cursor-pointer hover:border-gray-300 hover:shadow-sm"
-                                                            }`}
+                                                            className={`w-full appearance-none bg-white border border-gray-200 text-gray-700 text-xs font-bold rounded-lg px-3 py-2 outline-none transition-all flex items-center justify-between gap-2 ${problemConfigs[problem.id]?.difficultyViewType === "PROBLEM_DIFFICULTY"
+                                                                ? "opacity-50 cursor-not-allowed"
+                                                                : "focus:border-primary-main focus:ring-2 focus:ring-primary-100 cursor-pointer hover:border-gray-300 hover:shadow-sm"
+                                                                }`}
                                                         >
                                                             <span>{problemConfigs[problem.id]?.userDifficultyType}</span>
                                                             <svg className="h-3 w-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -417,11 +429,10 @@ const AddGroupProblemModal = ({ programId, onClose }: AddGroupProblemModalProps)
                                                                         updateConfig(problem.id, "userDifficultyType", difficulty as "EASY" | "MEDIUM" | "HARD");
                                                                         document.getElementById(`user-difficulty-dropdown-${problem.id}`)?.classList.add('hidden');
                                                                     }}
-                                                                    className={`w-full px-3 py-2.5 text-left text-xs font-bold transition-colors flex items-center gap-2 ${
-                                                                        problemConfigs[problem.id]?.userDifficultyType === difficulty
-                                                                            ? "bg-gray-100 text-gray-900"
-                                                                            : "text-gray-700 hover:bg-gray-50"
-                                                                    }`}
+                                                                    className={`w-full px-3 py-2.5 text-left text-xs font-bold transition-colors flex items-center gap-2 ${problemConfigs[problem.id]?.userDifficultyType === difficulty
+                                                                        ? "bg-gray-100 text-gray-900"
+                                                                        : "text-gray-700 hover:bg-gray-50"
+                                                                        }`}
                                                                 >
                                                                     <span>{difficulty}</span>
                                                                     {problemConfigs[problem.id]?.userDifficultyType === difficulty && (

@@ -131,7 +131,7 @@ int main() {
 
   const handleSubmit = async () => {
     if (!problemInfo || isSubmitting || cooldownSeconds > 0) return;
-    
+
     setIsSubmitting(true);
     try {
       const response = await postCodeSubmit(
@@ -162,7 +162,7 @@ int main() {
     : !!strategy && code.trim().length > 0;
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] w-full flex-col overflow-hidden bg-[#1E1E1E] font-sans text-gray-200">
+    <div className="flex h-[calc(125vh-4rem)] w-full flex-col overflow-hidden bg-[#1E1E1E] font-sans text-gray-200">
       {/* Top Header */}
       <header className="z-20 flex h-12 shrink-0 items-center justify-between border-b border-[#333333] bg-[#262626] px-4 shadow-sm">
         <div className="flex items-center gap-4">
@@ -217,29 +217,29 @@ int main() {
                 </svg>
               </a>
             )}
-            
+
             {/* Difficulty Badge */}
             {problemInfo && (() => {
-               const { difficultyViewType, difficultyType, userDifficultyType } = problemInfo;
-                if (difficultyViewType === "PROBLEM_DIFFICULTY") {
-                  return (
-                    <span className="inline-flex items-center justify-center rounded-[4px] bg-[#333] border border-[#444] px-1.5 py-0.5 text-[11px] font-semibold text-gray-300">
-                      {difficultyType}
-                    </span>
-                  );
-                } else {
-                  let style = "text-gray-400 bg-[#333] border border-[#444]";
-                  const diff = userDifficultyType?.toLowerCase();
-                  // Dark mode styles
-                  if (diff === "easy") style = "text-green-400 bg-green-900/30 border border-green-800";
-                  else if (diff === "medium") style = "text-yellow-400 bg-yellow-900/30 border border-yellow-800";
-                  else if (diff === "hard") style = "text-red-400 bg-red-900/30 border border-red-800";
-                  return (
-                    <span className={`inline-flex items-center justify-center rounded-[4px] px-1.5 py-0.5 text-[11px] font-semibold ${style}`}>
-                      {userDifficultyType}
-                    </span>
-                  );
-                }
+              const { difficultyViewType, difficultyType, userDifficultyType } = problemInfo;
+              if (difficultyViewType === "PROBLEM_DIFFICULTY") {
+                return (
+                  <span className="inline-flex items-center justify-center rounded-[4px] bg-[#333] border border-[#444] px-1.5 py-0.5 text-[11px] font-semibold text-gray-300">
+                    {difficultyType}
+                  </span>
+                );
+              } else {
+                let style = "text-gray-400 bg-[#333] border border-[#444]";
+                const diff = userDifficultyType?.toLowerCase();
+                // Dark mode styles
+                if (diff === "easy") style = "text-green-400 bg-green-900/30 border border-green-800";
+                else if (diff === "medium") style = "text-yellow-400 bg-yellow-900/30 border border-yellow-800";
+                else if (diff === "hard") style = "text-red-400 bg-red-900/30 border border-red-800";
+                return (
+                  <span className={`inline-flex items-center justify-center rounded-[4px] px-1.5 py-0.5 text-[11px] font-semibold ${style}`}>
+                    {userDifficultyType}
+                  </span>
+                );
+              }
             })()}
           </div>
         </div>
@@ -320,16 +320,14 @@ int main() {
                       value={execTime}
                       onChange={(e) => setExecTime(e.target.value)}
                       disabled={!isSuccess}
-                      className={`w-full h-8 rounded-lg border px-3 text-sm font-medium placeholder-gray-500 outline-none transition-all ${
-                        !isSuccess
+                      className={`w-full h-8 rounded-lg border px-3 text-sm font-medium placeholder-gray-500 outline-none transition-all ${!isSuccess
                           ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
                           : "border-gray-200 bg-gray-50 text-gray-800 focus:border-primary-main focus:bg-white focus:ring-2 focus:ring-primary-100"
-                      }`}
+                        }`}
                       placeholder="0"
                     />
-                    <span className={`absolute right-3 top-2 text-xs font-medium ${
-                      !isSuccess ? "text-gray-300" : "text-gray-400"
-                    }`}>ms</span>
+                    <span className={`absolute right-3 top-2 text-xs font-medium ${!isSuccess ? "text-gray-300" : "text-gray-400"
+                      }`}>ms</span>
                   </div>
                 </div>
                 <div className="flex flex-col gap-1">
@@ -340,16 +338,14 @@ int main() {
                       value={memory}
                       onChange={(e) => setMemory(e.target.value)}
                       disabled={!isSuccess}
-                      className={`w-full h-8 rounded-lg border px-3 text-sm font-medium placeholder-gray-400 outline-none transition-all ${
-                        !isSuccess
+                      className={`w-full h-8 rounded-lg border px-3 text-sm font-medium placeholder-gray-400 outline-none transition-all ${!isSuccess
                           ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
                           : "border-gray-200 bg-gray-50 text-gray-800 focus:border-primary-main focus:bg-white focus:ring-2 focus:ring-primary-100"
-                      }`}
+                        }`}
                       placeholder="0"
                     />
-                    <span className={`absolute right-3 top-2 text-xs font-medium ${
-                      !isSuccess ? "text-gray-300" : "text-gray-400"
-                    }`}>KB</span>
+                    <span className={`absolute right-3 top-2 text-xs font-medium ${!isSuccess ? "text-gray-300" : "text-gray-400"
+                      }`}>KB</span>
                   </div>
                 </div>
               </div>

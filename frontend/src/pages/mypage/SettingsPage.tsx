@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import BasePage from '../BasePage';
 import { getUserProfile } from '@api/user/userApi';
 import { postCheckNickname } from '@api/auth/auth';
-import { updateProfile, updatePassword } from '@api/user/settingsApi';
+import { updateUserInfo, updateProfileImage, updatePassword } from '@api/user/settingsApi';
 
 
 import useAuthStore from "@store/useAuthStore";
@@ -40,6 +40,7 @@ const SettingsPage = () => {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [passwordError, setPasswordError] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Fetch Initial Data
     const { data: userProfile, isLoading } = useQuery({
@@ -99,52 +100,94 @@ const SettingsPage = () => {
         }
     };
 
-    const handleUpdateProfile = async () => {
+    const handleUpdate = async () => {
+        // 1. Validation
         if (!isNicknameChecked) {
             alert('닉네임 중복 확인을 해주세요.');
             return;
         }
 
+        const isPasswordChangeRequested = newPassword.length > 0;
+
+        if (isPasswordChangeRequested) {
+            if (newPassword !== confirmPassword) {
+                setPasswordError('비밀번호가 일치하지 않습니다.');
+                return;
+            }
+            const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,20}$/;
+            if (!passwordRegex.test(newPassword)) {
+                setPasswordError('비밀번호는 영문, 숫자, 특수문자를 포함하여 8~20자여야 합니다.');
+                return;
+            }
+        }
+
+        // 2. Diff Checking
+        const isNicknameOrDescChanged =
+            nickname !== userProfile?.nickname ||
+            description !== (userProfile?.description || '');
+        const isImageChanged = selectedFile !== null;
+
+        if (!isNicknameOrDescChanged && !isImageChanged && !isPasswordChangeRequested) {
+            alert("변경 사항이 없습니다.");
+            return;
+        }
+
+        setIsSubmitting(true);
         try {
-            const formData = new FormData();
-            formData.append('nickname', nickname);
-            formData.append('description', description);
-            if (selectedFile) {
-                formData.append('profileImage', selectedFile);
+            const promises = [];
+            const messages: string[] = [];
+
+            // 3. Queue API Calls
+            if (isNicknameOrDescChanged) {
+                promises.push(
+                    updateUserInfo({ nickname, description })
+                        .then(() => messages.push("프로필 정보"))
+                );
             }
 
-            await updateProfile(formData);
-            alert('프로필이 수정되었습니다.');
-            // Refetch or update query cache could be done here
+            if (isImageChanged && selectedFile) {
+                const formData = new FormData();
+                formData.append('image', selectedFile);
+                promises.push(
+                    updateProfileImage(formData)
+                        .then(() => messages.push("프로필 이미지"))
+                );
+            }
+
+            if (isPasswordChangeRequested) {
+                promises.push(
+                    updatePassword({
+                        currentPassword,
+                        newPassword
+                    }).then(() => messages.push("비밀번호"))
+                );
+            }
+
+            // 4. Execute All
+            await Promise.all(promises);
+
+            // 5. Success Handling
+            alert(`${messages.join(', ')} 수정이 완료되었습니다.`);
+            navigate('/mypage');
+
+            // Data Reset
+            if (isPasswordChangeRequested) {
+                setCurrentPassword('');
+                setNewPassword('');
+                setConfirmPassword('');
+                setPasswordError('');
+            }
+            if (isImageChanged) setSelectedFile(null); // Clear file selection
+
+            // Note: If using React Query, you might want to refetch userProfile here or invalidate queries.
+            // queryClient.invalidateQueries(['userProfile']);
+
         } catch (error) {
             console.error('Update failed', error);
-            alert('프로필 수정에 실패했습니다.');
-        }
-    };
-
-    const handleUpdatePassword = async () => {
-        if (newPassword !== confirmPassword) {
-            setPasswordError('비밀번호가 일치하지 않습니다.');
-            return;
-        }
-        if (newPassword.length < 8) {
-            setPasswordError('비밀번호는 8자 이상이어야 합니다.');
-            return;
-        }
-
-        try {
-            await updatePassword({
-                currentPassword,
-                newPassword
-            });
-            alert('비밀번호가 변경되었습니다.');
-            setCurrentPassword('');
-            setNewPassword('');
-            setConfirmPassword('');
-            setPasswordError('');
-        } catch (error) {
-            console.error('Password update failed', error);
-            alert('비밀번호 변경에 실패했습니다. 현재 비밀번호를 확인해주세요.');
+            // Ideally parse error message from response
+            alert('수정 중 오류가 발생했습니다. 내용을 확인해주세요.');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -304,13 +347,11 @@ const SettingsPage = () => {
                         <div className="flex justify-end items-center mt-4">
 
                             <button
-                                onClick={() => {
-                                    handleUpdateProfile();
-                                    if (newPassword) handleUpdatePassword();
-                                }}
-                                className="px-6 py-3 bg-[#0D6EFD] text-white rounded-lg font-semibold hover:bg-[#0B5ED7] transition-colors"
+                                onClick={handleUpdate}
+                                disabled={isSubmitting}
+                                className={`px-6 py-3 text-white rounded-lg font-semibold transition-colors ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#0D6EFD] hover:bg-[#0B5ED7]'}`}
                             >
-                                수정하기
+                                {isSubmitting ? '수정 중...' : '수정하기'}
                             </button>
                         </div>
                     </div>

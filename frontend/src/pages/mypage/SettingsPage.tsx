@@ -4,19 +4,20 @@ import { useNavigate } from 'react-router-dom';
 import BasePage from '../BasePage';
 import { getUserProfile } from '@api/user/userApi';
 import { postCheckNickname } from '@api/auth/auth';
-import { updateUserInfo, updateProfileImage, updatePassword } from '@api/user/settingsApi';
-
-
+import { updateUserInfo, updateProfileImage, updatePassword, deleteProfileImage } from '@api/user/settingsApi';
+import useToast from "@hooks/useToast";
 import useAuthStore from "@store/useAuthStore";
 
 
 const SettingsPage = () => {
     const navigate = useNavigate();
+    const { showToast } = useToast();
     const authorization = useAuthStore((state) => state.authorization); // Check auth
 
     useEffect(() => {
         if (!authorization) {
-            alert("로그인이 필요한 서비스입니다.");
+            // alert("로그인이 필요한 서비스입니다."); // Should rely on global redirects or existing logic, but for now:
+            // Using replace to avoid history stack issues
             navigate("/login", { replace: true });
         }
     }, [authorization, navigate]);
@@ -32,6 +33,7 @@ const SettingsPage = () => {
     const [description, setDescription] = useState('');
     const [profileImage, setProfileImage] = useState<string | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [isDeleteImagePending, setIsDeleteImagePending] = useState(false); // Track if image deletion is requested
     const [isNicknameChecked, setIsNicknameChecked] = useState(true); // Initially true if unchanged
     const [nicknameError, setNicknameError] = useState('');
 
@@ -70,9 +72,17 @@ const SettingsPage = () => {
             const reader = new FileReader();
             reader.onloadend = () => {
                 setProfileImage(reader.result as string);
+                setIsDeleteImagePending(false); // New image selected, so not deleting
             };
             reader.readAsDataURL(file);
         }
+    };
+
+    const handleDeleteImage = (e: React.MouseEvent) => {
+        e.stopPropagation(); // prevent triggering handleImageClick
+        setProfileImage(null); // Reset local state to show default
+        setSelectedFile(null); // Clear any selected file
+        setIsDeleteImagePending(true); // Flag for deletion on submit
     };
 
     const handleNicknameCheck = async () => {
@@ -80,7 +90,7 @@ const SettingsPage = () => {
         if (nickname === userProfile?.nickname) {
             setIsNicknameChecked(true);
             setNicknameError('');
-            alert('현재 사용 중인 닉네임입니다.');
+            showToast('현재 사용 중인 닉네임입니다.', 'error');
             return;
         }
 
@@ -89,10 +99,11 @@ const SettingsPage = () => {
             if (isAvailable) {
                 setIsNicknameChecked(true);
                 setNicknameError('');
-                alert('사용 가능한 닉네임입니다.');
+                showToast('사용 가능한 닉네임입니다.', 'success');
             } else {
                 setIsNicknameChecked(false);
                 setNicknameError('이미 존재하는 닉네임입니다.');
+                showToast('이미 존재하는 닉네임입니다.', 'error');
             }
         } catch (error) {
             console.error(error);
@@ -103,7 +114,7 @@ const SettingsPage = () => {
     const handleUpdate = async () => {
         // 1. Validation
         if (!isNicknameChecked) {
-            alert('닉네임 중복 확인을 해주세요.');
+            showToast('닉네임 중복 확인을 해주세요.', 'error');
             return;
         }
 
@@ -125,33 +136,40 @@ const SettingsPage = () => {
         const isNicknameOrDescChanged =
             nickname !== userProfile?.nickname ||
             description !== (userProfile?.description || '');
-        const isImageChanged = selectedFile !== null;
+        const isImageChanged = selectedFile !== null || isDeleteImagePending;
 
         if (!isNicknameOrDescChanged && !isImageChanged && !isPasswordChangeRequested) {
-            alert("변경 사항이 없습니다.");
+            showToast('변경 사항이 없습니다.', 'error');
             return;
         }
 
         setIsSubmitting(true);
+        setIsSubmitting(true);
         try {
             const promises = [];
-            const messages: string[] = [];
 
-            // 3. Queue API Calls
+            // 3. Queue API Calls with Identifiers
             if (isNicknameOrDescChanged) {
                 promises.push(
                     updateUserInfo({ nickname, description })
-                        .then(() => messages.push("프로필 정보"))
+                        .then(() => ({ type: 'info', msg: "프로필 정보" }))
                 );
             }
 
-            if (isImageChanged && selectedFile) {
-                const formData = new FormData();
-                formData.append('image', selectedFile);
-                promises.push(
-                    updateProfileImage(formData)
-                        .then(() => messages.push("프로필 이미지"))
-                );
+            if (isImageChanged) {
+                if (isDeleteImagePending) {
+                    promises.push(
+                        deleteProfileImage()
+                            .then(() => ({ type: 'image', msg: "프로필 이미지 삭제" }))
+                    );
+                } else if (selectedFile) {
+                    const formData = new FormData();
+                    formData.append('image', selectedFile);
+                    promises.push(
+                        updateProfileImage(formData)
+                            .then(() => ({ type: 'image', msg: "프로필 이미지 변경" }))
+                    );
+                }
             }
 
             if (isPasswordChangeRequested) {
@@ -159,33 +177,61 @@ const SettingsPage = () => {
                     updatePassword({
                         currentPassword,
                         newPassword
-                    }).then(() => messages.push("비밀번호"))
+                    }).then(() => ({ type: 'password', msg: "비밀번호" }))
                 );
             }
 
-            // 4. Execute All
-            await Promise.all(promises);
+            // 4. Execute All with allSettled
+            const results = await Promise.allSettled(promises);
 
-            // 5. Success Handling
-            alert(`${messages.join(', ')} 수정이 완료되었습니다.`);
-            navigate('/mypage');
+            const successes: string[] = [];
+            const failures: string[] = [];
 
-            // Data Reset
-            if (isPasswordChangeRequested) {
-                setCurrentPassword('');
-                setNewPassword('');
-                setConfirmPassword('');
-                setPasswordError('');
+            results.forEach((result) => {
+                if (result.status === 'fulfilled') {
+                    successes.push(result.value.msg);
+                } else {
+                    // Extract error message if possible
+                    console.error("Update failed:", result.reason);
+                    failures.push("일부 항목"); // Could be more specific if we tracked which index corresponded to what
+                }
+            });
+
+            // 5. Build Result Message
+            if (failures.length === 0) {
+                // All success
+                showToast(`${successes.join(', ')} 수정이 완료되었습니다.`, 'success');
+                setTimeout(() => navigate('/mypage'), 1500);
+
+                // Data Reset logic
+                if (isPasswordChangeRequested) {
+                    setCurrentPassword('');
+                    setNewPassword('');
+                    setConfirmPassword('');
+                    setPasswordError('');
+                }
+                if (isImageChanged) setSelectedFile(null);
+
+            } else if (successes.length > 0) {
+                // Partial Success
+                showToast(`${successes.join(', ')} 수정 완료. 실패한 항목이 있습니다.`, 'error');
+                // Don't navigate, let user retry failing parts
+                // Ideally refresh user profile or update UI to reflect partial success
+                if (isImageChanged && successes.some(s => s.includes("이미지"))) setSelectedFile(null);
+                // For password, we can't easily reset if it failed, but if it succeeded we should
+                if (isPasswordChangeRequested && successes.some(s => s.includes("비밀번호"))) {
+                    setCurrentPassword('');
+                    setNewPassword('');
+                    setConfirmPassword('');
+                }
+            } else {
+                // All failed
+                showToast('수정 중 오류가 발생했습니다.', 'error');
             }
-            if (isImageChanged) setSelectedFile(null); // Clear file selection
-
-            // Note: If using React Query, you might want to refetch userProfile here or invalidate queries.
-            // queryClient.invalidateQueries(['userProfile']);
 
         } catch (error) {
             console.error('Update failed', error);
-            // Ideally parse error message from response
-            alert('수정 중 오류가 발생했습니다. 내용을 확인해주세요.');
+            showToast('수정 중 치명적인 오류가 발생했습니다.', 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -197,7 +243,7 @@ const SettingsPage = () => {
 
     return (
         <BasePage>
-            <div className="flex max-w-[600px] flex-col items-center gap-10 self-stretch mx-auto px-4 py-8">
+            <div className="flex max-w-[1000px] flex-col items-center gap-10 self-stretch mx-auto px-4 py-8">
                 {/* Header Link */}
                 <div className="self-stretch">
                     <button
@@ -223,17 +269,33 @@ const SettingsPage = () => {
                                     {profileImage ? (
                                         <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-4xl text-[#ADB5BD]">
-                                            {nickname?.charAt(0).toUpperCase()}
+                                        <div className="w-full h-full flex items-center justify-center bg-[#F0F2F5] text-[#ADB5BD]">
+                                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                                <circle cx="12" cy="7" r="4"></circle>
+                                            </svg>
                                         </div>
                                     )}
                                 </div>
-                                <div className="absolute bottom-0 right-0 w-8 h-8 bg-[#0D6EFD] rounded-full flex items-center justify-center text-white shadow-md group-hover:bg-[#0B5ED7] transition-colors">
+                                {/* Edit Button (Bottom Right) */}
+                                <div className="absolute bottom-0 right-0 w-8 h-8 bg-[#0D6EFD] rounded-full flex items-center justify-center text-white shadow-md group-hover:bg-[#0B5ED7] transition-colors z-10">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                                         <circle cx="12" cy="13" r="4"></circle>
                                     </svg>
                                 </div>
+                                {/* Delete Button (Top Right) - Only show if image exists */}
+                                {profileImage && (
+                                    <div
+                                        onClick={handleDeleteImage}
+                                        className="absolute top-0 right-0 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white shadow-md hover:bg-red-600 transition-colors z-20"
+                                    >
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                    </div>
+                                )}
                                 <input
                                     type="file"
                                     ref={fileInputRef}
@@ -357,8 +419,8 @@ const SettingsPage = () => {
                     </div>
 
                 </div>
-            </div>
-        </BasePage>
+            </div >
+        </BasePage >
     );
 };
 

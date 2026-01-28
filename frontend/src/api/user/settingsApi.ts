@@ -23,6 +23,12 @@ export const updateProfileImage = async (formData: FormData) => {
     return response.data;
 };
 
+// 프로필 이미지 삭제
+export const deleteProfileImage = async () => {
+    const response = await client.put("/api/v1/users/profile-images");
+    return response.data;
+};
+
 // 비밀번호 수정
 export const updatePassword = async (data: PasswordUpdateRequest) => {
     const response = await client.patch("/api/v1/users/password", data);

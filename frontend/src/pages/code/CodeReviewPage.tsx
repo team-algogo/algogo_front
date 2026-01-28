@@ -612,7 +612,7 @@ const CodeReviewPage = () => {
           <div className="flex flex-1 flex-col gap-4 min-w-0">
             <div className="flex items-center justify-between gap-4">
               <h2 className="shrink-0 text-lg font-semibold text-[#1f2328]">
-                Problem Approach
+                문제 접근 방식
               </h2>
               {/* 알고리즘 태그 리스트 - 1줄 고정, 넘치면 +N 표시 */}
               {submissionDetail?.algorithmList &&
@@ -677,7 +677,7 @@ const CodeReviewPage = () => {
                       : "border-[#cf222e]/30 bg-[#ffebe9] text-[#cf222e]"
                       }`}
                   >
-                    {submissionDetail.isSuccess ? "Success" : "Failed"}
+                    {submissionDetail.isSuccess ? "성공" : "실패"}
                   </span>
                 )}
                 {/* Copy Button */}
@@ -721,7 +721,7 @@ const CodeReviewPage = () => {
           <Editor
             height={editorHeight}
             language={submissionDetail?.language.toLowerCase() || "java"}
-            value={code || "// Code Loading..."}
+            value={code || "// 코드 로딩 중..."}
             theme="light"
             onMount={handleEditorDidMount}
             options={{
@@ -858,7 +858,7 @@ const CodeReviewPage = () => {
         {/* Review Conversation Section - 플랫한 타임라인 (박스 제거) */}
         <div className="w-full border-t border-[#d0d7de] pt-8">
           <h3 className="mb-4 text-base font-semibold text-[#1f2328]">
-            Review Conversation
+            리뷰 대화
           </h3>
           <div className="flex flex-col gap-0">
             {/* Existing Comments - 플랫한 타임라인 */}

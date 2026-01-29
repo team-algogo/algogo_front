@@ -142,6 +142,11 @@ export default function ProblemStatisticsPage() {
     setMounted(true);
   }, []);
 
+  // Scroll to top when page changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [page]);
+
   const submissions = statisticsData?.submissions || [];
   const pageInfo = statisticsData?.page;
   const totalPages = pageInfo?.totalPages || 1;

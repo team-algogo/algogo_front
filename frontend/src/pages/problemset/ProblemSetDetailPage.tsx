@@ -65,6 +65,11 @@ export default function ProblemSetDetailPage() {
     }
   }, [isLogined, navigate]);
 
+  // Scroll to top when page changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [page]);
+
   const canMoreSubmission = canMoreSubmissionData?.canMoreSubmission ?? true;
 
   // 사용자 정보 조회 (ADMIN 확인용)

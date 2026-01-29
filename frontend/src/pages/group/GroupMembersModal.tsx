@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchGroupMembers, updateGroupMemberRole, deleteGroupMember, fetchGroupDetail } from "../../api/group/groupApi";
 import { getUserDetail } from "@api/auth/auth";
@@ -72,6 +72,11 @@ export default function GroupMembersModal({ programId, onClose }: GroupMembersMo
     // Pagination State
     const [page, setPage] = useState(0);
     const PAGE_SIZE = 5;
+
+    // Scroll to top when page changes
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [page]);
 
     const offset = page * PAGE_SIZE;
     const paginatedMembers = sortedMembers.slice(offset, offset + PAGE_SIZE);
@@ -268,11 +273,10 @@ export default function GroupMembersModal({ programId, onClose }: GroupMembersMo
                                                                                         handleRoleChange(member.programUserId, "USER");
                                                                                         document.getElementById(`role-dropdown-${member.programUserId}`)?.classList.add('hidden');
                                                                                     }}
-                                                                                    className={`w-full px-3 py-2.5 text-left text-xs font-bold transition-colors flex items-center gap-2 ${
-                                                                                        member.role === "USER"
+                                                                                    className={`w-full px-3 py-2.5 text-left text-xs font-bold transition-colors flex items-center gap-2 ${member.role === "USER"
                                                                                             ? "bg-gray-100 text-gray-900"
                                                                                             : "text-gray-700 hover:bg-gray-50"
-                                                                                    }`}
+                                                                                        }`}
                                                                                 >
                                                                                     <span>USER</span>
                                                                                     {member.role === "USER" && (
@@ -286,11 +290,10 @@ export default function GroupMembersModal({ programId, onClose }: GroupMembersMo
                                                                                         handleRoleChange(member.programUserId, "MANAGER");
                                                                                         document.getElementById(`role-dropdown-${member.programUserId}`)?.classList.add('hidden');
                                                                                     }}
-                                                                                    className={`w-full px-3 py-2.5 text-left text-xs font-bold transition-colors flex items-center gap-2 ${
-                                                                                        member.role === "MANAGER"
+                                                                                    className={`w-full px-3 py-2.5 text-left text-xs font-bold transition-colors flex items-center gap-2 ${member.role === "MANAGER"
                                                                                             ? "bg-indigo-50 text-indigo-900"
                                                                                             : "text-gray-700 hover:bg-gray-50"
-                                                                                    }`}
+                                                                                        }`}
                                                                                 >
                                                                                     <span>MANAGER</span>
                                                                                     {member.role === "MANAGER" && (

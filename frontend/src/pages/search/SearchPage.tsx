@@ -35,6 +35,16 @@ export default function SearchPage() {
     setWorkbookPage(1);
   }, [activeTab, initialKeyword]);
 
+  // Scroll to top when problemPage changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [problemPage]);
+
+  // Scroll to top when workbookPage changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [workbookPage]);
+
   const handleSearch = () => {
     if (!inputValue.trim()) {
       searchParams.delete("keyword");

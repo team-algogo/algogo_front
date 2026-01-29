@@ -46,7 +46,7 @@ export function FeatureSection() {
                         return (
                             <div
                                 key={index}
-                                className="text-center p-5 rounded-xl hover:bg-gray-50 transition-colors"
+                                className="text-center p-5 rounded-xl"
                             >
                                 <div className={`inline-flex items-center justify-center w-14 h-14 rounded-full bg-gray-100 mb-4 ${feature.color}`}>
                                     <Icon className="w-7 h-7" />

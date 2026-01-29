@@ -38,7 +38,7 @@ export function HeroSection() {
             className="relative w-full overflow-hidden transition-colors duration-500"
             style={{ backgroundColor: slides[currentSlide].bgColor }}
         >
-            <div className="container relative mx-auto px-4 py-16 min-[952px]:py-0 h-auto min-[952px]:h-[400px] flex flex-col-reverse min-[952px]:flex-row justify-between items-center">
+            <div className="relative mx-auto h-auto min-[952px]:h-[400px] max-w-7xl flex flex-col-reverse justify-between items-center px-4 sm:px-6 lg:px-8 min-[952px]:flex-row min-[952px]:py-0 py-16">
                 {/* Left Content */}
                 <div className="flex flex-col items-center min-[952px]:items-start z-10 w-full min-[952px]:max-w-[30%] text-center min-[952px]:text-left pt-6 min-[952px]:pt-0">
                     <div className="inline-block px-3 py-1 bg-white/20 rounded-full text-xs font-medium mb-4 backdrop-blur-sm text-white border border-white/10">
@@ -63,7 +63,7 @@ export function HeroSection() {
                     />
                 </div>
 
-                <div className="absolute bottom-4 right-40 flex gap-2 z-20">
+                <div className="absolute bottom-4 right-4 sm:right-6 lg:right-8 flex gap-2 z-20">
                     {slides.map((_, index) => (
                         <button
                             key={index}

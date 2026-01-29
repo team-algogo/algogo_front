@@ -535,6 +535,7 @@ export default function GroupDetailPage() {
                                         difficultyViewType={problem.difficultyViewType}
                                         userDifficulty={problem.userDifficultyType}
                                         problemDifficulty={problem.problemResponseDto.difficultyType}
+                                        platformType={problem.problemResponseDto.platformType}
                                         viewCount={problem.viewCount}
                                         submissionCount={problem.submissionCount}
                                         solvedCount={problem.solvedCount}

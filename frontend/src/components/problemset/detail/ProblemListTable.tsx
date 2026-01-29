@@ -109,6 +109,7 @@ export default function ProblemListTable({
                     difficultyViewType={item.difficultyViewType}
                     userDifficulty={item.userDifficultyType}
                     problemDifficulty={pInfo.difficultyType}
+                    platformType={pInfo.platformType}
                     viewCount={item.viewCount}
                     submissionCount={item.submissionCount}
                     solvedCount={item.solvedCount}

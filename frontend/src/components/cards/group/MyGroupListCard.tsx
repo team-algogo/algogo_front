@@ -63,7 +63,7 @@ const MyGroupListCard = ({
 
 
       {/* Description */}
-      <p className={`text-gray-700 leading-relaxed ${variant === 'mypage' ? 'text-xs line-clamp-1' : 'text-sm line-clamp-2 h-[40px]'}`}>
+      <p className={`text-gray-700 leading-relaxed ${variant === 'mypage' ? 'text-xs line-clamp-1' : 'text-sm line-clamp-2 h-[46px]'}`}>
         {description}
       </p>
 

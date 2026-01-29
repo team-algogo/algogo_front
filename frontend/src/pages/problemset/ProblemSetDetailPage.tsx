@@ -40,7 +40,7 @@ export default function ProblemSetDetailPage() {
     enabled: !isNaN(id),
   });
 
-  const { data: problemsData } = useQuery({
+  const { data: problemsData, isLoading: isProblemsLoading } = useQuery({
     queryKey: ["problemSetProblems", id, page, sortBy, sortDirection],
     queryFn: () => getProblemSetProblems(id, page, 10, sortBy, sortDirection),
     enabled: !isNaN(id),
@@ -234,6 +234,7 @@ export default function ProblemSetDetailPage() {
             canMoreSubmission={canMoreSubmission}
             programId={id}
             programTitle={detail?.title ?? ""}
+            isLoading={isProblemsLoading}
           />
 
           {/* Pagination */}

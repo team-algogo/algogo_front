@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchGroupJoinRequests, respondToJoinRequest, cancelGroupInvitation, fetchGroupInviteList } from "../../api/group/groupApi";
 import Toast, { type ToastType } from "@components/toast/Toast";
@@ -28,6 +28,11 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
     // Better way:
     // const [page, setPage] = useState(0);
     // useEffect(() => setPage(0), [activeTab]); -> requires import useEffect
+
+    // Scroll to top when page changes
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [page]);
 
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;

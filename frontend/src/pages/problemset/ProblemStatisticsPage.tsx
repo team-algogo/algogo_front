@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import BasePage from "@pages/BasePage";
 import Pagination from "@components/pagination/Pagination";
@@ -23,7 +23,11 @@ export default function ProblemStatisticsPage() {
   const { programProblemId } = useParams<{ programProblemId: string }>();
   const id = Number(programProblemId);
   const navigate = useNavigate();
-  const [page, setPage] = useState(1);
+
+  // Pagination State - Read from URL
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialPage = parseInt(searchParams.get("page") || "1");
+  const [page, setPage] = useState(initialPage);
   const [keyword, setKeyword] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [language, setLanguage] = useState("");
@@ -141,6 +145,18 @@ export default function ProblemStatisticsPage() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Scroll to top when page changes
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    if (page > 1) {
+      params.set("page", page.toString());
+    } else {
+      params.delete("page");
+    }
+    setSearchParams(params, { replace: true });
+    window.scrollTo(0, 0);
+  }, [page]);
 
   const submissions = statisticsData?.submissions || [];
   const pageInfo = statisticsData?.page;

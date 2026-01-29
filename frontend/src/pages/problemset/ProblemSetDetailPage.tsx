@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import CustomSelect, {
   type SelectOption,
@@ -23,7 +23,10 @@ export default function ProblemSetDetailPage() {
   const id = Number(programId);
   const navigate = useNavigate();
 
-  const [page, setPage] = useState(1);
+  // Pagination State - Read from URL
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialPage = parseInt(searchParams.get("page") || "1");
+  const [page, setPage] = useState(initialPage);
   const [sortBy, setSortBy] = useState("startDate");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
@@ -67,6 +70,13 @@ export default function ProblemSetDetailPage() {
 
   // Scroll to top when page changes
   useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    if (page > 1) {
+      params.set("page", page.toString());
+    } else {
+      params.delete("page");
+    }
+    setSearchParams(params, { replace: true });
     window.scrollTo(0, 0);
   }, [page]);
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import LoginRequestOverlay from "@components/common/LoginRequestOverlay";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import BasePage from "@pages/BasePage";
 import Group from "@components/cards/group/GroupListCard";
 import MyGroupListCard from "@components/cards/group/MyGroupListCard";
@@ -25,7 +25,11 @@ const GroupMainPage = () => {
   const [keyword, setKeyword] = useState("");
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortDirection, setSortDirection] = useState("desc");
-  const [page, setPage] = useState(0);
+
+  // Pagination State - Read from URL (0-indexed)
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialPage = parseInt(searchParams.get("page") || "1") - 1; // Convert to 0-indexed
+  const [page, setPage] = useState(initialPage);
   const size = 6; // 한 페이지에 6개만 표시 (30% 감소)
 
   const sortOptions: SelectOption[] = [
@@ -34,8 +38,16 @@ const GroupMainPage = () => {
     { label: "수정일순", value: "modified" },
   ];
 
-  // 페이지 변경 시 스크롤 맨 위로 이동
+  // 페이지 변경 시 스크롤 맨 위로 이동 및 URL 업데이트
   useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    const displayPage = page + 1; // Convert to 1-indexed for URL
+    if (displayPage > 1) {
+      params.set("page", displayPage.toString());
+    } else {
+      params.delete("page");
+    }
+    setSearchParams(params, { replace: true });
     window.scrollTo(0, 0);
   }, [page]);
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchGroupJoinRequests, respondToJoinRequest, cancelGroupInvitation, fetchGroupInviteList } from "../../api/group/groupApi";
+import { fetchGroupJoinRequests, respondToJoinRequest, cancelGroupInvitation, fetchGroupInviteList, fetchGroupMembers } from "../../api/group/groupApi";
 import Toast, { type ToastType } from "@components/toast/Toast";
 import ConfirmModal from "@components/modal/ConfirmModal";
 import Button from "@components/button/Button";
@@ -60,10 +60,25 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
         enabled: !!programId && activeTab === "INVITE_LIST",
     });
 
+    // 멤버 리스트 조회 (이미 가입된 유저 필터링용)
+    const { data: memberData } = useQuery({
+        queryKey: ["groupMembers", programId],
+        queryFn: () => fetchGroupMembers(programId),
+        enabled: !!programId,
+    });
+
+    const members = memberData?.data?.members || [];
+    const memberEmails = new Set(members.map((m: any) => m.email));
+
     const requests = requestData?.data?.users || [];
-    const pendingRequests = requests.filter((u: any) => u.status === "PENDING");
+    // 이미 멤버인 경우 필터링
+    const pendingRequests = requests.filter((u: any) => u.status === "PENDING" && !memberEmails.has(u.email));
 
     const invites = inviteData?.data?.users || [];
+    // 이미 멤버인 경우 필터링
+    const pendingInvites = activeTab === "INVITE_LIST"
+        ? invites.filter((i: any) => i.status === "PENDING" && !memberEmails.has(i.email))
+        : [];
 
     // Pagination Slice Logic
     const offset = page * PAGE_SIZE;
@@ -75,8 +90,8 @@ export default function GroupJoinRequestsModal({ programId, onClose }: GroupJoin
     const currentList = activeTab === "JOIN_REQUEST" ? pendingRequests : invites.filter((i: any) => i.status === "PENDING");
     const totalElements = currentList.length;
 
-    // Sent Invitations: Only show PENDING ones
-    const pendingInvites = activeTab === "INVITE_LIST" ? invites.filter((i: any) => i.status === "PENDING") : [];
+    // Sent Invitations: Only show PENDING ones (already filtered above but keeping for safety/consistency if needed)
+    // const pendingInvites = activeTab === "INVITE_LIST" ? invites.filter((i: any) => i.status === "PENDING") : [];
 
     // Derived sub-lists
     const paginatedRequests = activeTab === "JOIN_REQUEST" ? pendingRequests.slice(offset, offset + PAGE_SIZE) : [];

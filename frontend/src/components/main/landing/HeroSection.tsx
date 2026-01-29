@@ -63,7 +63,7 @@ export function HeroSection() {
                     />
                 </div>
 
-                <div className="absolute bottom-4 right-40 flex gap-2 z-20">
+                <div className="absolute bottom-4 right-4 sm:right-6 lg:right-8 flex gap-2 z-20">
                     {slides.map((_, index) => (
                         <button
                             key={index}

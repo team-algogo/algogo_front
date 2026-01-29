@@ -27,16 +27,23 @@ const ReviewRequests = ({ requests, totalCount }: ReviewRequestsProps) => {
 
   return (
     <div className="flex w-full flex-col items-start gap-4">
-      <div className="flex w-full items-center gap-2  mb-5">
+      <div className="flex w-full items-center gap-2 mb-5">
+        <span className="text-4xl">📭</span>
         <span
           className="text-xl leading-[130%] font-bold tracking-[-0.2px] text-[#050505]"
           style={{ fontFamily: "IBM Plex Sans KR" }}
         >
           리뷰요청이 왔어요!
         </span>
-        <div className="flex items-center justify-center gap-2.5 rounded-[100px] bg-[#FF3B30] px-2 py-0.5">
+        <div
+          className={`flex items-center justify-center gap-2.5 rounded-[100px] px-2 py-0.5 ${totalCount === 0
+            ? "bg-[#F4F4F5] border border-[#E4E4E5]"
+            : "bg-[#FF3B30]"
+            }`}
+        >
           <span
-            className="text-xs leading-[130%] font-bold text-white"
+            className={`text-xs leading-[130%] font-bold ${totalCount === 0 ? "text-[#71717A]" : "text-white"
+              }`}
             style={{ fontFamily: "IBM Plex Sans KR" }}
           >
             {totalCount}
@@ -47,7 +54,7 @@ const ReviewRequests = ({ requests, totalCount }: ReviewRequestsProps) => {
       <div className="flex w-full flex-col items-start gap-3 rounded-2xl border border-[#EBEBEB] bg-white p-5 shadow-[0px_2px_12px_0px_rgba(0,0,0,0.04)]">
         {requests.length === 0 ? (
           <div className="flex w-full items-center justify-center py-4">
-            <span className="text-[#9FA3AA]">아직 리뷰 요청이 없어요</span>
+            <span className="text-[#9FA3AA]"> 아직 도착한 리뷰 요청이 없어요</span>
           </div>
         ) : (
           requests.map((req, idx) => {

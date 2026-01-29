@@ -21,9 +21,11 @@ export default function SearchPage() {
     "전체",
   );
 
-  // Pagination State
-  const [problemPage, setProblemPage] = useState(1);
-  const [workbookPage, setWorkbookPage] = useState(1);
+  // Pagination State - Read from URL
+  const initialProblemPage = parseInt(searchParams.get("problemPage") || "1");
+  const initialWorkbookPage = parseInt(searchParams.get("workbookPage") || "1");
+  const [problemPage, setProblemPage] = useState(initialProblemPage);
+  const [workbookPage, setWorkbookPage] = useState(initialWorkbookPage);
 
   useEffect(() => {
     setInputValue(initialKeyword);
@@ -34,6 +36,30 @@ export default function SearchPage() {
     setProblemPage(1);
     setWorkbookPage(1);
   }, [activeTab, initialKeyword]);
+
+  // Update URL when problemPage changes
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    if (problemPage > 1) {
+      params.set("problemPage", problemPage.toString());
+    } else {
+      params.delete("problemPage");
+    }
+    setSearchParams(params, { replace: true });
+    window.scrollTo(0, 0);
+  }, [problemPage]);
+
+  // Update URL when workbookPage changes
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    if (workbookPage > 1) {
+      params.set("workbookPage", workbookPage.toString());
+    } else {
+      params.delete("workbookPage");
+    }
+    setSearchParams(params, { replace: true });
+    window.scrollTo(0, 0);
+  }, [workbookPage]);
 
   const handleSearch = () => {
     if (!inputValue.trim()) {

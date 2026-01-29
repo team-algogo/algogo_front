@@ -17,6 +17,7 @@ interface GroupProblemCardProps {
   difficultyViewType: "USER_DIFFICULTY" | "PROBLEM_DIFFICULTY" | string;
   userDifficulty: "Easy" | "Medium" | "Hard" | string;
   problemDifficulty: string; // Tier e.g. "GOLD_1"
+  platformType?: string; // Platform e.g. "BOJ", "PROGRAMMERS", "SWEA"
 
   // Statistics
   viewCount: number;
@@ -40,6 +41,7 @@ const GroupProblemCard = ({
   difficultyViewType,
   userDifficulty,
   problemDifficulty,
+  platformType,
   viewCount,
   submissionCount,
   solvedCount,
@@ -124,6 +126,30 @@ const GroupProblemCard = ({
     }
   };
 
+  // 플랫폼 뱃지 렌더링
+  const renderPlatformBadge = () => {
+    if (!platformType) return null;
+
+    let style = "text-gray-600 bg-gray-50 border border-gray-200";
+    const platform = platformType.toUpperCase();
+
+    // 플랫폼별 색상 지정
+    if (platform === "BOJ") {
+      style = "text-blue-600 bg-blue-50 border border-blue-200";
+    } else if (platform === "PROGRAMMERS") {
+      style = "text-indigo-600 bg-indigo-50 border border-indigo-200";
+    } else if (platform === "SWEA") {
+      style = "text-orange-600 bg-orange-50 border border-orange-200";
+    }
+
+    return (
+      <span className={`px-1.5 py-0.5 rounded-[4px] text-[10px] font-medium ${style}`}>
+        {platform}
+      </span>
+    );
+  };
+
+
   const handleCardClick = () => {
     // 1. 멤버 체크
     if (!isMember) {
@@ -188,8 +214,15 @@ const GroupProblemCard = ({
             </>
           )}
 
-          {/* Difficulty */}
+          {/* Platform and Difficulty */}
           <div className="flex items-center gap-1">
+            {platformType && (
+              <>
+                <span>플랫폼:</span>
+                {renderPlatformBadge()}
+                <div className="w-[1px] h-3 bg-gray-300"></div>
+              </>
+            )}
             <span>난이도:</span>
             {renderDifficultyBadge()}
           </div>

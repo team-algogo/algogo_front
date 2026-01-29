@@ -12,6 +12,7 @@ interface ProblemListTableProps {
   programId?: number; // 문제집 ID
   programTitle?: string; // 문제집 이름
   isMember?: boolean; // default true
+  isLoading?: boolean; // 로딩 상태
 }
 
 export default function ProblemListTable({
@@ -23,6 +24,7 @@ export default function ProblemListTable({
   programId,
   programTitle,
   isMember = true,
+  isLoading = false,
 }: ProblemListTableProps) {
   const navigate = useNavigate();
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -109,6 +111,7 @@ export default function ProblemListTable({
                     difficultyViewType={item.difficultyViewType}
                     userDifficulty={item.userDifficultyType}
                     problemDifficulty={pInfo.difficultyType}
+                    platformType={pInfo.platformType}
                     viewCount={item.viewCount}
                     submissionCount={item.submissionCount}
                     solvedCount={item.solvedCount}
@@ -123,6 +126,16 @@ export default function ProblemListTable({
               </div>
             );
           })
+        ) : isLoading ? (
+          <div className="flex h-[200px] w-full items-center justify-center border border-dashed border-gray-300 rounded-xl">
+            <div className="flex flex-col items-center gap-3">
+              <div className="relative">
+                <div className="border-primary-main h-10 w-10 animate-spin rounded-full border-4 border-t-transparent"></div>
+                <div className="absolute inset-0 border-primary-200 h-10 w-10 animate-spin rounded-full border-4 opacity-20" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+              </div>
+              <p className="text-sm font-medium text-gray-600">문제 목록을 불러오는 중...</p>
+            </div>
+          </div>
         ) : (
           <div className="flex h-[200px] w-full items-center justify-center border border-dashed border-gray-300 rounded-xl text-sm text-gray-400">
             등록된 문제가 없습니다.

@@ -214,7 +214,7 @@ const JoinPage = () => {
                   />
                   <Button
                     variant="secondary"
-                    size="sm"
+                    size="md"
                     type="button"
                     onClick={onSubmitCheckNickname}
                     disabled={isNicknameChecked}
@@ -259,7 +259,7 @@ const JoinPage = () => {
                   />
                   <Button
                     variant="secondary"
-                    size="sm"
+                    size="md"
                     type="button"
                     onClick={onSubmitCheckEmail}
                     disabled={isEmailChecked}
@@ -292,7 +292,7 @@ const JoinPage = () => {
                     />
                     <Button
                       variant="primary"
-                      size="sm"
+                      size="md"
                       type="button"
                       onClick={onSubmitVerifyCode}
                       className="shrink-0"

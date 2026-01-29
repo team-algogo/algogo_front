@@ -51,7 +51,8 @@ const WrittenReviews = () => {
 
   return (
     <div className="flex w-full flex-col items-start gap-4 h-full flex-1">
-      <div className="flex w-full items-center gap-2  mb-5">
+      <div className="flex w-full items-center gap-2 mb-5">
+        <span className="text-4xl">✍🏻</span>
         <span
           className="text-xl leading-[130%] font-bold tracking-[-0.2px] text-[#050505]"
           style={{ fontFamily: "IBM Plex Sans KR" }}
@@ -59,22 +60,27 @@ const WrittenReviews = () => {
           내가 작성한 리뷰
         </span>
         <div
-          className={`flex h-6 min-w-[24px] items-center justify-center rounded-full px-1.5 text-xs font-bold ${totalElements > 0
-            ? "bg-[#FF3B30] text-white"
-            : "bg-[#EBEBEB] text-[#727479]"
+          className={`flex items-center justify-center gap-2.5 rounded-[100px] px-2 py-0.5 ${totalElements === 0
+            ? "bg-[#F4F4F5] border border-[#E4E4E5]"
+            : "bg-[#FF3B30]"
             }`}
-          style={{ fontFamily: "IBM Plex Sans KR" }}
         >
-          {totalElements}
+          <span
+            className={`text-xs leading-[130%] font-bold ${totalElements === 0 ? "text-[#71717A]" : "text-white"
+              }`}
+            style={{ fontFamily: "IBM Plex Sans KR" }}
+          >
+            {totalElements}
+          </span>
         </div>
       </div>
 
       <div className="flex w-full flex-col items-start gap-3 flex-1">
         {/* Empty State */}
         {totalElements === 0 ? (
-          <div className="flex w-full items-center justify-center py-10">
+          <div className="flex w-full items-center justify-center py-4 rounded-2xl border border-[#EBEBEB] bg-white shadow-[0px_2px_12px_0px_rgba(0,0,0,0.04)]">
             <span
-              className="text-base leading-[130%] font-medium text-[#9FA3AA]"
+              className="text-[#9FA3AA]"
               style={{ fontFamily: "IBM Plex Sans KR" }}
             >
               아직 작성한 리뷰가 없어요

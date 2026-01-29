@@ -21,7 +21,7 @@ export default function MySolutions() {
     const [sortBy, setSortBy] = useState("createdAt");
     const [sortDirection, setSortDirection] = useState("desc");
     const [retryingSubmissions, setRetryingSubmissions] = useState<Set<number>>(new Set());
-    const itemsPerPage = 20;
+    const itemsPerPage = 10;
 
     // Language options
     const languageOptions: SelectOption[] = [
@@ -112,6 +112,23 @@ export default function MySolutions() {
         if (normalized.includes("go")) return "GO";
         if (normalized.includes("rust")) return "RUST";
         return lang.toUpperCase();
+    };
+
+    // 상대 시간 포맷팅 헬퍼 함수
+    const formatRelativeTime = (dateString: string) => {
+        const now = new Date();
+        const date = new Date(dateString);
+        const diff = now.getTime() - date.getTime();
+        const diffMin = Math.floor(diff / (1000 * 60));
+        const diffHour = Math.floor(diff / (1000 * 60 * 60));
+        const diffDay = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+        if (diffMin < 1) return "방금 전";
+        if (diffMin < 60) return `${diffMin}분 전`;
+        if (diffHour < 24) return `${diffHour}시간 전`;
+        if (diffDay < 7) return `${diffDay}일 전`;
+
+        return format(date, "MM.dd");
     };
 
     // AI 점수별 뱃지 스타일 가져오기 (ProblemStatisticsPage reuse)
@@ -360,7 +377,7 @@ export default function MySolutions() {
                             >
                                 {/* Program Name & Badge */}
                                 <div
-                                    className="group relative w-[140px] flex flex-col items-center justify-center gap-1 px-2 cursor-pointer hover:bg-gray-100 rounded-md py-1 transition-colors"
+                                    className="group relative w-[110px] flex flex-col items-center justify-center gap-1 px-2 cursor-pointer hover:bg-gray-100 rounded-md py-1 transition-colors"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         if (program.programType.name === 'PROBLEMSET') {
@@ -383,7 +400,7 @@ export default function MySolutions() {
                                     </div>
                                 </div>
                                 {/* Problem Name */}
-                                <div className="group relative flex w-[140px] min-w-[140px] justify-center px-2">
+                                <div className="group relative flex w-[145px] min-w-[145px] justify-center px-2">
                                     <span className="w-full truncate text-center text-sm font-medium text-[#333333]">
                                         {problem.title}
                                     </span>
@@ -456,8 +473,8 @@ export default function MySolutions() {
                                         <div className="flex items-center gap-1">
                                             <div
                                                 className={`inline-flex w-fit items-center justify-center rounded-md px-2.5 py-1 text-[12px] font-semibold tracking-tight ${aiStatus === 'evaluating'
-                                                        ? 'bg-blue-50 text-blue-700'
-                                                        : getAiScoreBadgeStyle(aiScoreDisplay).bg + ' ' + getAiScoreBadgeStyle(aiScoreDisplay).text
+                                                    ? 'bg-blue-50 text-blue-700'
+                                                    : getAiScoreBadgeStyle(aiScoreDisplay).bg + ' ' + getAiScoreBadgeStyle(aiScoreDisplay).text
                                                     }`}
                                             >
                                                 {aiStatus === 'evaluating' && (
@@ -527,8 +544,13 @@ export default function MySolutions() {
                                         </div>
                                     )}
                                 </div>
-                                <div className="w-[80px] text-center text-sm font-medium text-[#333333]">
-                                    {format(new Date(sub.createAt), "MM/dd")}
+                                <div className="group relative flex w-[80px] cursor-help justify-center text-sm font-medium text-[#333333]">
+                                    {formatRelativeTime(sub.createAt)}
+                                    {/* Tooltip for Exact Time */}
+                                    <div className="pointer-events-none invisible absolute bottom-full left-1/2 z-20 mb-2 w-max -translate-x-1/2 transform rounded-lg bg-gray-800 p-2 text-xs text-white opacity-0 shadow-lg transition-all group-hover:visible group-hover:opacity-100">
+                                        {format(new Date(sub.createAt), "yyyy-MM-dd HH:mm:ss")}
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 transform border-4 border-transparent border-t-gray-800"></div>
+                                    </div>
                                 </div>
                                 <div className="flex w-[80px] justify-center">
                                     {/* Link to code view - Assuming /review/:submissionId is appropriate used in previous code */}

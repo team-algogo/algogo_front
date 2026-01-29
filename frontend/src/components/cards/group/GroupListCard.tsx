@@ -150,7 +150,7 @@ const Group = ({
             </span>
           </div>
 
-          <p className="text-sm text-gray-700 line-clamp-1 leading-relaxed md:line-clamp-2">
+          <p className="text-sm text-gray-700 line-clamp-1 leading-relaxed">
             {description}
           </p>
         </div>

@@ -105,8 +105,24 @@ export const getUserDetailById = async (userId: number) => {
   );
   return response.data;
 };
-// 비밀번호 찾기 (임시 비밀번호 발송)
-export const postFindPassword = async (email: string) => {
-  const response = await client.post(`/api/v1/users/find-password/${email}`);
+// 비밀번호 재설정
+export const postResetPassword = async (
+  email: string,
+  code: string,
+  newPassword: string,
+) => {
+  const response = await client.post("/api/v1/users/reset-password", {
+    email,
+    code,
+    newPassword,
+  });
   return response;
+};
+
+// 비밀번호 재설정용 인증번호 요청
+export const postPasswordResetCodeRequest = async (email: string) => {
+  const response = await client.post("/api/v1/users/password-reset/verification/request", {
+    email: email,
+  });
+  return response.data;
 };
